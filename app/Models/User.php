@@ -53,6 +53,12 @@ class User extends Authenticatable
         return $this->hasMany(Task::class, 'utilisateur_id');
     }
 
+    public function notifications()
+{
+    return $this->hasMany(Notification::class);
+}
+
+
     public function hasPermission($permissionName)
     {
         if(\DB::table('model_has_permissions')

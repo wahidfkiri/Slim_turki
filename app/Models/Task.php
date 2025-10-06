@@ -41,4 +41,10 @@ class Task extends Model
     {
         return $this->belongsTo(User::class, 'utilisateur_id');
     }
+
+    public function notifications()
+{
+    return $this->hasMany(Notification::class);
+}
+
 }
