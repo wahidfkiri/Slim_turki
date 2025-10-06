@@ -1,0 +1,493 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreDossierRequest;
+use App\Http\Requests\UpdateDossierRequest;
+use App\Http\Resources\DossierResource;
+use App\Models\Dossier;
+use App\Models\Domaine;
+use App\Models\SousDomaine;
+use App\Models\Intervenant;
+use App\Models\User;
+use App\Models\Fichier;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+
+class DossierController extends Controller
+{
+    public function index()
+{
+        if (!auth()->user()->hasPermission('view_dossiers')) {
+            abort(403, 'Unauthorized action.');
+        }
+    if(auth()->user()->hasRole('admin')){
+        $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])->paginate(10);
+    }else{
+$dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])
+    ->whereHas('users', function($query) {
+        $query->where('users.id', auth()->id());
+    })
+    ->paginate(10);
+}
+    $domaines = Domaine::all(); // Ajouter cette ligne
+    return view('dossiers.index', compact('dossiers', 'domaines'));
+}
+
+    public function create()
+{
+    $this->authorize('create_dossiers', Dossier::class);
+   $domaines = Domaine::with(['sousDomaines' => function($query) {
+            $query->orderBy('nom');
+        }])->get();
+     $intervenants = Intervenant::where('archive', false)
+            ->orderBy('identite_fr')
+            ->get();
+            
+        $users = User::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+        $dossiers = Dossier::orderBy('numero_dossier')->get();
+
+    return view('dossiers.create', compact('domaines', 'intervenants', 'users', 'dossiers'));
+}
+
+ public function edit(Dossier $dossier)
+{
+   
+        if (!auth()->user()->hasPermission('edit_dossiers')) {
+            abort(403, 'Unauthorized action.');
+        }
+   $domaines = Domaine::with(['sousDomaines' => function($query) {
+            $query->orderBy('nom');
+        }])->get();
+     $intervenants = Intervenant::where('archive', false)
+            ->orderBy('identite_fr')
+            ->get();
+            $sousDomaines = SousDomaine::where('domaine_id', $dossier->domaine_id)
+            ->orderBy('nom')
+            ->get();
+        $users = User::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+        $dossiers = Dossier::where('id', '!=', $dossier->id)
+            ->orderBy('numero_dossier')
+            ->get();
+
+    return view('dossiers.edit', compact('domaines', 'intervenants', 'users', 'dossier', 'sousDomaines', 'dossiers'));
+}
+
+
+
+    public function store(StoreDossierRequest $request)
+{
+    $this->authorize('create_dossiers', Dossier::class);
+    
+    // Démarrer une transaction de base de données
+    DB::beginTransaction();
+
+    try {
+        // Valider les données de base du dossier
+        $validatedData = $request->validated();
+        
+        // Créer le dossier
+        $dossier = Dossier::create($validatedData);
+        
+        // Attacher le client principal comme intervenant
+        if ($request->has('client_id')) {
+            $dossier->intervenants()->attach($request->client_id, [
+                'role' => 'client'
+            ]);
+        }
+        
+        // Attacher les autres intervenants
+        if ($request->has('autres_intervenants')) {
+            foreach ($request->autres_intervenants as $intervenantId) {
+                // Déterminer le rôle selon la catégorie de l'intervenant
+                $intervenant = Intervenant::find($intervenantId);
+                $role = $intervenant->categorie; // ou une logique plus spécifique
+                
+                $dossier->intervenants()->attach($intervenantId, [
+                    'role' => $role
+                ]);
+            }
+        }
+
+        if($request->has('autres_dossiers')){
+            foreach ($request->autres_dossiers as $dossierLieId) {
+                // Déterminer la relation (à adapter selon votre logique)
+                $relation = 'autre'; // ou une logique plus spécifique
+                
+                $dossier->dossiersLies()->attach($dossierLieId, [
+                    'relation' => $relation
+                ]);
+            }
+        }
+        
+        // Attacher l'avocat responsable comme utilisateur
+        if ($request->has('avocat_id')) {
+            $dossier->users()->attach($request->avocat_id, [
+                'role' => 'avocat',
+                'ordre' => $request->ordre ?? 1
+            ]);
+        }
+        
+        // Attacher l'équipe supplémentaire
+        if ($request->has('equipe_supplementaire')) {
+            foreach ($request->equipe_supplementaire as $userId) {
+                $user = User::find($userId);
+                $role = $user->fonction; // ou une logique plus spécifique
+                
+                $dossier->users()->attach($userId, [
+                    'role' => $role,
+                    'ordre' => $request->ordre ?? 2
+                ]);
+            }
+        }
+        
+        // Gérer l'upload des fichiers
+        $uploadedFiles = [];
+        if ($request->hasFile('fichiers')) {
+            foreach ($request->file('fichiers') as $file) {
+                if ($file->isValid()) {
+                    $fileName = time() . '_' . $file->getClientOriginalName();
+                    $filePath = $file->storeAs('dossiers/' . $dossier->numero_dossier, $fileName, 'public');
+                    
+                    $fichier = Fichier::create([
+                        'type_module' => 'facture',
+                        'module_id' => $dossier->id,
+                        'nom_fichier' => $file->getClientOriginalName(),
+                        'chemin_fichier' => $filePath,
+                        'type_mime' => $file->getMimeType(),
+                        'taille' => $file->getSize(),
+                        'description' => 'Fichier joint au dossier'
+                    ]);
+                    
+                    $uploadedFiles[] = $filePath;
+                }
+            }
+        }
+        
+        // Valider que tout s'est bien passé avant de committer
+        DB::commit();
+        
+        // Redirection avec message de succès
+        return redirect()->route('dossiers.index')
+            ->with('success', 'Dossier créé avec succès.');
+            
+    } catch (\Exception $e) {
+        // En cas d'erreur, annuler la transaction
+        DB::rollBack();
+        
+        // Supprimer les fichiers uploadés en cas d'erreur
+        if (isset($uploadedFiles) && !empty($uploadedFiles)) {
+            foreach ($uploadedFiles as $filePath) {
+                if (Storage::disk('public')->exists($filePath)) {
+                    Storage::disk('public')->delete($filePath);
+                }
+            }
+        }
+        
+        // Log de l'erreur pour le débogage
+        \Log::error('Erreur création dossier: ' . $e->getMessage(), [
+            'exception' => $e,
+            'request_data' => $request->except(['fichiers']) // Exclure les fichiers pour la sécurité
+        ]);
+        
+        // Redirection avec message d'erreur
+        return redirect()->back()
+            ->withInput()
+            ->withErrors(['error' => 'Erreur lors de la création du dossier. Veuillez réessayer.']);
+    }
+}
+
+    public function show(Dossier $dossier)
+    {
+    $this->authorize('view_dossiers', Dossier::class);
+        return view('dossiers.show', compact('dossier'));
+    }
+public function update(UpdateDossierRequest $request, Dossier $dossier)
+{
+    $this->authorize('edit_dossiers', Dossier::class);
+    
+    // Valider les données de base du dossier
+    $validatedData = $request->validated();
+    
+    // Mettre à jour le dossier
+    $dossier->update($validatedData);
+    
+    // Synchroniser le client principal comme intervenant
+    if ($request->has('client_id')) {
+        // Supprimer l'ancien client et ajouter le nouveau
+        $dossier->intervenants()->wherePivot('role', 'client')->detach();
+        $dossier->intervenants()->attach($request->client_id, [
+            'role' => 'client'
+        ]);
+    } else {
+        // Si aucun client n'est sélectionné, supprimer l'ancien client
+        $dossier->intervenants()->wherePivot('role', 'client')->detach();
+    }
+    
+    // Synchroniser les autres intervenants
+    if ($request->has('autres_intervenants')) {
+        // Récupérer les IDs des intervenants actuels (sauf le client)
+        $currentIntervenants = $dossier->intervenants()
+            ->wherePivot('role', '!=', 'client')
+            ->pluck('intervenants.id')
+            ->toArray();
+        
+        // Détacher les intervenants supprimés
+        $intervenantsToDetach = array_diff($currentIntervenants, $request->autres_intervenants);
+        $dossier->intervenants()->detach($intervenantsToDetach);
+        
+        // Attacher les nouveaux intervenants
+        foreach ($request->autres_intervenants as $intervenantId) {
+            if (!in_array($intervenantId, $currentIntervenants)) {
+                $intervenant = Intervenant::find($intervenantId);
+                $role = $intervenant->categorie; // ou une logique plus spécifique
+                
+                $dossier->intervenants()->attach($intervenantId, [
+                    'role' => $role
+                ]);
+            }
+        }
+    } else {
+        // Si aucun autre intervenant n'est sélectionné, supprimer tous les intervenants sauf le client
+        $dossier->intervenants()->wherePivot('role', '!=', 'client')->detach();
+    }
+
+    if($request->has('autres_dossiers')){
+        // Récupérer les IDs des dossiers liés actuels
+        $currentDossiersLies = $dossier->dossiersLies()
+            ->pluck('dossiers.id')
+            ->toArray();
+        
+        // Détacher les dossiers liés supprimés
+        $dossiersToDetach = array_diff($currentDossiersLies, $request->autres_dossiers);
+        $dossier->dossiersLies()->detach($dossiersToDetach);
+        
+        // Attacher les nouveaux dossiers liés
+        foreach ($request->autres_dossiers as $dossierLieId) {
+            if (!in_array($dossierLieId, $currentDossiersLies)) {
+                // Déterminer la relation (à adapter selon votre logique)
+                $relation = 'autre'; // ou une logique plus spécifique
+                
+                $dossier->dossiersLies()->attach($dossierLieId, [
+                    'relation' => $relation
+                ]);
+            }
+        }
+    } else {
+        // Si aucun dossier lié n'est sélectionné, supprimer tous les dossiers liés
+        $dossier->dossiersLies()->detach();
+    }
+    
+    // Synchroniser l'avocat responsable comme utilisateur
+    if ($request->has('avocat_id')) {
+        // Supprimer l'ancien avocat responsable
+        $dossier->users()->wherePivot('role', 'avocat')->detach();
+        
+        // Attacher le nouvel avocat responsable
+        $dossier->users()->attach($request->avocat_id, [
+            'role' => 'avocat',
+            'ordre' => $request->ordre ?? 1
+        ]);
+    } else {
+        // Si aucun avocat n'est sélectionné, supprimer l'ancien avocat
+        $dossier->users()->wherePivot('role', 'avocat')->detach();
+    }
+    
+    // Synchroniser l'équipe supplémentaire
+    if ($request->has('equipe_supplementaire')) {
+        // Récupérer les IDs des utilisateurs actuels (sauf l'avocat responsable)
+        $currentTeam = $dossier->users()
+            ->wherePivot('role', '!=', 'avocat')
+            ->pluck('users.id')
+            ->toArray();
+        
+        // Détacher les utilisateurs supprimés
+        $usersToDetach = array_diff($currentTeam, $request->equipe_supplementaire);
+        $dossier->users()->detach($usersToDetach);
+        
+        // Attacher les nouveaux utilisateurs
+        foreach ($request->equipe_supplementaire as $userId) {
+            if (!in_array($userId, $currentTeam)) {
+                $user = User::find($userId);
+                $role = $user->fonction; // ou une logique plus spécifique
+                
+                $dossier->users()->attach($userId, [
+                    'role' => $role,
+                    'ordre' => $request->ordre ?? 2
+                ]);
+            }
+        }
+    } else {
+        // Si aucune équipe supplémentaire n'est sélectionnée, supprimer toute l'équipe sauf l'avocat
+        $dossier->users()->wherePivot('role', '!=', 'avocat')->detach();
+    }
+    
+    // Gérer l'upload des nouveaux fichiers
+    if ($request->hasFile('fichiers')) {
+        foreach ($request->file('fichiers') as $file) {
+            if ($file->isValid()) {
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $filePath = $file->storeAs('dossiers/' . $dossier->numero_dossier, $fileName, 'public');
+                
+                Fichier::create([
+                    'type_module' => 'facture',
+                    'module_id' => $dossier->id,
+                    'nom_fichier' => $file->getClientOriginalName(),
+                    'chemin_fichier' => $filePath,
+                    'type_mime' => $file->getMimeType(),
+                    'taille' => $file->getSize(),
+                    'description' => 'Fichier joint au dossier'
+                ]);
+            }
+        }
+    }
+    
+    // Gérer la suppression des fichiers existants
+    if ($request->has('fichiers_supprimes')) {
+        $fichiersASupprimer = $request->fichiers_supprimes;
+        $fichiers = Fichier::whereIn('id', $fichiersASupprimer)
+            ->where('module_id', $dossier->id)
+            ->where('type_module', 'facture')
+            ->get();
+        
+        foreach ($fichiers as $fichier) {
+            // Supprimer le fichier physique
+            Storage::disk('public')->delete($fichier->chemin_fichier);
+            // Supprimer l'enregistrement en base
+            $fichier->delete();
+        }
+    }
+    
+    // Redirection avec message de succès
+    return redirect()->route('dossiers.index')
+        ->with('success', 'Dossier mis à jour avec succès.');
+}
+    // public function update(UpdateDossierRequest $request, Dossier $dossier): DossierResource
+    // {
+    //     $this->authorize('edit_dossiers', Dossier::class);
+    //     $dossier->update($request->validated());
+        
+    //     return new DossierResource($dossier->load(['domaine', 'sousDomaine', 'users', 'intervenants']));
+    // }
+
+    public function destroy(Dossier $dossier): JsonResponse
+    {
+        $this->authorize('delete_dossiers', Dossier::class);
+        $dossier->delete();
+        
+        return response()->json([
+            'message' => 'Dossier supprimé avec succès.'
+        ], 200);
+    }
+
+    public function search(Request $request): AnonymousResourceCollection
+    {
+        $query = Dossier::query();
+        
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('numero_dossier', 'like', "%{$search}%")
+                  ->orWhere('nom_dossier', 'like', "%{$search}%");
+        }
+        
+        if ($request->has('domaine_id')) {
+            $query->where('domaine_id', $request->domaine_id);
+        }
+        
+        if ($request->has('conseil')) {
+            $query->where('conseil', $request->boolean('conseil'));
+        }
+        
+        if ($request->has('contentieux')) {
+            $query->where('contentieux', $request->boolean('contentieux'));
+        }
+        
+        if ($request->has('archive')) {
+            $query->where('archive', $request->boolean('archive'));
+        }
+        
+        $dossiers = $query->with(['domaine', 'sousDomaine', 'users', 'intervenants'])->paginate(10);
+        
+        return DossierResource::collection($dossiers);
+    }
+
+    public function attachUser(Request $request, Dossier $dossier): JsonResponse
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'role' => 'required|in:avocat,clerc,secrétaire,stagiaire',
+            'ordre' => 'required|integer'
+        ]);
+        
+        $dossier->users()->attach($request->user_id, [
+            'role' => $request->role,
+            'ordre' => $request->ordre
+        ]);
+        
+        return response()->json([
+            'message' => 'Utilisateur attaché au dossier avec succès.'
+        ], 200);
+    }
+
+    public function attachIntervenant(Request $request, Dossier $dossier): JsonResponse
+    {
+        $request->validate([
+            'intervenant_id' => 'required|exists:intervenants,id',
+            'role' => 'required|in:client,avocat,avocat_secondaire,adversaire,huissier,notaire,expert,juridiction,administrateur_judiciaire,mandataire_judiciaire,autre'
+        ]);
+        
+        $dossier->intervenants()->attach($request->intervenant_id, [
+            'role' => $request->role
+        ]);
+        
+        return response()->json([
+            'message' => 'Intervenant attaché au dossier avec succès.'
+        ], 200);
+    }
+
+    public function linkDossier(Request $request, Dossier $dossier): JsonResponse
+    {
+        $request->validate([
+            'dossier_lie_id' => 'required|exists:dossiers,id',
+            'relation' => 'required|in:appel,cassation,opposition,renvoi_premiere_instance,autre'
+        ]);
+        
+        $dossier->dossiersLies()->attach($request->dossier_lie_id, [
+            'relation' => $request->relation
+        ]);
+        
+        return response()->json([
+            'message' => 'Dossier lié avec succès.'
+        ], 200);
+    }
+
+    public function getSousDomainesByDomaine(Request $request)
+    {
+        $request->validate([
+            'domaine_id' => 'required|exists:domaines,id'
+        ]);
+
+        $sousDomaines = SousDomaine::where('domaine_id', $request->domaine_id)
+            ->orderBy('nom')
+            ->get(['id', 'nom']);
+    
+        return response()->json($sousDomaines);
+    }
+
+    public function getSousDomaines(Request $request)
+{
+    $domaineId = $request->get('domaine_id');
+    
+    $sousDomaines = SousDomaine::where('domaine_id', $domaineId)
+        ->pluck('nom', 'id');
+    
+    return response()->json($sousDomaines);
+}
+}
