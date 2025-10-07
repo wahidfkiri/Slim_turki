@@ -207,6 +207,9 @@
 .hidden-item {
     display: none;
 }
+#intervenantsTable_filter {
+    display: none !important; /* Masquer la boîte de recherche par défaut */
+}
 </style>
 </head>
 <body class="hold-transition sidebar-mini">

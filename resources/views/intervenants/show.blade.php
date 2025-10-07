@@ -464,16 +464,17 @@
                                                         <table class="table table-bordered table-striped">
                                                             <thead>
                                                                 <tr>
+                                                                    <th>ID</th>
                                                                     <th>Intervenant</th>
-                                                                    <th>Catégorie</th>
-                                                                    <th>Relation</th>
-                                                                    <th>Coordonnées</th>
+                                                                    <th>Type</th>
+                                                                    <th>Forme Sociale</th>
                                                                     <th>Actions</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
                                                                 @foreach($intervenant->intervenantsLies as $intervenantLie)
                                                                 <tr>
+                                                                    <td>{{ $intervenantLie->id }}</td>
                                                                     <td>
                                                                         <div class="d-flex align-items-center">
                                                                             <div class="mr-3">
@@ -489,47 +490,9 @@
                                                                         </div>
                                                                     </td>
                                                                     <td>
-                                                                        <span class="badge badge-secondary">
-                                                                            {{ ucfirst(str_replace('_', ' ', $intervenantLie->categorie)) }}
-                                                                        </span>
-                                                                        @if($intervenantLie->fonction)
-                                                                            <br>
-                                                                            <small class="text-muted">{{ $intervenantLie->fonction }}</small>
-                                                                        @endif
+                                                                        {{ $intervenantLie->type }}
                                                                     </td>
-                                                                    <td>
-                                                                        @php
-                                                                            $relation = $intervenantLie->pivot->relation;
-                                                                            $relationBadges = [
-                                                                                'associe' => 'badge-info',
-                                                                                'client' => 'badge-success',
-                                                                                'avocat' => 'badge-warning',
-                                                                                'adversaire' => 'badge-danger',
-                                                                                'partenaire' => 'badge-primary',
-                                                                                'fournisseur' => 'badge-secondary',
-                                                                                'collaborateur' => 'badge-light',
-                                                                                'representant' => 'badge-dark',
-                                                                                'autre' => 'badge-light'
-                                                                            ];
-                                                                        @endphp
-                                                                        <span class="badge {{ $relationBadges[$relation] ?? 'badge-light' }}">
-                                                                            {{ ucfirst(str_replace('_', ' ', $relation)) }}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td>
-                                                                        @if($intervenantLie->portable1)
-                                                                            <div>
-                                                                                <i class="fas fa-mobile-alt text-success mr-1"></i>
-                                                                                <small>{{ $intervenantLie->portable1 }}</small>
-                                                                            </div>
-                                                                        @endif
-                                                                        @if($intervenantLie->mail1)
-                                                                            <div>
-                                                                                <i class="fas fa-envelope text-info mr-1"></i>
-                                                                                <small>{{ $intervenantLie->mail1 }}</small>
-                                                                            </div>
-                                                                        @endif
-                                                                    </td>
+                                                                    <td> {{ $intervenantLie->formeSociale->nom ?? 'N/A' }} </td>
                                                                     <td>
                                                                         <div class="btn-group btn-group-sm">
                                                                             <a href="{{ route('intervenants.show', $intervenantLie->id) }}" 
@@ -740,9 +703,8 @@
                                                                 <tr>
                                                                     <th>Numéro Dossier</th>
                                                                     <th>Nom Dossier</th>
-                                                                    <th>Domaine</th>
-                                                                    <th>Sous Domaine</th>
-                                                                    <th>Date Entrée</th>
+                                                                    <th>Objet</th>
+                                                                    <th>Archivé</th>
                                                                     <th>Actions</th>
                                                                 </tr>
                                                             </thead>
@@ -751,12 +713,10 @@
                                                                 <tr>
                                                                     <td>{{ $dossier->numero_dossier }}</td>
                                                                     <td>{{ $dossier->nom_dossier }}</td>
-                                                                    <td>{{ $dossier->domaine->nom ?? null}}</td>
-                                                                    <td>{{ $dossier->sousDomaine->nom ?? null }}</td>
-                                                                    <td>{{ \Carbon\Carbon::parse($dossier->date_entree)->format('d/m/Y') }}</td>
-                                                                   
-                      <td>
-                        <div class="btn-group btn-group-sm">
+                                                                    <td>{{ $dossier->objet }}</td>
+                                                                    <td>{{ $dossier->archive ? 'Oui' : 'Non' }}</td>
+                                                                    <td>
+                                                                        <div class="btn-group btn-group-sm">
                           <a href="{{ route('dossiers.show', $dossier->id) }}" 
                              class="btn btn-info" title="Voir">
                             <i class="fas fa-eye"></i>

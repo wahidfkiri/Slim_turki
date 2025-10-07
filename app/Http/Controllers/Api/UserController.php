@@ -12,7 +12,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
-use DB;
+use Illuminate\Support\Facades\DB;
+use App\Http\Requests\UpdateUserGeneralRequest;
+use App\Http\Requests\UpdateUserSecurityRequest;
+use App\Http\Requests\UpdateUserPrivilegesRequest;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -72,11 +76,13 @@ class UserController extends Controller
     }
 }
 
-    public function show(User $user): UserResource
+    public function show(User $user)
     {
-        $this->authorize('view', $user);
+        if (!auth()->user()->hasPermission('view_users')) {
+            abort(403, 'Unauthorized action.');
+        }
         
-        return new UserResource($user->load('roles', 'permissions', 'dossiers'));
+        return view('users.show', compact('user'));
     }
 
     public function edit(User $user)
@@ -93,21 +99,27 @@ class UserController extends Controller
     
     $validated = $request->validated();
     
-    // Ne mettre à jour le mot de passe que s'il est fourni
+    // Séparer les données par onglets
+    $generalData = [
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'fonction' => $validated['fonction'],
+        'is_active' => $request->has('is_active') ? true : false,
+    ];
+    
+    // Ne mettre à jour le mot de passe que s'il est fourni (onglet Sécurité)
     if ($request->filled('password')) {
-        $validated['password'] = Hash::make($validated['password']);
-    } else {
-        unset($validated['password']);
+        $generalData['password'] = Hash::make($validated['password']);
     }
     
-    $user->update($validated);
+    $user->update($generalData);
     
-    // Synchroniser les rôles
+    // Synchroniser les rôles (onglet Privilèges)
     if ($request->has('roles')) {
         $user->syncRoles($request->roles);
     }
 
-    // Synchroniser les permissions directes
+    // Synchroniser les permissions directes (onglet Privilèges)
     if ($request->has('permissions')) {
         $user->syncPermissions($request->permissions);
     } else {
@@ -160,4 +172,70 @@ class UserController extends Controller
         
         return UserResource::collection($users);
     }
+
+    public function updateGeneralInfo(UpdateUserGeneralRequest $request, User $user)
+{
+    $this->authorize('edit_users', $user);
+    
+    $validated = $request->validated();
+    
+    $generalData = [
+        'name' => $validated['name'],
+        'email' => $validated['email'],
+        'fonction' => $validated['fonction'],
+        'is_active' => $request->has('is_active') ? true : false,
+    ];
+    
+    $user->update($generalData);
+
+    return redirect()->route('users.edit', $user)
+        ->with('success', 'Informations générales mises à jour avec succès.')
+        ->with('active_tab', 'general');
+}
+
+public function updateSecurity(UpdateUserSecurityRequest $request, User $user)
+{
+    $this->authorize('edit_users', $user);
+    
+    $validated = $request->validated();
+    
+    $securityData = [];
+    
+    // Ne mettre à jour le mot de passe que s'il est fourni
+    if ($request->filled('password')) {
+        $securityData['password'] = Hash::make($validated['password']);
+    }
+    
+    if (!empty($securityData)) {
+        $user->update($securityData);
+    }
+
+    return redirect()->route('users.edit', $user)
+        ->with('success', 'Paramètres de sécurité mis à jour avec succès.')
+        ->with('active_tab', 'security');
+}
+
+public function updatePrivileges(UpdateUserPrivilegesRequest $request, User $user)
+{
+    $this->authorize('edit_users', $user);
+    
+    $validated = $request->validated();
+    
+    // Synchroniser les rôles
+    if ($request->has('roles')) {
+        $user->syncRoles($request->roles);
+    }
+
+    // Synchroniser les permissions directes
+    if ($request->has('permissions')) {
+        $user->syncPermissions($request->permissions);
+    } else {
+        // Si aucune permission n'est sélectionnée, supprimer toutes les permissions directes
+        $user->syncPermissions([]);
+    }
+
+    return redirect()->route('users.edit', $user)
+        ->with('success', 'Privilèges mis à jour avec succès.')
+        ->with('active_tab', 'privileges');
+}
 }

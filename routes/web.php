@@ -11,7 +11,9 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmailWebController;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -34,7 +36,12 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 
 Route::resource('users', UserController::class);
-Route::get('users/search', [UserController::class, 'search']);
+Route::put('/users/{user}/general', [UserController::class, 'updateGeneralInfo'])
+    ->name('users.update.general');
+Route::put('/users/{user}/security', [UserController::class, 'updateSecurity'])
+    ->name('users.update.security');
+Route::put('/users/{user}/privileges', [UserController::class, 'updatePrivileges'])
+    ->name('users.update.privileges');
 
 Route::resource('intervenants', IntervenantController::class);
 Route::get('intervenants/search', [IntervenantController::class, 'search']);
@@ -111,12 +118,27 @@ Route::prefix('email')->group(function () {
     Route::post('/reconnect', [EmailController::class, 'reconnect']);
 });
 
+
+// 1️⃣ Serve DOCX file with correct MIME type
+Route::get('/file/{filename}', function ($filename) {
+    $path = storage_path("app/public/intervenants/2/{$filename}");
+    if (!file_exists($path)) {
+        abort(404, "File not found");
+    }
+
+    return response()->file($path, [
+        'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ]);
+});
+
+// 2️⃣ ONLYOFFICE editor page
 Route::get('/editor', function () {
+    $filename = '1759774533_example.docx'; // your file name in storage/app/public
     $document = [
         'fileType' => 'docx',
         'key' => uniqid(),
-        'title' => 'example.docx',
-        'url' => url('storage/example.docx'),
+        'title' => $filename,
+        'url' => url("file/{$filename}"), // route that serves the file
     ];
 
     $config = [
@@ -128,13 +150,30 @@ Route::get('/editor', function () {
         ],
         'editorConfig' => [
             'callbackUrl' => url('/onlyoffice/callback'),
+            'mode' => 'edit',
+            'coEditing' => [
+                'mode' => 'fast',
+                'change' => true
+            ],
         ],
     ];
 
-    // Add JWT token
-    $secret = 'your_secret_here'; // from ONLYOFFICE local.json
-    $token = JWT::encode($config, $secret, 'HS256');
-    $config['token'] = $token;
-
     return view('onlyoffice', compact('config'));
+});
+
+// 3️⃣ ONLYOFFICE callback route (save edits)
+Route::post('/onlyoffice/callback', function (Request $request) {
+    $data = $request->all();
+    Log::info('ONLYOFFICE callback', $data);
+
+    // status = 2 means document is ready to be saved
+    if (($data['status'] ?? null) == 2) {
+        $fileUrl = $data['url'] ?? null;
+        if ($fileUrl) {
+            $contents = file_get_contents($fileUrl);
+            Storage::disk('public/intervenants/2')->put('1759774533_example.docx', $contents);
+        }
+    }
+
+    return response()->json(['error' => 0]);
 });

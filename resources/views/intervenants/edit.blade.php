@@ -276,11 +276,11 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="portable1">Portable 1 *</label>
+                                                                <label for="portable1">Portable 1</label>
                                                                 <input type="text" class="form-control @error('portable1') is-invalid @enderror" 
                                                                        id="portable1" name="portable1" 
                                                                        value="{{ old('portable1', $intervenant->portable1) }}" 
-                                                                       placeholder="Numéro de portable principal" required>
+                                                                       placeholder="Numéro de portable principal">
                                                                 @error('portable1')
                                                                     <span class="invalid-feedback" role="alert">
                                                                         <strong>{{ $message }}</strong>
@@ -341,11 +341,11 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="mail1">Email 1 *</label>
+                                                                <label for="mail1">Email 1</label>
                                                                 <input type="email" class="form-control @error('mail1') is-invalid @enderror" 
                                                                        id="mail1" name="mail1" 
                                                                        value="{{ old('mail1', $intervenant->mail1) }}" 
-                                                                       placeholder="Adresse email principale" required>
+                                                                       placeholder="Adresse email principale">
                                                                 @error('mail1')
                                                                     <span class="invalid-feedback" role="alert">
                                                                         <strong>{{ $message }}</strong>
@@ -374,10 +374,10 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="adresse1">Adresse 1 *</label>
+                                                                <label for="adresse1">Adresse 1</label>
                                                                 <textarea class="form-control @error('adresse1') is-invalid @enderror" 
                                                                           id="adresse1" name="adresse1" 
-                                                                          rows="3" placeholder="Adresse principale" required>{{ old('adresse1', $intervenant->adresse1) }}</textarea>
+                                                                          rows="3" placeholder="Adresse principale">{{ old('adresse1', $intervenant->adresse1) }}</textarea>
                                                                 @error('adresse1')
                                                                     <span class="invalid-feedback" role="alert">
                                                                         <strong>{{ $message }}</strong>
@@ -545,41 +545,138 @@
                                             <!-- Onglet Intervenants Liés -->
                                             <div class="tab-pane fade" id="intervenants-lies" role="tabpanel" aria-labelledby="intervenants-lies-tab">
                                                 <div class="p-3">
-                                                    <div class="alert alert-info">
-                                                        <h5><i class="icon fas fa-info"></i> Gestion des relations</h5>
-                                                        <p class="mb-0">
-                                                            Vous pouvez associer cet intervenant à d'autres intervenants existants et définir le type de relation.
-                                                        </p>
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h5 class="text-primary mb-0"><i class="fas fa-users"></i> Intervenants Liés</h5>
+                                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#linkIntervenantModal">
+                                                            <i class="fas fa-link"></i> Lier un intervenant
+                                                        </button>
                                                     </div>
 
-                                                    <div class="row">
-                                                        <div class="col-md-12">
-                                                            <div class="card">
-                                                                <div class="card-body">
-                                                                    <div class="form-group">
-                                                                        <label for="intervenants_lies">Intervenants liés</label>
-                                                                        <select class="form-control @error('intervenants_lies') is-invalid @enderror" 
-                                                                                id="intervenants_lies" name="intervenants_lies[]" 
-                                                                                multiple>
-                                                                            @foreach($intervenants as $intervenantItem)
-                                                                                <option value="{{ $intervenantItem->id }}" 
-                                                                                    {{ (collect(old('intervenants_lies', $intervenant->intervenantsLies->pluck('id')))->contains($intervenantItem->id)) ? 'selected':'' }}>
-                                                                                    {{ $intervenantItem->identite_fr }}
-                                                                                </option>
+                                                    <!-- Tableau des intervenants liés -->
+                                                    <div class="card">
+                                                        <div class="card-header bg-light">
+                                                            <h6 class="mb-0"><i class="fas fa-table"></i> Liste des intervenants liés</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered table-striped" id="linkedIntervenantsTable">
+                                                                    <thead class="thead-dark">
+                                                                        <tr>
+                                                                            <th width="30%">Intervenant Lié</th>
+                                                                            <th width="30%">Relation (de cet intervenant)</th>
+                                                                            <th width="30%">Relation (de l'intervenant lié)</th>
+                                                                            <th width="10%">Actions</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody id="linked-intervenants-container">
+                                                                        @php
+    $existingLinkedIntervenants = [];
+    if ($intervenant->intervenantsLies->count() > 0) {
+        foreach ($intervenant->intervenantsLies as $index => $linkedIntervenant) {
+            $pivot = $linkedIntervenant->pivot;
+            
+            // Récupérer la relation inverse
+            $relationTo = '';
+            $inverseRelation = $linkedIntervenant->intervenantsLies->where('id', $intervenant->id)->first();
+            if ($inverseRelation) {
+                $relationTo = $inverseRelation->pivot->relation ?? '';
+            }
+            
+            $existingLinkedIntervenants[] = [
+                'intervenant_id' => $linkedIntervenant->id,
+                'intervenant_name' => $linkedIntervenant->identite_fr,
+                'relation_from' => $pivot->relation,
+                'relation_to' => $relationTo
+            ];
+        }
+    }
+@endphp
+
+                                                                        @if(old('linked_intervenants'))
+                                                                            <!-- Afficher les intervenants depuis la validation -->
+                                                                            @foreach(old('linked_intervenants') as $index => $linkedIntervenant)
+                                                                            <tr class="linked-intervenant-item">
+                                                                                <td>
+                                                                                    <strong>{{ $linkedIntervenant['intervenant_name'] ?? 'Intervenant' }}</strong>
+                                                                                    <input type="hidden" name="linked_intervenants[{{ $index }}][intervenant_id]" 
+                                                                                           value="{{ $linkedIntervenant['intervenant_id'] }}">
+                                                                                    <input type="hidden" name="linked_intervenants[{{ $index }}][intervenant_name]" 
+                                                                                           value="{{ $linkedIntervenant['intervenant_name'] }}">
+                                                                                </td>
+                                                                                <td>
+                                                                                    <input type="text" class="form-control" 
+                                                                                           name="linked_intervenants[{{ $index }}][relation_from]" 
+                                                                                           value="{{ $linkedIntervenant['relation_from'] ?? '' }}"
+                                                                                           placeholder="Ex: Client, Partenaire, Associé..."
+                                                                                           required>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <input type="text" class="form-control" 
+                                                                                           name="linked_intervenants[{{ $index }}][relation_to]" 
+                                                                                           value="{{ $linkedIntervenant['relation_to'] ?? '' }}"
+                                                                                           placeholder="Ex: Avocat, Fournisseur, Collaborateur..."
+                                                                                           required>
+                                                                                </td>
+                                                                                <td class="text-center">
+                                                                                    <button type="button" class="btn btn-danger btn-sm remove-linked-intervenant">
+                                                                                        <i class="fas fa-trash"></i>
+                                                                                    </button>
+                                                                                </td>
+                                                                            </tr>
                                                                             @endforeach
-                                                                        </select>
-                                                                        @error('intervenants_lies')
-                                                                            <span class="invalid-feedback" role="alert">
-                                                                                <strong>{{ $message }}</strong>
-                                                                            </span>
-                                                                        @enderror
-                                                                        <small class="form-text text-muted">
-                                                                            Maintenez la touche Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs intervenants.
-                                                                        </small>
-                                                                    </div>
-                                                                </div>
+                                                                        @elseif(count($existingLinkedIntervenants) > 0)
+                                                                            <!-- Afficher les intervenants existants depuis la base de données -->
+                                                                            @foreach($existingLinkedIntervenants as $index => $linkedIntervenant)
+                                                                            <tr class="linked-intervenant-item">
+                                                                                <td>
+                                                                                    <strong>{{ $linkedIntervenant['intervenant_name'] }}</strong>
+                                                                                    <input type="hidden" name="linked_intervenants[{{ $index }}][intervenant_id]" 
+                                                                                           value="{{ $linkedIntervenant['intervenant_id'] }}">
+                                                                                    <input type="hidden" name="linked_intervenants[{{ $index }}][intervenant_name]" 
+                                                                                           value="{{ $linkedIntervenant['intervenant_name'] }}">
+                                                                                </td>
+                                                                                <td>
+                                                                                    <input type="text" class="form-control" 
+                                                                                           name="linked_intervenants[{{ $index }}][relation_from]" 
+                                                                                           value="{{ $linkedIntervenant['relation_from'] }}"
+                                                                                           placeholder="Ex: Client, Partenaire, Associé..."
+                                                                                           required>
+                                                                                </td>
+                                                                                <td>
+                                                                                    <input type="text" class="form-control" 
+                                                                                           name="linked_intervenants[{{ $index }}][relation_to]" 
+                                                                                           value="{{ $linkedIntervenant['relation_to'] }}"
+                                                                                           placeholder="Ex: Avocat, Fournisseur, Collaborateur..."
+                                                                                           required>
+                                                                                </td>
+                                                                                <td class="text-center">
+                                                                                    <button type="button" class="btn btn-danger btn-sm remove-linked-intervenant">
+                                                                                        <i class="fas fa-trash"></i>
+                                                                                    </button>
+                                                                                </td>
+                                                                            </tr>
+                                                                            @endforeach
+                                                                        @endif
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+
+                                                            <!-- Message quand aucun intervenant n'est lié -->
+                                                            <div id="no-linked-intervenants" class="text-center py-4" 
+                                                                 style="{{ (old('linked_intervenants') || count($existingLinkedIntervenants) > 0) ? 'display: none;' : '' }}">
+                                                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                                                <p class="text-muted">Aucun intervenant lié pour le moment</p>
                                                             </div>
                                                         </div>
+                                                    </div>
+
+                                                    <div class="alert alert-info mt-3">
+                                                        <h6><i class="icon fas fa-info"></i> Information</h6>
+                                                        <p class="mb-0">
+                                                            <strong>Relation (de cet intervenant)</strong> : Comment cet intervenant voit l'intervenant lié.<br>
+                                                            <strong>Relation (de l'intervenant lié)</strong> : Comment l'intervenant lié voit cet intervenant.<br>
+                                                            Exemple : "Client" / "Avocat" ou "Employeur" / "Employé"
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -648,6 +745,115 @@
     <!-- /.content -->
 </div>
 
+<!-- Modal pour lier un intervenant -->
+<div class="modal fade" id="linkIntervenantModal" tabindex="-1" role="dialog" aria-labelledby="linkIntervenantModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="linkIntervenantModalLabel">
+                    <i class="fas fa-users"></i> Sélectionner un intervenant à lier
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Filtre de recherche -->
+                <div class="form-group">
+                    <label for="intervenantFilter">Filtrer les intervenants</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="intervenantFilter" 
+                               placeholder="Tapez pour filtrer par nom, email ou catégorie...">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" id="clearFilter">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <small class="form-text text-muted">
+                        Tapez pour filtrer la liste des intervenants. {{ $intervenants->count() }} intervenant(s) disponible(s).
+                    </small>
+                </div>
+
+                <!-- Liste des intervenants disponibles -->
+                <div class="form-group">
+                    <label for="intervenantList">Choisir un intervenant</label>
+                    <select class="form-control" id="intervenantList" size="8" style="height: auto; min-height: 200px;">
+                        <option value="">-- Sélectionnez un intervenant --</option>
+                        @foreach($intervenants as $intervenantItem)
+                            @if($intervenantItem->id != $intervenant->id) {{-- Exclure l'intervenant actuel --}}
+                            <option value="{{ $intervenantItem->id }}" 
+                                    data-name="{{ $intervenantItem->identite_fr }}"
+                                    data-email="{{ $intervenantItem->mail1 ?? 'N/A' }}"
+                                    data-phone="{{ $intervenantItem->portable1 ?? 'N/A' }}"
+                                    data-category="{{ $intervenantItem->categorie ?? 'N/A' }}"
+                                    class="intervenant-option">
+                                {{ $intervenantItem->identite_fr }} 
+                                @if($intervenantItem->mail1)
+                                    - {{ $intervenantItem->mail1 }}
+                                @endif
+                                @if($intervenantItem->categorie)
+                                    ({{ $intervenantItem->categorie }})
+                                @endif
+                            </option>
+                            @endif
+                        @endforeach
+                    </select>
+                    <div id="noResults" class="alert alert-warning mt-2" style="display: none;">
+                        <i class="fas fa-search"></i> Aucun intervenant ne correspond à votre recherche.
+                    </div>
+                </div>
+
+                <!-- Aperçu de l'intervenant sélectionné -->
+                <div id="intervenantPreview" class="card mt-3" style="display: none;">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0"><i class="fas fa-eye"></i> Aperçu de l'intervenant</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <table class="table table-sm table-borderless">
+                                    <tr>
+                                        <td width="30%"><strong>Nom :</strong></td>
+                                        <td id="previewName"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Email :</strong></td>
+                                        <td id="previewEmail"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Téléphone :</strong></td>
+                                        <td id="previewPhone"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Catégorie :</strong></td>
+                                        <td id="previewCategory"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <button type="button" class="btn btn-success" id="confirmLinkIntervenant">
+                                    <i class="fas fa-link"></i> Lier cet intervenant
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message si aucun intervenant disponible -->
+                @if($intervenants->count() <= 1)
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Aucun autre intervenant disponible pour le moment.
+                </div>
+                @endif
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal de confirmation de suppression -->
 <div class="modal fade" id="deleteFileModal" tabindex="-1" role="dialog" aria-labelledby="deleteFileModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -676,7 +882,7 @@
 <!-- jQuery -->
 <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
 <!-- Bootstrap 4 -->
-<script src="{{ asset('assets/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<!-- <script src="{{ asset('assets/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script> -->
 <!-- jquery-validation -->
 <script src="{{ asset('assets/plugins/jquery-validation/jquery.validate.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/jquery-validation/additional-methods.min.js') }}"></script>
@@ -718,7 +924,181 @@ function getFileIcon(filename) {
     return iconMap[ext] || 'fa-file text-secondary';
 }
 
+// Gestion des intervenants liés
+let linkedIntervenantsCount = {{ max(
+    old('linked_intervenants') ? count(old('linked_intervenants')) : 0,
+    count($existingLinkedIntervenants)
+) }};
+
+// Filtrage des intervenants
+$('#intervenantFilter').on('input', function() {
+    const filterText = $(this).val().toLowerCase();
+    const options = $('.intervenant-option');
+    let visibleCount = 0;
+    
+    options.each(function() {
+        const optionText = $(this).text().toLowerCase();
+        if (optionText.includes(filterText)) {
+            $(this).show();
+            visibleCount++;
+        } else {
+            $(this).hide();
+        }
+    });
+    
+    // Afficher/masquer le message "aucun résultat"
+    if (visibleCount === 0 && filterText !== '') {
+        $('#noResults').show();
+    } else {
+        $('#noResults').hide();
+    }
+    
+    // Réinitialiser la sélection si l'option sélectionnée est masquée
+    const selectedOption = $('#intervenantList option:selected');
+    if (selectedOption.length > 0 && selectedOption.is(':hidden')) {
+        $('#intervenantList').val('');
+        $('#intervenantPreview').hide();
+    }
+});
+
+// Effacer le filtre
+$('#clearFilter').click(function() {
+    $('#intervenantFilter').val('');
+    $('.intervenant-option').show();
+    $('#noResults').hide();
+});
+
+// Sélection d'un intervenant dans la liste
+$('#intervenantList').change(function() {
+    const selectedOption = $(this).find('option:selected');
+    const intervenantId = selectedOption.val();
+    
+    if (!intervenantId) {
+        $('#intervenantPreview').hide();
+        return;
+    }
+
+    // Afficher l'aperçu
+    $('#previewName').text(selectedOption.data('name'));
+    $('#previewEmail').text(selectedOption.data('email'));
+    $('#previewPhone').text(selectedOption.data('phone'));
+    $('#previewCategory').text(selectedOption.data('category'));
+    
+    $('#intervenantPreview').show();
+});
+
+// Confirmation du lien
+$('#confirmLinkIntervenant').click(function() {
+    const selectedOption = $('#intervenantList option:selected');
+    const intervenantId = selectedOption.val();
+    const intervenantName = selectedOption.data('name');
+
+    if (!intervenantId) {
+        alert('Veuillez sélectionner un intervenant.');
+        return;
+    }
+
+    // Vérifier si l'intervenant n'est pas déjà lié
+    const existingLink = $(`input[value="${intervenantId}"]`).closest('.linked-intervenant-item');
+    if (existingLink.length > 0) {
+        alert('Cet intervenant est déjà lié.');
+        return;
+    }
+
+    addLinkedIntervenant(intervenantId, intervenantName);
+    
+    // Reset la modal
+    $('#intervenantList').val('');
+    $('#intervenantFilter').val('');
+    $('.intervenant-option').show();
+    $('#noResults').hide();
+    $('#intervenantPreview').hide();
+    $('#linkIntervenantModal').modal('hide');
+});
+
+function addLinkedIntervenant(intervenantId, intervenantName) {
+    const newIndex = linkedIntervenantsCount++;
+    
+    const linkedItem = `
+        <tr class="linked-intervenant-item">
+            <td>
+                <strong>${intervenantName}</strong>
+                <input type="hidden" name="linked_intervenants[${newIndex}][intervenant_id]" value="${intervenantId}">
+                <input type="hidden" name="linked_intervenants[${newIndex}][intervenant_name]" value="${intervenantName}">
+            </td>
+            <td>
+                <input type="text" class="form-control" 
+                       name="linked_intervenants[${newIndex}][relation_from]" 
+                       placeholder="Ex: Client, Partenaire, Associé..."
+                       required>
+            </td>
+            <td>
+                <input type="text" class="form-control" 
+                       name="linked_intervenants[${newIndex}][relation_to]" 
+                       placeholder="Ex: Avocat, Fournisseur, Collaborateur..."
+                       required>
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-danger btn-sm remove-linked-intervenant">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+
+    $('#linked-intervenants-container').append(linkedItem);
+    $('#no-linked-intervenants').hide();
+
+    // Ajouter l'événement de suppression
+    $('.remove-linked-intervenant').off('click').on('click', function() {
+        $(this).closest('.linked-intervenant-item').remove();
+        linkedIntervenantsCount--;
+        
+        // Réindexer les éléments restants
+        reindexLinkedIntervenants();
+        
+        // Afficher le message si plus d'intervenants liés
+        if ($('#linked-intervenants-container').children().length === 0) {
+            $('#no-linked-intervenants').show();
+        }
+    });
+}
+
+function reindexLinkedIntervenants() {
+    $('#linked-intervenants-container .linked-intervenant-item').each(function(index) {
+        $(this).find('input').each(function() {
+            const name = $(this).attr('name').replace(/\[\d+\]/, `[${index}]`);
+            $(this).attr('name', name);
+        });
+    });
+}
+
+// Initialiser les boutons de suppression pour les intervenants existants
 $(document).ready(function() {
+    $('.remove-linked-intervenant').click(function() {
+        $(this).closest('.linked-intervenant-item').remove();
+        linkedIntervenantsCount--;
+        
+        reindexLinkedIntervenants();
+        
+        if ($('#linked-intervenants-container').children().length === 0) {
+            $('#no-linked-intervenants').show();
+        }
+    });
+
+    // Reset de la modal quand elle se ferme
+    $('#linkIntervenantModal').on('hidden.bs.modal', function() {
+        $('#intervenantList').val('');
+        $('#intervenantFilter').val('');
+        $('.intervenant-option').show();
+        $('#noResults').hide();
+        $('#intervenantPreview').hide();
+    });
+
+    // Focus sur le champ de filtre quand la modal s'ouvre
+    $('#linkIntervenantModal').on('shown.bs.modal', function() {
+        $('#intervenantFilter').focus();
+    });
 
     // Gestion de la navigation par onglets
     let currentTab = 0;
@@ -873,6 +1253,12 @@ $(document).ready(function() {
             'piece_jointe[]': {
                 accept: "application/pdf,image/jpeg,image/jpg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,application/zip,application/x-rar-compressed",
                 filesize: 10485760 // 10MB in bytes
+            },
+            'linked_intervenants[*][relation_from]': {
+                required: true
+            },
+            'linked_intervenants[*][relation_to]': {
+                required: true
             }
         },
         messages: {
@@ -939,7 +1325,6 @@ $(document).ready(function() {
         }
     });
 
-   
     updateNavigationButtons();
 });
 </script>
@@ -976,7 +1361,6 @@ h5.text-primary {
     margin-bottom: 1.5rem !important;
 }
 
-
 /* Styles pour l'aperçu des fichiers */
 #files_preview .list-group-item {
     border-left: 4px solid #007bff;
@@ -992,5 +1376,38 @@ h5.text-primary {
 .fa-file-excel { color: #28a745; }
 .fa-file-alt { color: #6c757d; }
 .fa-file-archive { color: #ffc107; }
+
+/* Styles pour le tableau des intervenants liés */
+#linkedIntervenantsTable {
+    font-size: 0.9rem;
+}
+
+#linkedIntervenantsTable th {
+    background-color: #343a40;
+    color: white;
+    font-weight: 600;
+}
+
+.linked-intervenant-item td {
+    vertical-align: middle;
+    padding: 0.75rem;
+}
+
+.linked-intervenant-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Styles pour les champs de relation */
+.linked-intervenant-item input[type="text"] {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.linked-intervenant-item input[type="text"]:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
 </style>
 @endsection

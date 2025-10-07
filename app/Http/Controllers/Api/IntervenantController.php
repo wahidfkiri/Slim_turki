@@ -14,6 +14,8 @@ use App\Models\FormeSociale;
 use App\Models\IntervenantFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class IntervenantController extends Controller
 {
@@ -41,60 +43,113 @@ class IntervenantController extends Controller
 
    public function store(StoreIntervenantRequest $request)
 {
-    // Récupérer les données validées (sans piece_jointe)
-     $validatedData = $request->validated();
-    unset($validatedData['piece_jointe']);
-    
-    // Créer l'intervenant avec les données validées
-    $intervenant = Intervenant::create($validatedData);
-    
-    // Gestion des fichiers
-    if ($request->hasFile('piece_jointe')) {
-        $files = $request->file('piece_jointe');
+    try {
+        DB::beginTransaction();
+
+        // Récupérer les données validées (sans piece_jointe)
+        $validatedData = $request->validated();
+        unset($validatedData['piece_jointe']);
         
-        // Créer le dossier pour cet intervenant
-        $intervenantFolder = 'intervenants/' . $intervenant->id;
-        $storagePath = storage_path('app/public/' . $intervenantFolder);
+        // Créer l'intervenant avec les données validées
+        $intervenant = Intervenant::create($validatedData);
         
-        // S'assurer que le dossier existe
-        if (!File::exists($storagePath)) {
-            File::makeDirectory($storagePath, 0755, true);
-        }
-        
-        foreach ($files as $file) {
-            if ($file->isValid()) {
-                // Générer un nom de fichier unique
-                $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
-                
-                // Déplacer le fichier vers le dossier de l'intervenant
-                $filePath = $file->storeAs($intervenantFolder, $fileName, 'public');
-                
-                // Enregistrer dans la table IntervenantFile
-                IntervenantFile::create([
-                    'intervenant_id' => $intervenant->id,
-                    'file_path' => $filePath,
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_size' => $file->getSize(),
-                    'file_type' => $file->getClientMimeType(),
-                    'uploaded_at' => now(),
-                ]);
+        // Gestion des fichiers
+        if ($request->hasFile('piece_jointe')) {
+            $files = $request->file('piece_jointe');
+            
+            // Créer le dossier pour cet intervenant
+            $intervenantFolder = 'intervenants/' . $intervenant->id;
+            $storagePath = storage_path('app/public/' . $intervenantFolder);
+            
+            // S'assurer que le dossier existe
+            if (!File::exists($storagePath)) {
+                File::makeDirectory($storagePath, 0755, true);
+            }
+            
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    // Générer un nom de fichier unique
+                    $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+                    
+                    // Déplacer le fichier vers le dossier de l'intervenant
+                    $filePath = $file->storeAs($intervenantFolder, $fileName, 'public');
+                    
+                    // Enregistrer dans la table IntervenantFile
+                    IntervenantFile::create([
+                        'intervenant_id' => $intervenant->id,
+                        'file_path' => $filePath,
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_size' => $file->getSize(),
+                        'file_type' => $file->getClientMimeType(),
+                        'uploaded_at' => now(),
+                    ]);
+                }
             }
         }
-    }
-    
-    // Gestion des intervenants liés
-    if ($request->has('intervenants_lies')) {
-        $intervenantsLies = [];
-        foreach ($request->intervenants_lies as $intervenantLieId) {
-            $intervenantsLies[$intervenantLieId] = [
-                'relation' => 'représente'
-            ];
+        
+        // Gestion des intervenants liés avec les deux relations
+        if ($request->has('linked_intervenants')) {
+            $intervenantsLiesFrom = []; // Relations de cet intervenant vers les autres
+            $intervenantsLiesTo = [];   // Relations des autres intervenants vers celui-ci
+            
+            foreach ($request->linked_intervenants as $linkedIntervenant) {
+                if (!empty($linkedIntervenant['intervenant_id']) && 
+                    !empty($linkedIntervenant['relation_from']) && 
+                    !empty($linkedIntervenant['relation_to'])) {
+                    
+                    // Relation de cet intervenant vers l'intervenant lié
+                    $intervenantsLiesFrom[$linkedIntervenant['intervenant_id']] = [
+                        'relation' => $linkedIntervenant['relation_from'],
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
+                    
+                    // Relation inverse (de l'intervenant lié vers cet intervenant)
+                    $intervenantsLiesTo[$linkedIntervenant['intervenant_id']] = [
+                        'relation' => $linkedIntervenant['relation_to'],
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
+                }
+            }
+            
+            if (!empty($intervenantsLiesFrom)) {
+                // Attacher les relations de cet intervenant vers les autres
+                $intervenant->intervenantsLies()->attach($intervenantsLiesFrom);
+                
+                // Attacher les relations inverses
+                foreach ($intervenantsLiesTo as $linkedId => $relationData) {
+                    $linkedIntervenant = Intervenant::find($linkedId);
+                    if ($linkedIntervenant) {
+                        $linkedIntervenant->intervenantsLies()->attach($intervenant->id, $relationData);
+                    }
+                }
+            }
         }
-        $intervenant->intervenantsLies()->attach($intervenantsLies);
+
+        DB::commit();
+        
+        $message = 'Intervenant créé avec succès.';
+        if ($request->has('linked_intervenants')) {
+            $message .= ' ' . count($request->linked_intervenants) . ' intervenant(s) lié(s).';
+        }
+        
+        return redirect()->route('intervenants.index')->with('success', $message);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        Log::error('Erreur lors de la création de l\'intervenant', [
+            'erreur' => $e->getMessage(),
+            'fichier' => $e->getFile(),
+            'ligne' => $e->getLine(),
+            'donnees' => $request->except(['piece_jointe', 'password'])
+        ]);
+
+        return redirect()->back()
+            ->withInput()
+            ->with('error', 'Une erreur est survenue lors de la création de l\'intervenant. Veuillez réessayer.');
     }
-    
-    $intervenants = Intervenant::with(['formeSociale', 'dossiers'])->paginate(10);
-    return redirect()->route('intervenants.index', compact('intervenants'))->with('success', 'Intervenant créé avec succès.');
 }
 
     public function show(Intervenant $intervenant)
@@ -103,85 +158,206 @@ class IntervenantController extends Controller
         return view('intervenants.show', compact('intervenant'));
     }
 
-   public function update(UpdateIntervenantRequest $request, Intervenant $intervenant)
+  public function update(UpdateIntervenantRequest $request, Intervenant $intervenant)
 {
-    // Récupérer les données validées (sans piece_jointe)
-    $validatedData = $request->validated();
-    unset($validatedData['piece_jointe']);
-    
-    // Mettre à jour l'intervenant avec les données validées
-    $intervenant->update($validatedData);
-    
-    // Gestion des nouveaux fichiers
-    if ($request->hasFile('piece_jointe')) {
-        $files = $request->file('piece_jointe');
+    try {
+        DB::beginTransaction();
+
+        // Récupérer les données validées (sans piece_jointe)
+        $validatedData = $request->validated();
+        unset($validatedData['piece_jointe']);
         
-        // Créer le dossier pour cet intervenant s'il n'existe pas
-        $intervenantFolder = 'intervenants/' . $intervenant->id;
-        $storagePath = storage_path('app/public/' . $intervenantFolder);
+        // Mettre à jour l'intervenant avec les données validées
+        $intervenant->update($validatedData);
         
-        // S'assurer que le dossier existe
-        if (!File::exists($storagePath)) {
-            File::makeDirectory($storagePath, 0755, true);
+        // Gestion des nouveaux fichiers
+        if ($request->hasFile('piece_jointe')) {
+            $files = $request->file('piece_jointe');
+            
+            // Créer le dossier pour cet intervenant s'il n'existe pas
+            $intervenantFolder = 'intervenants/' . $intervenant->id;
+            $storagePath = storage_path('app/public/' . $intervenantFolder);
+            
+            // S'assurer que le dossier existe
+            if (!File::exists($storagePath)) {
+                File::makeDirectory($storagePath, 0755, true);
+            }
+            
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    // Générer un nom de fichier unique
+                    $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+                    
+                    // Déplacer le fichier vers le dossier de l'intervenant
+                    $filePath = $file->storeAs($intervenantFolder, $fileName, 'public');
+                    
+                    // Enregistrer dans la table IntervenantFile
+                    IntervenantFile::create([
+                        'intervenant_id' => $intervenant->id,
+                        'file_path' => $filePath,
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_size' => $file->getSize(),
+                        'file_type' => $file->getClientMimeType(),
+                        'uploaded_at' => now(),
+                    ]);
+                }
+            }
         }
         
-        foreach ($files as $file) {
-            if ($file->isValid()) {
-                // Générer un nom de fichier unique
-                $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
-                
-                // Déplacer le fichier vers le dossier de l'intervenant
-                $filePath = $file->storeAs($intervenantFolder, $fileName, 'public');
-                
-                // Enregistrer dans la table IntervenantFile
-                IntervenantFile::create([
-                    'intervenant_id' => $intervenant->id,
-                    'file_path' => $filePath,
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_size' => $file->getSize(),
-                    'file_type' => $file->getClientMimeType(),
-                    'uploaded_at' => now(),
+        // Gestion des intervenants liés avec les deux relations
+        $intervenantsLiesFrom = []; // Relations de cet intervenant vers les autres
+        $intervenantsLiesTo = [];   // Relations des autres intervenants vers celui-ci
+        
+        if ($request->has('linked_intervenants')) {
+            foreach ($request->linked_intervenants as $linkedIntervenant) {
+                if (!empty($linkedIntervenant['intervenant_id']) && 
+                    !empty($linkedIntervenant['relation_from']) && 
+                    !empty($linkedIntervenant['relation_to'])) {
+                    
+                    // Relation de cet intervenant vers l'intervenant lié
+                    $intervenantsLiesFrom[$linkedIntervenant['intervenant_id']] = [
+                        'relation' => $linkedIntervenant['relation_from'],
+                        'updated_at' => now()
+                    ];
+                    
+                    // Relation inverse (de l'intervenant lié vers cet intervenant)
+                    $intervenantsLiesTo[$linkedIntervenant['intervenant_id']] = [
+                        'relation' => $linkedIntervenant['relation_to'],
+                        'updated_at' => now()
+                    ];
+                }
+            }
+        }
+        
+        // Synchroniser les relations de cet intervenant vers les autres
+        $intervenant->intervenantsLies()->sync($intervenantsLiesFrom);
+        
+        // Synchroniser les relations inverses
+        foreach ($intervenantsLiesTo as $linkedId => $relationData) {
+            $linkedIntervenant = Intervenant::find($linkedId);
+            if ($linkedIntervenant) {
+                $linkedIntervenant->intervenantsLies()->syncWithoutDetaching([
+                    $intervenant->id => $relationData
                 ]);
             }
         }
-    }
-    
-    // Gestion des intervenants liés
-    if ($request->has('intervenants_lies')) {
-        // Synchroniser les intervenants liés
-        $intervenantsLies = [];
-        foreach ($request->intervenants_lies as $intervenantLieId) {
-            $intervenantsLies[$intervenantLieId] = [
-                'relation' => 'représente' // Vous pouvez aussi récupérer la relation depuis le formulaire si nécessaire
-            ];
+        
+        // Supprimer les relations qui ne sont plus présentes
+        $currentLinkedIds = array_keys($intervenantsLiesFrom);
+        $allLinkedIntervenants = $intervenant->intervenantsLies()->pluck('intervenant_id')->toArray();
+        
+        $intervenantsToDetach = array_diff($allLinkedIntervenants, $currentLinkedIds);
+        
+        foreach ($intervenantsToDetach as $intervenantIdToDetach) {
+            // Détacher de cet intervenant
+            $intervenant->intervenantsLies()->detach($intervenantIdToDetach);
+            
+            // Détacher la relation inverse
+            $intervenantToDetach = Intervenant::find($intervenantIdToDetach);
+            if ($intervenantToDetach) {
+                $intervenantToDetach->intervenantsLies()->detach($intervenant->id);
+            }
         }
-        $intervenant->intervenantsLies()->sync($intervenantsLies);
-    } else {
-        // Si aucun intervenant lié n'est sélectionné, supprimer toutes les relations
-        $intervenant->intervenantsLies()->detach();
+
+        // Ancien format de gestion (pour compatibilité) - à supprimer éventuellement
+        if ($request->has('intervenants_lies')) {
+            $intervenantsLiesOld = [];
+            foreach ($request->intervenants_lies as $intervenantLieId) {
+                $intervenantsLiesOld[$intervenantLieId] = [
+                    'relation' => 'représente',
+                    'updated_at' => now()
+                ];
+            }
+            $intervenant->intervenantsLies()->sync($intervenantsLiesOld);
+        } elseif (!$request->has('linked_intervenants')) {
+            // Si aucun format n'est utilisé, détacher toutes les relations
+            $intervenant->intervenantsLies()->detach();
+        }
+
+        DB::commit();
+        
+        $message = 'Intervenant modifié avec succès.';
+        if ($request->has('linked_intervenants')) {
+            $message .= ' ' . count($request->linked_intervenants) . ' intervenant(s) lié(s).';
+        }
+        
+        // Recharger les relations pour la réponse
+        $intervenant->load(['formeSociale', 'dossiers', 'files', 'intervenantsLies']);
+        
+        return redirect()->route('intervenants.index')->with('success', $message);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        Log::error('Erreur lors de la modification de l\'intervenant', [
+            'intervenant_id' => $intervenant->id,
+            'erreur' => $e->getMessage(),
+            'fichier' => $e->getFile(),
+            'ligne' => $e->getLine()
+        ]);
+
+        return redirect()->back()
+            ->withInput()
+            ->with('error', 'Une erreur est survenue lors de la modification de l\'intervenant. Veuillez réessayer.');
     }
-    
-    // Recharger les relations pour la réponse
-    $intervenant->load(['formeSociale', 'dossiers', 'files', 'intervenantsLies']);
-    
-    return redirect()->route('intervenants.index')->with('success', 'Intervenant modifié avec succès.');
 }
 
-    public function destroy(Intervenant $intervenant): JsonResponse
-    {
-        // Vérifier si l'intervenant est utilisé dans des dossiers ou factures
-        if ($intervenant->dossiers()->count() > 0 || $intervenant->factures()->count() > 0) {
-            return response()->json([
-                'message' => 'Impossible de supprimer cet intervenant car il est associé à des dossiers ou factures.'
-            ], 422);
+    public function destroy(Intervenant $intervenant)
+{
+    try {
+        DB::beginTransaction();
+        // Pour les dossiers où cet intervenant est référencé
+        if ($intervenant->dossiers()->count() > 0) {
+            // Ou supprimer les dossiers associés (si c'est le comportement souhaité)
+            $dossiers = $intervenant->dossiers()->delete();
+
         }
-        
+
+        // Pour les factures où cet intervenant est référencé
+        if ($intervenant->factures()->count() > 0) {
+            // Mettre à jour les factures ou les supprimer selon votre logique métier
+            // $intervenant->factures()->update(['intervenant_id' => null]);
+            
+            // Ou supprimer les factures associées
+            $intervenant->factures()->delete();
+        }
+
+        // 3. Supprimer l'intervenant
+        $intervenantName = $intervenant->name; // ou le champ approprié
         $intervenant->delete();
-        
+
+        DB::commit();
+
+        // Log de la suppression
+        // Log::info('Intervenant supprimé avec suppression en cascade', [
+        //     'intervenant_id' => $intervenant->id,
+        //     'intervenant_name' => $intervenantName,
+        //     'dossiers_supprimés' => $dossiersAssocies,
+        //     'factures_supprimées' => $facturesAssociees,
+        //     'supprimé_par' => auth()->id(),
+        //     'supprimé_le' => now()->toDateTimeString()
+        // ]);
+
         return response()->json([
-            'message' => 'Intervenant supprimé avec succès.'
+            'message' => 'Intervenant et toutes ses associations supprimés avec succès.',
         ], 200);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        Log::error('Erreur lors de la suppression en cascade de l\'intervenant', [
+            'intervenant_id' => $intervenant->id,
+            'erreur' => $e->getMessage(),
+            'fichier' => $e->getFile(),
+            'ligne' => $e->getLine()
+        ]);
+
+        return response()->json([
+            'message' => 'Une erreur est survenue lors de la suppression de l\'intervenant.',
+            'error' => config('app.debug') ? $e->getMessage() : 'Erreur interne du serveur'
+        ], 500);
     }
+}
 
     public function search(Request $request): AnonymousResourceCollection
     {

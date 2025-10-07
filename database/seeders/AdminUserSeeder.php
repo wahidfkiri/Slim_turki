@@ -13,7 +13,7 @@ class AdminUserSeeder extends Seeder
     public function run()
     {
         // Create Slim Turki role if it doesn't exist
-        $role = Role::firstOrCreate(['name' => 'Slim Turki']);
+        $role = Role::firstOrCreate(['name' => 'admin']);
 
         // Create the admin user
         $user = User::firstOrCreate(

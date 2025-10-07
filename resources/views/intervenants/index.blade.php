@@ -175,7 +175,7 @@
 <script>
 $(document).ready(function() {
     let intervenantToDelete = null;
-    
+    $('#intervenantsTable_filter').css('display', 'none'); // Hide default search box
     // Delete button click handler
     $('.delete-btn').on('click', function() {
         const intervenantId = $(this).data('id');
