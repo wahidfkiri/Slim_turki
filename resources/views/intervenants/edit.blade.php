@@ -25,6 +25,23 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-12">
+                    
+            <!-- Alert Messages -->
+            @if(session('success'))
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas fa-check"></i> Succès!</h5>
+                {{ session('success') }}
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas fa-ban"></i> Erreur!</h5>
+                {{ session('error') }}
+            </div>
+            @endif
                     <div class="card card-primary">
                         <div class="card-header">
                             <h3 class="card-title">Modification de l'intervenant</h3>
@@ -1469,7 +1486,7 @@ $(document).ready(function() {
                         // Update file count in tab
                         updateFileCount();
                         
-                        showAlert('success', response.message || 'Fichier supprimé avec succès!');
+                      //  showAlert('success', response.message || 'Fichier supprimé avec succès!');
                     });
                 },
                 error: function(xhr) {

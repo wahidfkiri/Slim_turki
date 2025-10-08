@@ -295,6 +295,8 @@ class IntervenantController extends Controller
                 ]);
             }
 
+            return redirect()->back()->with('success', $message);
+       
     } catch (\Illuminate\Validation\ValidationException $e) {
             if ($request->ajax()) {
                 return response()->json([
@@ -311,6 +313,9 @@ class IntervenantController extends Controller
                     'message' => 'Erreur lors de la mise à jour: ' . $e->getMessage()
                 ], 500);
             }
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Une erreur est survenue lors de la mise à jour de l\'intervenant. Veuillez réessayer.');
             throw $e;
         }
 }
@@ -421,7 +426,7 @@ class IntervenantController extends Controller
         ], 200);
     }
 
-    public function destroyFile(IntervenantFile $file)
+    public function destroyFile(Request $request, IntervenantFile $file)
 {
     try {
         // Supprimer le fichier physique
@@ -431,11 +436,22 @@ class IntervenantController extends Controller
         
         // Supprimer l'enregistrement de la base de données
         $file->delete();
-
-        return redirect()->back()->with(['success' => true, 'message' => 'Fichier supprimé avec succès.']);
+if($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Fichier supprimé avec succès.'
+            ], 200);
+        }
+        return redirect()->back()->with('success', 'Fichier supprimé avec succès.');
 
     } catch (\Exception $e) {
-        return redirect()->back()->with(['success' => false, 'message' => 'Erreur lors de la suppression du fichier.']);
+        if($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression du fichier.'
+            ], 500);
+        }
+        return redirect()->back()->with('error', 'Erreur lors de la suppression du fichier.');
     }
 }
 }
