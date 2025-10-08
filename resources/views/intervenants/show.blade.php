@@ -417,7 +417,7 @@
                                                                 @foreach($intervenant->files as $file)
                                                                     <tr>
                                                                         <td>
-                                                                            <span class="badge badge-info">{{ pathinfo($file->file_path, PATHINFO_EXTENSION) }}</span> {{$file->file_path }}
+                                                                            <span class="badge badge-info">{{ pathinfo($file->file_path, PATHINFO_EXTENSION) }}</span> {{$file->file_path ?? $file->file_name }}
                                                                         </td>
                                                                         <td>{{ $file->created_at->format('d/m/Y H:i') }}</td>
                                                                         <td>
@@ -466,8 +466,8 @@
                                                                 <tr>
                                                                     <th>ID</th>
                                                                     <th>Intervenant</th>
+                                                                    <th>Relation</th>
                                                                     <th>Type</th>
-                                                                    <th>Forme Sociale</th>
                                                                     <th>Actions</th>
                                                                 </tr>
                                                             </thead>
@@ -489,10 +489,10 @@
                                                                             </div>
                                                                         </div>
                                                                     </td>
+                                                                    <td> {{ $intervenantLie->pivot->relation ?? 'N/A' }} </td>
                                                                     <td>
                                                                         {{ $intervenantLie->type }}
                                                                     </td>
-                                                                    <td> {{ $intervenantLie->formeSociale->nom ?? 'N/A' }} </td>
                                                                     <td>
                                                                         <div class="btn-group btn-group-sm">
                                                                             <a href="{{ route('intervenants.show', $intervenantLie->id) }}" 
@@ -503,16 +503,6 @@
                                                                                class="btn btn-warning" title="Modifier">
                                                                                 <i class="fas fa-edit"></i>
                                                                             </a>
-                                                                            <form action="{{ route('intervenants.detach-intervenant', [$intervenant->id, $intervenantLie->id]) }}" 
-                                                                                  method="POST" class="d-inline">
-                                                                                @csrf
-                                                                                @method('DELETE')
-                                                                                <button type="submit" class="btn btn-danger" 
-                                                                                        title="Détacher"
-                                                                                        onclick="return confirm('Êtes-vous sûr de vouloir détacher cet intervenant?')">
-                                                                                    <i class="fas fa-unlink"></i>
-                                                                                </button>
-                                                                            </form>
                                                                         </div>
                                                                     </td>
                                                                 </tr>

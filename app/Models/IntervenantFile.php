@@ -11,6 +11,7 @@ class IntervenantFile extends Model
     protected $fillable = [
         'intervenant_id',
         'file_path',
+        'file_name',
         'description',
     ];
 

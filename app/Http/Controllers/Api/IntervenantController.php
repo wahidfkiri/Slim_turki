@@ -22,7 +22,7 @@ class IntervenantController extends Controller
     public function index()
     {
         $formeSociales = FormeSociale::all();
-        $intervenants = Intervenant::with(['formeSociale', 'dossiers'])->paginate(10);
+        $intervenants = Intervenant::with(['formeSociale', 'dossiers'])->orderBy('created_at', 'desc')->paginate(10);
         return view('intervenants.index', compact('intervenants', 'formeSociales'));
     }
 
@@ -79,9 +79,6 @@ class IntervenantController extends Controller
                         'intervenant_id' => $intervenant->id,
                         'file_path' => $filePath,
                         'file_name' => $file->getClientOriginalName(),
-                        'file_size' => $file->getSize(),
-                        'file_type' => $file->getClientMimeType(),
-                        'uploaded_at' => now(),
                     ]);
                 }
             }
@@ -129,9 +126,12 @@ class IntervenantController extends Controller
 
         DB::commit();
         
-        $message = 'Intervenant créé avec succès.';
-        if ($request->has('linked_intervenants')) {
-            $message .= ' ' . count($request->linked_intervenants) . ' intervenant(s) lié(s).';
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Intervenant créé avec succès.' . ($request->has('linked_intervenants') ? ' ' . count($request->linked_intervenants) . ' intervenant(s) lié(s).' : ''),
+                'redirect_url' => route('intervenants.index')
+            ]);
         }
         
         return redirect()->route('intervenants.index')->with('success', $message);
@@ -142,9 +142,15 @@ class IntervenantController extends Controller
         Log::error('Erreur lors de la création de l\'intervenant', [
             'erreur' => $e->getMessage(),
             'fichier' => $e->getFile(),
-            'ligne' => $e->getLine(),
-            'donnees' => $request->except(['piece_jointe', 'password'])
+            'ligne' => $e->getLine()
         ]);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la création de l\'intervenant.'
+            ], 500);
+        }
 
         return redirect()->back()
             ->withInput()
@@ -196,9 +202,6 @@ class IntervenantController extends Controller
                         'intervenant_id' => $intervenant->id,
                         'file_path' => $filePath,
                         'file_name' => $file->getClientOriginalName(),
-                        'file_size' => $file->getSize(),
-                        'file_type' => $file->getClientMimeType(),
-                        'uploaded_at' => now(),
                     ]);
                 }
             }
@@ -284,22 +287,32 @@ class IntervenantController extends Controller
         // Recharger les relations pour la réponse
         $intervenant->load(['formeSociale', 'dossiers', 'files', 'intervenantsLies']);
         
-        return redirect()->route('intervenants.index')->with('success', $message);
+        if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Intervenant mis à jour avec succès!',
+                    'redirect_url' => route('intervenants.show', $intervenant->id)
+                ]);
+            }
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        
-        Log::error('Erreur lors de la modification de l\'intervenant', [
-            'intervenant_id' => $intervenant->id,
-            'erreur' => $e->getMessage(),
-            'fichier' => $e->getFile(),
-            'ligne' => $e->getLine()
-        ]);
-
-        return redirect()->back()
-            ->withInput()
-            ->with('error', 'Une erreur est survenue lors de la modification de l\'intervenant. Veuillez réessayer.');
-    }
+    } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur de validation',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur lors de la mise à jour: ' . $e->getMessage()
+                ], 500);
+            }
+            throw $e;
+        }
 }
 
     public function destroy(Intervenant $intervenant)
@@ -337,10 +350,12 @@ class IntervenantController extends Controller
         //     'supprimé_par' => auth()->id(),
         //     'supprimé_le' => now()->toDateTimeString()
         // ]);
-
-        return response()->json([
-            'message' => 'Intervenant et toutes ses associations supprimés avec succès.',
-        ], 200);
+         if ($request->ajax()) {
+            return response()->json([
+                'message' => 'Intervenant et toutes ses associations supprimés avec succès.',
+            ], 200);
+        }
+        return redirect()->back()->with('success', 'Intervenant et toutes ses associations supprimés avec succès.');
 
     } catch (\Exception $e) {
         DB::rollBack();
@@ -351,11 +366,14 @@ class IntervenantController extends Controller
             'fichier' => $e->getFile(),
             'ligne' => $e->getLine()
         ]);
-
-        return response()->json([
+        if ($request->ajax()) {
+           return response()->json([
             'message' => 'Une erreur est survenue lors de la suppression de l\'intervenant.',
             'error' => config('app.debug') ? $e->getMessage() : 'Erreur interne du serveur'
         ], 500);
+        }
+        return redirect()->back()->with('error', 'Une erreur est survenue lors de la suppression de l\'intervenant. Veuillez réessayer.');
+        
     }
 }
 

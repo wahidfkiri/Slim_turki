@@ -505,7 +505,7 @@
                                                                                     @foreach($intervenant->files as $file)
                                                                                         <tr>
                                                                                             <td>
-                                                                                                <span class="badge badge-info">{{ pathinfo($file->file_path, PATHINFO_EXTENSION) }}</span> {{ $file->file_path }}
+                                                                                                <span class="badge badge-info">{{ pathinfo($file->file_path, PATHINFO_EXTENSION) }}</span> {{ $file->file_name ?? $file->file_path }}
                                                                                             </td>
                                                                                             <td>{{ $file->created_at->format('d/m/Y H:i') }}</td>
                                                                                             <td>
@@ -759,7 +759,7 @@
             </div>
             <div class="modal-body">
                 <!-- Filtre de recherche -->
-                <div class="form-group">
+                <div class="form-group d-none">
                     <label for="intervenantFilter">Filtrer les intervenants</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="intervenantFilter" 
@@ -776,9 +776,9 @@
                 </div>
 
                 <!-- Liste des intervenants disponibles -->
-                <div class="form-group">
+                <div class="form-group w-100" style="display:grid;">
                     <label for="intervenantList">Choisir un intervenant</label>
-                    <select class="form-control" id="intervenantList" size="8" style="height: auto; min-height: 200px;">
+                    <select class="form-control search_test1" id="intervenantList">
                         <option value="">-- Sélectionnez un intervenant --</option>
                         @foreach($intervenants as $intervenantItem)
                             @if($intervenantItem->id != $intervenant->id) {{-- Exclure l'intervenant actuel --}}
@@ -887,7 +887,9 @@
 <script src="{{ asset('assets/plugins/jquery-validation/jquery.validate.min.js') }}"></script>
 <script src="{{ asset('assets/plugins/jquery-validation/additional-methods.min.js') }}"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.sumoselect/3.0.2/jquery.sumoselect.min.js"></script>
 <script>
+    $('.search_test1').SumoSelect({search: true, searchText: 'Sélectionner un intervenant...'});
 // Fonction pour effacer l'input file
 function clearFileInput() {
     $('#piece_jointe').val('');
@@ -1328,7 +1330,188 @@ $(document).ready(function() {
     updateNavigationButtons();
 });
 </script>
-
+<script>
+$(document).ready(function() {
+    // AJAX form submission
+    $('#intervenantForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const form = $(this);
+        const submitBtn = form.find('button[type="submit"]');
+        const originalText = submitBtn.html();
+        
+        // Show loading state
+        submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Mise à jour...');
+        
+        // Create FormData to handle file uploads
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: form.attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                // Show success message
+                showAlert('success', response.message || 'Intervenant mis à jour avec succès!');
+                
+                // Reset loading state
+                submitBtn.prop('disabled', false).html(originalText);
+                
+                // Optionally redirect after success
+                // setTimeout(() => {
+                //     window.location.href = response.redirect_url || '{{ route("intervenants.show", $intervenant->id) }}';
+                // }, 1500);
+            },
+            error: function(xhr) {
+                // Reset loading state
+                submitBtn.prop('disabled', false).html(originalText);
+                
+                if (xhr.status === 422) {
+                    // Validation errors
+                    const errors = xhr.responseJSON.errors;
+                    displayValidationErrors(errors);
+                } else {
+                    // Other errors
+                    showAlert('danger', xhr.responseJSON.message || 'Une erreur est survenue lors de la mise à jour.');
+                }
+            }
+        });
+    });
+    
+    // Function to display validation errors
+    function displayValidationErrors(errors) {
+        // Remove existing error displays
+        $('.is-invalid').removeClass('is-invalid');
+        $('.invalid-feedback').remove();
+        
+        // Display new errors
+        $.each(errors, function(field, messages) {
+            const input = $(`[name="${field}"]`);
+            const tabPane = input.closest('.tab-pane');
+            
+            // Add error styling
+            input.addClass('is-invalid');
+            
+            // Create error message
+            const errorHtml = `<span class="invalid-feedback" role="alert"><strong>${messages[0]}</strong></span>`;
+            
+            // Append error message
+            if (input.closest('.form-group').length) {
+                input.closest('.form-group').append(errorHtml);
+            } else {
+                input.after(errorHtml);
+            }
+            
+            // Switch to tab containing the error
+            if (tabPane.length) {
+                const tabId = tabPane.attr('id');
+                $(`[href="#${tabId}"]`).tab('show');
+            }
+        });
+        
+        // Scroll to first error
+        const firstError = $('.is-invalid').first();
+        if (firstError.length) {
+            $('html, body').animate({
+                scrollTop: firstError.offset().top - 100
+            }, 500);
+        }
+    }
+    
+    // Function to show alert messages
+    function showAlert(type, message) {
+        // Remove existing alerts
+        $('.ajax-alert').remove();
+        
+        const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible ajax-alert">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                ${message}
+            </div>
+        `;
+        
+        // Insert alert at the top of the form
+        $('#intervenantForm .card-body').prepend(alertHtml);
+        
+        // Auto-remove success alerts after 5 seconds
+        if (type === 'success') {
+            setTimeout(() => {
+                $('.ajax-alert').alert('close');
+            }, 5000);
+        }
+    }
+    
+    // AJAX file deletion
+    $(document).on('click', '.delete-file-btn1', function(e) {
+        e.preventDefault();
+        
+        const fileId = $(this).data('file-id');
+        const fileName = $(this).data('file-name');
+        const button = $(this);
+        
+        // if (confirm(`Êtes-vous sûr de vouloir supprimer le fichier "${fileName}" ?`)) {
+            $.ajax({
+                url: `{{ url('intervenant-files') }}/${fileId}`,
+                type: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    // Remove file row from table
+                    button.closest('tr').fadeOut(300, function() {
+                        $(this).remove();
+                        
+                        // Update file count in tab
+                        updateFileCount();
+                        
+                        showAlert('success', response.message || 'Fichier supprimé avec succès!');
+                    });
+                },
+                error: function(xhr) {
+                    showAlert('danger', xhr.responseJSON.message || 'Erreur lors de la suppression du fichier.');
+                }
+            });
+        // }
+    });
+    
+    // Function to update file count in tab
+    function updateFileCount() {
+        const fileCount = $('#fichiers .table tbody tr').length;
+        const fileBadge = $('#fichiers-tab .badge');
+        
+        if (fileCount > 0) {
+            fileBadge.text(fileCount);
+        } else {
+            fileBadge.remove();
+        }
+    }
+    
+    // Real-time validation for some fields
+    $('#mail1, #mail2').on('blur', function() {
+        const email = $(this).val();
+        if (email && !isValidEmail(email)) {
+            $(this).addClass('is-invalid');
+            $(this).after('<span class="invalid-feedback"><strong>Veuillez entrer une adresse email valide</strong></span>');
+        }
+    });
+    
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    // Clear validation on input
+    $('input, select, textarea').on('input', function() {
+        $(this).removeClass('is-invalid');
+        $(this).next('.invalid-feedback').remove();
+    });
+});
+</script>
 <style>
 .nav-tabs .nav-link {
     font-weight: 500;
@@ -1409,5 +1592,334 @@ h5.text-primary {
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
+.SelectClass,.SumoSelect.open .search-txt,.SumoUnder {
+  position:absolute;
+  -webkit-box-sizing:border-box;
+  -moz-box-sizing:border-box;
+  top:0;
+  left:0
+}
+.SumoSelect p {
+  margin:0
+}
+.SumoSelect {
+  width:100%;
+}
+.SelectBox {
+  padding:5px 8px
+}
+.sumoStopScroll {
+  overflow:hidden
+}
+.SumoSelect .hidden {
+  display:none
+}
+.SumoSelect .search-txt {
+  display:none;
+  outline:0
+}
+.SumoSelect .no-match {
+  display:none;
+  padding:6px
+}
+.SumoSelect.open .search-txt {
+  display:inline-block;
+  width:100%;
+  margin:0;
+  padding:5px 8px;
+  border:none;
+  box-sizing:border-box;
+  border-radius:5px
+}
+.SumoSelect.open>.search>label,.SumoSelect.open>.search>span {
+visibility:hidden
+}
+.SelectClass,.SumoUnder {
+  right:0;
+  height:100%;
+  width:100%;
+  border:none;
+  box-sizing:border-box;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter:alpha(opacity=0);
+  -moz-opacity:0;
+  -khtml-opacity:0;
+  opacity:0
+}
+.SelectClass {
+  z-index:1
+}
+.SumoSelect .select-all>label,.SumoSelect>.CaptionCont,.SumoSelect>.optWrapper>.options li.opt label {
+  user-select:none;
+  -o-user-select:none;
+  -moz-user-select:none;
+  -khtml-user-select:none;
+  -webkit-user-select:none
+}
+.SumoSelect {
+  display:inline-block;
+  position:relative;
+  outline:0
+}
+.SumoSelect.open>.CaptionCont,.SumoSelect:focus>.CaptionCont,.SumoSelect:hover>.CaptionCont {
+  box-shadow:0 0 2px #7799D0;
+  border-color:#7799D0
+} 
+.SumoSelect>.CaptionCont {
+  position:relative;
+  border:1px solid #A4A4A4;
+  min-height:14px;
+  background-color:#fff;
+  border-radius:2px;
+  margin:0
+}
+.SumoSelect>.CaptionCont>span {
+  display:block;
+  padding-right:30px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  overflow:hidden;
+  cursor:default
+}
+.SumoSelect>.CaptionCont>span.placeholder {
+  color:#ccc;
+  font-style:italic
+}
+.SumoSelect>.CaptionCont>label {
+  position:absolute;
+  top:0;
+  right:0;
+  bottom:0;
+  width:30px
+}
+.SumoSelect>.CaptionCont>label>i {
+  background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAANCAYAAABy6+R8AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wMdBhAJ/fwnjwAAAGFJREFUKM9jYBh+gBFKuzEwMKQwMDB8xaOWlYGB4T4DA0MrsuapDAwM//HgNwwMDDbYTJuGQ8MHBgYGJ1xOYGNgYJiBpuEpAwODHSF/siDZ+ISBgcGClEDqZ2Bg8B6CkQsAPRga0cpRtDEAAAAASUVORK5CYII=);
+  background-position:center center;
+  width:16px;
+  height:16px;
+  display:block;
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  margin:auto;
+  background-repeat:no-repeat;
+  opacity:.8
+}
+.SumoSelect>.optWrapper {
+  display:none;
+  z-index:1000;
+  top:30px;
+  width:100%;
+  position:absolute;
+  left:0;
+  -webkit-box-sizing:border-box;
+  -moz-box-sizing:border-box;
+  box-sizing:border-box;
+  background:#fff;
+  border:1px solid #ddd;
+  box-shadow:2px 3px 3px rgba(0,0,0,.11);
+  border-radius:3px;
+  overflow:hidden
+}
+.SumoSelect.open>.optWrapper {
+  top:35px;
+  display:block
+}
+.SumoSelect.open>.optWrapper.up {
+  top:auto;
+  bottom:100%;
+  margin-bottom:5px
+}
+.SumoSelect>.optWrapper ul {
+  list-style:none;
+  display:block;
+  padding:0;
+  margin:0;
+  overflow:auto
+}
+.SumoSelect>.optWrapper>.options {
+  border-radius:2px;
+  position:relative;
+  max-height:250px
+}
+.SumoSelect>.optWrapper>.options li.group.disabled>label {
+  opacity:.5
+}
+.SumoSelect>.optWrapper>.options li ul li.opt {
+  padding-left:22px
+}
+.SumoSelect>.optWrapper.multiple>.options li ul li.opt {
+  padding-left:50px
+}
+.SumoSelect>.optWrapper.isFloating>.options {
+  max-height:100%;
+  box-shadow:0 0 100px #595959
+}
+.SumoSelect>.optWrapper>.options li.opt {
+  padding:6px;
+  position:relative;
+  border-bottom:1px solid #f5f5f5
+}
+.SumoSelect>.optWrapper>.options>li.opt:first-child {
+  border-radius:2px 2px 0 0
+}
+.SumoSelect>.optWrapper>.options>li.opt:last-child {
+  border-radius:0 0 2px 2px;
+  border-bottom:none
+}
+.SumoSelect>.optWrapper>.options li.opt:hover {
+  background-color:#E4E4E4
+}
+.SumoSelect>.optWrapper>.options li.opt.sel {
+  background-color:#a1c0e4;
+  border-bottom:1px solid #a1c0e4
+}
+.SumoSelect>.optWrapper>.options li label {
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  overflow:hidden;
+  display:block;
+  cursor:pointer
+}
+.SumoSelect>.optWrapper>.options li span {
+  display:none
+}
+.SumoSelect>.optWrapper>.options li.group>label {
+  cursor:default;
+  padding:8px 6px;
+  font-weight:700
+}
+.SumoSelect>.optWrapper.isFloating {
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  width:90%;
+  bottom:0;
+  margin:auto;
+  max-height:90%
+}
+.SumoSelect>.optWrapper>.options li.opt.disabled {
+  background-color:inherit;
+  pointer-events:none
+}
+.SumoSelect>.optWrapper>.options li.opt.disabled * {
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+  filter:alpha(opacity=50);
+  -moz-opacity:.5;
+  -khtml-opacity:.5;
+  opacity:.5
+}
+.SumoSelect>.optWrapper.multiple>.options li.opt {
+  padding-left:35px;
+  cursor:pointer
+}
+.SumoSelect .select-all>span,.SumoSelect>.optWrapper.multiple>.options li.opt span {
+  position:absolute;
+  display:block;
+  width:30px;
+  top:0;
+  bottom:0;
+  margin-left:-35px
+}
+.SumoSelect .select-all>span i,.SumoSelect>.optWrapper.multiple>.options li.opt span i {
+  position:absolute;
+  margin:auto;
+  left:0;
+  right:0;
+  top:0;
+  bottom:0;
+  width:14px;
+  height:14px;
+  border:1px solid #AEAEAE;
+  border-radius:2px;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.15);
+  background-color:#fff
+}
+.SumoSelect>.optWrapper>.MultiControls {
+  display:none;
+  border-top:1px solid #ddd;
+  background-color:#fff;
+  box-shadow:0 0 2px rgba(0,0,0,.13);
+  border-radius:0 0 3px 3px
+}
+.SumoSelect>.optWrapper.multiple.isFloating>.MultiControls {
+  display:block;
+  margin-top:5px;
+  position:absolute;
+  bottom:0;
+  width:100%
+}
+.SumoSelect>.optWrapper.multiple.okCancelInMulti>.MultiControls {
+  display:block
+}
+.SumoSelect>.optWrapper.multiple.okCancelInMulti>.MultiControls>p {
+  padding:6px
+}
+.SumoSelect>.optWrapper.multiple>.MultiControls>p {
+  display:inline-block;
+  cursor:pointer;
+  padding:12px;
+  width:50%;
+  box-sizing:border-box;
+  text-align:center
+}
+.SumoSelect>.optWrapper.multiple>.MultiControls>p:hover {
+  background-color:#f1f1f1
+}
+.SumoSelect>.optWrapper.multiple>.MultiControls>p.btnOk {
+  border-right:1px solid #DBDBDB;
+  border-radius:0 0 0 3px 
+}
+.SumoSelect>.optWrapper.multiple>.MultiControls>p.btnCancel {
+  border-radius:0 0 3px
+}
+.SumoSelect>.optWrapper.isFloating>.options li.opt {
+  padding:12px 6px 
+}
+.SumoSelect>.optWrapper.multiple.isFloating>.options li.opt {
+  padding-left:35px
+}
+.SumoSelect>.optWrapper.multiple.isFloating {
+  padding-bottom:43px
+}
+.SumoSelect .select-all.partial>span i,.SumoSelect .select-all.selected>span i,.SumoSelect>.optWrapper.multiple>.options li.opt.selected span i {
+  background-color:#11a911;
+  box-shadow:none;
+  border-color:transparent;
+  background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAGCAYAAAD+Bd/7AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNXG14zYAAABMSURBVAiZfc0xDkAAFIPhd2Kr1WRjcAExuIgzGUTIZ/AkImjSofnbNBAfHvzAHjOKNzhiQ42IDFXCDivaaxAJd0xYshT3QqBxqnxeHvhunpu23xnmAAAAAElFTkSuQmCC);
+  background-repeat:no-repeat;
+  background-position:center center
+}
+.SumoSelect.disabled {
+  opacity:.7;
+  cursor:not-allowed
+}
+.SumoSelect.disabled>.CaptionCont {
+  border-color:#ccc;
+  box-shadow:none
+}
+.SumoSelect .select-all {
+  border-radius:3px 3px 0 0;
+  position:relative;
+  border-bottom:1px solid #ddd;
+  background-color:#fff;
+  padding:8px 0 3px 35px;
+  height:20px;
+  cursor:pointer
+}
+.SumoSelect .select-all>label,.SumoSelect .select-all>span i {
+  cursor:pointer
+}
+.SumoSelect .select-all.partial>span i {
+  background-color:#ccc
+}
+.SumoSelect>.optWrapper>.options li.optGroup {
+  padding-left:5px;
+  text-decoration:underline
+}
+/*# sourceMappingURL=sumoselect.min.css.map */
 </style>
 @endsection
