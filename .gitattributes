@@ -1,11 +1,26 @@
+# Set default behavior to auto-convert
 * text=auto
 
-*.blade.php diff=html
-*.css diff=css
-*.html diff=html
-*.md diff=markdown
-*.php diff=php
+# Explicitly declare text files you want to always be normalized and converted
+*.php text
+*.js text
+*.css text
+*.html text
+*.json text
+*.md text
+*.txt text
+*.yml text
+*.yaml text
 
-/.github export-ignore
-CHANGELOG.md export-ignore
-.styleci.yml export-ignore
+# Denote files that should always have CRLF line endings on checkout
+*.bat text eol=crlf
+
+# Denote files that should always have LF line endings on checkout
+*.sh text eol=lf
+
+# Files that are binary should not be modified
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.pdf binary

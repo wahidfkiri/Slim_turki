@@ -38,8 +38,8 @@ class UpdateDossierRequest extends FormRequest
             'numero_instruction' => 'nullable|string|max:50',
             'numero_plainte' => 'nullable|string|max:50',
             'archive' => 'sometimes|boolean',
-            'date_archive' => 'nullable|date|required_if:archive,true',
-            'boite_archive' => 'nullable|string|max:100|required_if:archive,true'
+            'date_archive' => 'nullable|date',
+            // 'boite_archive' => 'nullable|string|max:100|required_if:archive,true'
         ];
     }
 }

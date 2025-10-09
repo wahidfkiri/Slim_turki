@@ -69,15 +69,12 @@ $(document).ready(function() {
         if (currentTab === 0) {
             $('.btn-previous').hide();
             $('.btn-next').show();
-            $('#submitDossier').hide();
         } else if (currentTab === totalTabs - 1) {
             $('.btn-previous').show();
             $('.btn-next').hide();
-            $('#submitDossier').show();
         } else {
             $('.btn-previous').show();
             $('.btn-next').show();
-            $('#submitDossier').hide();
         }
     }
 

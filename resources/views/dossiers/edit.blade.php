@@ -76,16 +76,6 @@
                                                 </a>
                                             </li>
                                             <li class="nav-item">
-                                                <a class="nav-link" id="fichiers-tab" data-toggle="tab" href="#fichiers" role="tab" aria-controls="fichiers" aria-selected="false">
-                                                    <i class="fas fa-file-upload"></i> Fichiers
-                                                </a>
-                                            </li>
-                                            <!-- <li class="nav-item">
-                                                <a class="nav-link" id="facturation-tab" data-toggle="tab" href="#facturation" role="tab" aria-controls="facturation" aria-selected="false">
-                                                    <i class="fas fa-file-invoice-dollar"></i> Facturation
-                                                </a>
-                                            </li> -->
-                                            <li class="nav-item">
                                                 <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">
                                                     <i class="fas fa-sticky-note"></i> Notes 
                                                 </a>
@@ -166,9 +156,9 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="domaine_id">Domaine *</label>
+                                                                <label for="domaine_id">Domaine</label>
                                                                 <select class="form-control @error('domaine_id') is-invalid @enderror" 
-                                                                        id="domaine_id" name="domaine_id" required>
+                                                                        id="domaine_id" name="domaine_id">
                                                                     <option value="">Sélectionnez un domaine</option>
                                                                     @foreach($domaines as $domaine)
                                                                         <option value="{{ $domaine->id }}" {{  $dossier->domaine_id == $domaine->id ? 'selected' : '' }}>
@@ -233,6 +223,34 @@
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                    </div>
+
+                                                    
+                                                    <!-- Archivage -->
+                                                    <h5 class="text-primary mb-3 mt-4"><i class="fas fa-archive"></i> Archivage</h5>
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="form-group">
+                                                                <div class="custom-control custom-checkbox">
+                                                                    <input class="custom-control-input" type="checkbox" 
+                                                                           id="archive" name="archive" value="1" 
+                                                                           {{ old('archive', $dossier->archive) ? 'checked' : '' }}>
+                                                                    <label for="archive" class="custom-control-label">
+                                                                        Marquer comme archivé
+                                                                    </label>
+                                                                </div>
+                                                                <small class="form-text text-muted">
+                                                                    Si coché, ce dossier sera marqué comme archivé.
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="alert alert-info">
+                                                        <h5><i class="icon fas fa-info"></i> Informations</h5>
+                                                        <p class="mb-0">
+                                                            Utilisez cet espace pour noter toutes informations supplémentaires concernant ce dossier.
+                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -381,9 +399,9 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="form-group">
-                    <label for="client_id">Client principal *</label>
+                    <label for="client_id">Client principal</label>
                     <select class="form-control @error('client_id') is-invalid @enderror" 
-                            id="client_id" name="client_id" required>
+                            id="client_id" name="client_id">
                         <option value="">Sélectionnez le client</option>
                         @foreach($intervenants as $intervenant)
                             @if($intervenant->categorie == 'client')
@@ -486,9 +504,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label for="avocat_id">Avocat responsable *</label>
+                                                                <label for="avocat_id">Avocat responsable</label>
                                                                 <select class="form-control @error('avocat_id') is-invalid @enderror" 
-                                                                        id="avocat_id" name="avocat_id" required>
+                                                                        id="avocat_id" name="avocat_id">
                                                                     <option value="">Sélectionnez l'avocat responsable</option>
                                                                     @foreach($users as $user)
                                                                         @if($user->hasRole('avocat') || $user->hasRole('admin'))
@@ -550,93 +568,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Onglet Fichiers -->
-                                            <div class="tab-pane fade" id="fichiers" role="tabpanel" aria-labelledby="fichiers-tab">
-                                                <div class="p-3">
-                                                    <h5 class="text-primary mb-3"><i class="fas fa-file-upload"></i> Gestion des fichiers</h5>
-                                                    
-                                                    <!-- Upload de fichiers -->
-                                                    <div class="row">
-                                                        <div class="col-md-12">
-                                                            <div class="form-group">
-                                                                <label for="fichiers">Ajouter de nouveaux fichiers</label>
-                                                                <div class="custom-file">
-                                                                    <input type="file" class="custom-file-input @error('fichiers') is-invalid @enderror" 
-                                                                           id="fichiers" name="fichiers[]" multiple>
-                                                                    <label class="custom-file-label" for="fichiers">Choisir les fichiers</label>
-                                                                </div>
-                                                                @error('fichiers')
-                                                                    <span class="invalid-feedback" role="alert">
-                                                                        <strong>{{ $message }}</strong>
-                                                                    </span>
-                                                                @enderror
-                                                                <small class="form-text text-muted">
-                                                                    Formats acceptés: PDF, Word, Excel, Images. Taille max: 10MB par fichier.
-                                                                </small>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Liste des fichiers existants -->
-                                                    @if($dossier->fichiers && $dossier->fichiers->count() > 0)
-                                                    <div class="row mt-4">
-                                                        <div class="col-md-12">
-                                                            <h6>Fichiers existants</h6>
-                                                            <div class="table-responsive">
-                                                                <table class="table table-bordered table-hover">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th>Nom du fichier</th>
-                                                                            <th>Taille</th>
-                                                                            <th>Date d'ajout</th>
-                                                                            <th>Actions</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        @foreach($dossier->fichiers as $fichier)
-                                                                        <tr>
-                                                                            <td>
-                                                                                <i class="fas fa-file-pdf text-danger"></i>
-                                                                                {{ $fichier->nom_fichier }}
-                                                                            </td>
-                                                                            <td>{{ number_format($fichier->taille / 1024, 2) }} KB</td>
-                                                                            <td>{{ $fichier->created_at->format('d/m/Y H:i') }}</td>
-                                                                            <td>
-                                                                                <a href="{{ Storage::disk('public')->url($fichier->chemin_fichier) }}" 
-                                                                                   target="_blank" class="btn btn-sm btn-info" title="Voir">
-                                                                                    <i class="fas fa-eye"></i>
-                                                                                </a>
-                                                                                <a href="{{ Storage::disk('public')->url($fichier->chemin_fichier) }}" 
-                                                                                   download class="btn btn-sm btn-success" title="Télécharger">
-                                                                                    <i class="fas fa-download"></i>
-                                                                                </a>
-                                                                                <button type="button" class="btn btn-sm btn-danger delete-file-btn" 
-                                                                                        data-file-id="{{ $fichier->id }}" title="Supprimer">
-                                                                                    <i class="fas fa-trash"></i>
-                                                                                </button>
-                                                                            </td>
-                                                                        </tr>
-                                                                        @endforeach
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    @else
-                                                    <div class="row">
-                                                        <div class="col-md-12">
-                                                            <div class="alert alert-info">
-                                                                <h6><i class="icon fas fa-info"></i> Information</h6>
-                                                                <p class="mb-0">
-                                                                    Aucun fichier n'a été ajouté à ce dossier.
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    @endif
                                                 </div>
                                             </div>
 
@@ -714,33 +645,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                                                 <strong>{{ $message }}</strong>
                                                             </span>
                                                         @enderror
-                                                    </div>
-
-                                                    <!-- Archivage -->
-                                                    <h5 class="text-primary mb-3 mt-4"><i class="fas fa-archive"></i> Archivage</h5>
-                                                    <div class="row">
-                                                        <div class="col-md-12">
-                                                            <div class="form-group">
-                                                                <div class="custom-control custom-checkbox">
-                                                                    <input class="custom-control-input" type="checkbox" 
-                                                                           id="archive" name="archive" value="1" 
-                                                                           {{ old('archive', $dossier->archive) ? 'checked' : '' }}>
-                                                                    <label for="archive" class="custom-control-label">
-                                                                        Marquer comme archivé
-                                                                    </label>
-                                                                </div>
-                                                                <small class="form-text text-muted">
-                                                                    Si coché, ce dossier sera marqué comme archivé.
-                                                                </small>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="alert alert-info">
-                                                        <h5><i class="icon fas fa-info"></i> Informations</h5>
-                                                        <p class="mb-0">
-                                                            Utilisez cet espace pour noter toutes informations supplémentaires concernant ce dossier.
-                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>

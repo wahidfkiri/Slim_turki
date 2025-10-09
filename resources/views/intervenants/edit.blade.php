@@ -161,6 +161,7 @@
                                                                 <select class="form-control @error('categorie') is-invalid @enderror" 
                                                                         id="categorie" name="categorie" required>
                                                                     <option value="">Sélectionnez une catégorie</option>
+                                                                    <option value="contact" {{ old('categorie', $intervenant->categorie) == 'contact' ? 'selected' : '' }}>Contact</option>
                                                                     <option value="client" {{ old('categorie', $intervenant->categorie) == 'client' ? 'selected' : '' }}>Client</option>
                                                                     <option value="avocat" {{ old('categorie', $intervenant->categorie) == 'avocat' ? 'selected' : '' }}>Avocat</option>
                                                                     <option value="adversaire" {{ old('categorie', $intervenant->categorie) == 'adversaire' ? 'selected' : '' }}>Adversaire</option>
@@ -170,7 +171,7 @@
                                                                     <option value="administrateur_judiciaire" {{ old('categorie', $intervenant->categorie) == 'administrateur_judiciaire' ? 'selected' : '' }}>Administrateur Judiciaire</option>
                                                                     <option value="mandataire_judiciaire" {{ old('categorie', $intervenant->categorie) == 'mandataire_judiciaire' ? 'selected' : '' }}>Mandataire Judiciaire</option>
                                                                     <option value="expert_judiciaire" {{ old('categorie', $intervenant->categorie) == 'expert_judiciaire' ? 'selected' : '' }}>Expert Judiciaire</option>
-                                                                    <option value="contact" {{ old('categorie', $intervenant->categorie) == 'contact' ? 'selected' : '' }}>Contact</option>
+                                                                    <option value="contact" {{ old('categorie', $intervenant->categorie) == 'traducteur' ? 'selected' : '' }}>Traducteur</option>
                                                                 </select>
                                                                 @error('categorie')
                                                                     <span class="invalid-feedback" role="alert">

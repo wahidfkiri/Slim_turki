@@ -112,6 +112,7 @@
                                                                 <label for="categorie">Catégorie *</label>
                                                                 <select class="form-control" id="categorie" name="categorie" required>
                                                                     <option value="">Sélectionnez une catégorie</option>
+                                                                    <option value="contact" {{ old('categorie') == 'contact' ? 'selected' : '' }}>Contact</option>
                                                                     <option value="client" {{ old('categorie') == 'client' ? 'selected' : '' }}>Client</option>
                                                                     <option value="avocat" {{ old('categorie') == 'avocat' ? 'selected' : '' }}>Avocat</option>
                                                                     <option value="adversaire" {{ old('categorie') == 'adversaire' ? 'selected' : '' }}>Adversaire</option>
@@ -121,7 +122,7 @@
                                                                     <option value="administrateur_judiciaire" {{ old('categorie') == 'administrateur_judiciaire' ? 'selected' : '' }}>Administrateur Judiciaire</option>
                                                                     <option value="mandataire_judiciaire" {{ old('categorie') == 'mandataire_judiciaire' ? 'selected' : '' }}>Mandataire Judiciaire</option>
                                                                     <option value="expert_judiciaire" {{ old('categorie') == 'expert_judiciaire' ? 'selected' : '' }}>Expert Judiciaire</option>
-                                                                    <option value="contact" {{ old('categorie') == 'contact' ? 'selected' : '' }}>Contact</option>
+                                                                    <option value="contact" {{ old('categorie') == 'traducteur' ? 'selected' : '' }}>Traducteur</option>
                                                                 </select>
                                                             </div>
                                                         </div>

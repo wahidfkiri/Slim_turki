@@ -115,13 +115,13 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Identité (Français)</label>
-                                                            <p class="form-control-plaintext">{{ $intervenant->identite_fr }}</p>
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">{{ $intervenant->identite_fr }}</p>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Identité (Arabe)</label>
-                                                            <p class="form-control-plaintext">{{ $intervenant->identite_ar ?? 'Non renseigné' }}</p>
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">{{ $intervenant->identite_ar ?? 'Non renseigné' }}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -136,7 +136,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Type</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 <span class="badge badge-info">
                                                                     {{ ucfirst($intervenant->type) }}
                                                                 </span>
@@ -146,7 +146,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Catégorie</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 <span class="badge badge-primary">
                                                                     {{ ucfirst(str_replace('_', ' ', $intervenant->categorie)) }}
                                                                 </span>
@@ -165,13 +165,13 @@
                                                     <div class="col-md-4">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Fonction</label>
-                                                            <p class="form-control-plaintext">{{ $intervenant->fonction ?? 'Non renseigné' }}</p>
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">{{ $intervenant->fonction ?? 'Non renseigné' }}</p>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Forme Sociale</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 {{ $intervenant->forme_sociale->nom ?? 'Non renseigné' }}
                                                             </p>
                                                         </div>
@@ -179,7 +179,7 @@
                                                     <div class="col-md-4">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Numéro CNI</label>
-                                                            <p class="form-control-plaintext">{{ $intervenant->numero_cni ?? 'Non renseigné' }}</p>
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">{{ $intervenant->numero_cni ?? 'Non renseigné' }}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -194,13 +194,13 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">RNE</label>
-                                                            <p class="form-control-plaintext">{{ $intervenant->rne ?? 'Non renseigné' }}</p>
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">{{ $intervenant->rne ?? 'Non renseigné' }}</p>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Numéro CNSS</label>
-                                                            <p class="form-control-plaintext">{{ $intervenant->numero_cnss ?? 'Non renseigné' }}</p>
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">{{ $intervenant->numero_cnss ?? 'Non renseigné' }}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -210,7 +210,7 @@
                                                     <div class="col-md-12">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Statut</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 @if($intervenant->archive)
                                                                     <span class="badge badge-warning">Archivé</span>
                                                                 @else
@@ -234,7 +234,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Portable 1</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 @if($intervenant->portable1)
                                                                     <a href="tel:{{ $intervenant->portable1 }}" class="text-decoration-none">
                                                                         <i class="fas fa-phone-alt mr-2 text-success"></i>{{ $intervenant->portable1 }}
@@ -248,7 +248,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Portable 2</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 @if($intervenant->portable2)
                                                                     <a href="tel:{{ $intervenant->portable2 }}" class="text-decoration-none">
                                                                         <i class="fas fa-phone-alt mr-2 text-success"></i>{{ $intervenant->portable2 }}
@@ -266,7 +266,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Téléphone Fixe 1</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 @if($intervenant->fixe1)
                                                                     <a href="tel:{{ $intervenant->fixe1 }}" class="text-decoration-none">
                                                                         <i class="fas fa-phone mr-2 text-primary"></i>{{ $intervenant->fixe1 }}
@@ -280,7 +280,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Téléphone Fixe 2</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 @if($intervenant->fixe2)
                                                                     <a href="tel:{{ $intervenant->fixe2 }}" class="text-decoration-none">
                                                                         <i class="fas fa-phone mr-2 text-primary"></i>{{ $intervenant->fixe2 }}
@@ -301,7 +301,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Email 1</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 @if($intervenant->mail1)
                                                                     <a href="mailto:{{ $intervenant->mail1 }}" class="text-decoration-none">
                                                                         <i class="fas fa-envelope mr-2 text-info"></i>{{ $intervenant->mail1 }}
@@ -315,7 +315,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Email 2</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 @if($intervenant->mail2)
                                                                     <a href="mailto:{{ $intervenant->mail2 }}" class="text-decoration-none">
                                                                         <i class="fas fa-envelope mr-2 text-info"></i>{{ $intervenant->mail2 }}
@@ -336,7 +336,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Adresse 1</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 @if($intervenant->adresse1)
                                                                     <i class="fas fa-map-marker-alt mr-2 text-danger"></i>{{ $intervenant->adresse1 }}
                                                                 @else
@@ -348,7 +348,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Adresse 2</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 @if($intervenant->adresse2)
                                                                     <i class="fas fa-map-marker-alt mr-2 text-danger"></i>{{ $intervenant->adresse2 }}
                                                                 @else
@@ -367,7 +367,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Site Internet</label>
-                                                            <p class="form-control-plaintext">
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
                                                                 @if($intervenant->site_internet)
                                                                     <a href="{{ $intervenant->site_internet }}" target="_blank" class="text-decoration-none">
                                                                         <i class="fas fa-external-link-alt mr-2 text-warning"></i>{{ $intervenant->site_internet }}
@@ -381,7 +381,7 @@
                                                     <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Fax</label>
-                                                            <p class="form-control-plaintext">{{ $intervenant->fax ?? 'Non renseigné' }}</p>
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">{{ $intervenant->fax ?? 'Non renseigné' }}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -512,7 +512,7 @@
                                                     </div>
 
                                                     <!-- Statistiques des relations -->
-                                                    <div class="row mt-4">
+                                                    <div class="row mt-4 d-none">
                                                         <div class="col-md-12">
                                                             <div class="card">
                                                                 <div class="card-header">
@@ -811,14 +811,14 @@
 .info-group .form-control-plaintext {
     padding: 0.5rem 0;
     min-height: auto;
-    border-bottom: 1px solid #e9ecef;
+    /* border-bottom: 1px solid #e9ecef; */
 }
 
-h5.text-primary {
+/* h5.text-primary {
     border-bottom: 2px solid #007bff;
     padding-bottom: 0.5rem;
     margin-bottom: 1.5rem !important;
-}
+} */
 
 .badge {
     font-size: 0.85em;
@@ -836,6 +836,22 @@ h5.text-primary {
 
 .progress-bar {
     background-color: #007bff;
+}
+.form-control-plaintext {
+    min-height: 38px;
+    /* border: 1px solid #ced4da; */
+}
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+.alert-info {
+    background-color: #e8f4fd;
+    border-color: #b6e0fe;
+    color:black;
+}
+.bg-light {
+    background-color: #f8f9fa !important;
 }
 </style>
 <script>

@@ -67,11 +67,6 @@
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" id="fichiers-tab" data-toggle="tab" href="#fichiers" role="tab" aria-controls="fichiers" aria-selected="false">
-                                                <i class="fas fa-file"></i> Fichiers
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
                                             <a class="nav-link" id="facturation-tab" data-toggle="tab" href="#facturation" role="tab" aria-controls="facturation" aria-selected="false">
                                                 <i class="fas fa-file-invoice-dollar"></i> Facturation
                                             </a>
@@ -384,66 +379,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Onglet Fichiers -->
-                                        <div class="tab-pane fade" id="fichiers" role="tabpanel" aria-labelledby="fichiers-tab">
-                                            <div class="p-3">
-                                                <h5 class="text-primary mb-3"><i class="fas fa-file"></i> Fichiers du dossier</h5>
-                                                
-                                                @if($dossier->fichiers && $dossier->fichiers->count() > 0)
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered table-hover">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Nom du fichier</th>
-                                                                    <th>Type</th>
-                                                                    <th>Taille</th>
-                                                                    <th>Date d'ajout</th>
-                                                                    <th>Actions</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach($dossier->fichiers as $fichier)
-                                                                <tr>
-                                                                    <td>
-                                                                        <i class="fas 
-                                                                            @if(str_contains($fichier->type_mime, 'pdf')) fa-file-pdf text-danger
-                                                                            @elseif(str_contains($fichier->type_mime, 'word') || str_contains($fichier->type_mime, 'document')) fa-file-word text-primary
-                                                                            @elseif(str_contains($fichier->type_mime, 'excel') || str_contains($fichier->type_mime, 'sheet')) fa-file-excel text-success
-                                                                            @elseif(str_contains($fichier->type_mime, 'image')) fa-file-image text-info
-                                                                            @else fa-file text-secondary
-                                                                            @endif
-                                                                        "></i>
-                                                                        {{ $fichier->nom_fichier }}
-                                                                    </td>
-                                                                    <td>{{ $fichier->type_mime }}</td>
-                                                                    <td>{{ number_format($fichier->taille / 1024, 2) }} KB</td>
-                                                                    <td>{{ $fichier->created_at->format('d/m/Y H:i') }}</td>
-                                                                    <td>
-                                                                        <a href="{{ Storage::disk('public')->url($fichier->chemin_fichier) }}" 
-                                                                           target="_blank" class="btn btn-sm btn-info" title="Voir">
-                                                                            <i class="fas fa-eye"></i>
-                                                                        </a>
-                                                                        <a href="{{ Storage::disk('public')->url($fichier->chemin_fichier) }}" 
-                                                                           download class="btn btn-sm btn-success" title="Télécharger">
-                                                                            <i class="fas fa-download"></i>
-                                                                        </a>
-                                                                    </td>
-                                                                </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                @else
-                                                    <div class="alert alert-info">
-                                                        <h6><i class="icon fas fa-info"></i> Information</h6>
-                                                        <p class="mb-0">
-                                                            Aucun fichier n'a été ajouté à ce dossier.
-                                                        </p>
-                                                    </div>
-                                                @endif
                                             </div>
                                         </div>
                                         <!-- Onglet Dossiers -->

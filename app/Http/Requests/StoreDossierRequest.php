@@ -34,14 +34,14 @@ class StoreDossierRequest extends FormRequest
             'numero_plainte' => 'nullable|string|max:50',
             'archive' => 'boolean',
             'note' => 'nullable|string',
-            'date_archive' => 'nullable|date|required_if:archive,true',
-            'boite_archive' => 'nullable|string|max:100|required_if:archive,true',
+            'date_archive' => 'nullable|date',
+            // 'boite_archive' => 'nullable|string|max:100|required_if:archive,true',
             
             // Pour les relations
             'users' => 'sometimes|array',
-            'users.*.user_id' => 'required|exists:users,id',
-            'users.*.role' => 'required|in:avocat,clerc,secrétaire,stagiaire',
-            'users.*.ordre' => 'required|integer',
+            // 'users.*.user_id' => 'required|exists:users,id',
+            // 'users.*.role' => 'required|in:avocat,clerc,secrétaire,stagiaire',
+            // 'users.*.ordre' => 'required|integer',
             
             'intervenants' => 'sometimes|array',
             'intervenants.*.intervenant_id' => 'required|exists:intervenants,id',
@@ -61,12 +61,12 @@ class StoreDossierRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator)
-    {
-        $validator->after(function ($validator) {
-            if ($this->archive && !$this->date_archive) {
-                $validator->errors()->add('date_archive', 'La date d\'archivage est requise pour archiver un dossier.');
-            }
-        });
-    }
+    // public function withValidator($validator)
+    // {
+    //     $validator->after(function ($validator) {
+    //         if ($this->archive && !$this->date_archive) {
+    //             $validator->errors()->add('date_archive', 'La date d\'archivage est requise pour archiver un dossier.');
+    //         }
+    //     });
+    // }
 }

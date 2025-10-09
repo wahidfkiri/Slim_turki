@@ -91,11 +91,11 @@
                 <table id="dossiersTable" class="table table-bordered table-striped">
                   <thead>
                   <tr>
-                    <th>ID</th>
                     <th>Numéro</th>
                     <th>Nom du Dossier</th>
-                    <th>Domaine</th>
-                    <th>Sous-domaine</th>
+                    <th>Objet du Dossier</th>
+                    <!-- <th>Domaine</th>
+                    <th>Sous-domaine</th> -->
                     <th>Date Entrée</th>
                     <th>Type</th>
                     <th>Statut</th>
@@ -106,11 +106,11 @@
                   <tbody>
                     @foreach($dossiers as $dossier)
                     <tr id="dossier-row-{{ $dossier->id }}">
-                      <td>{{ $dossier->id }}</td>
                       <td>{{ $dossier->numero_dossier }}</td>
                       <td>{{ $dossier->nom_dossier }}</td>
-                      <td>{{ $dossier->domaine->nom ?? 'N/A' }}</td>
-                      <td>{{ $dossier->sousDomaine->nom ?? 'N/A' }}</td>
+                      <td>{{ $dossier->objet }}</td>
+                      <!-- <td>{{ $dossier->domaine->nom ?? 'N/A' }}</td>
+                      <td>{{ $dossier->sousDomaine->nom ?? 'N/A' }}</td> -->
                       <td>{{ $dossier->date_entree->format('d/m/Y') }}</td>
                       <td>
                         @if($dossier->conseil && $dossier->contentieux)

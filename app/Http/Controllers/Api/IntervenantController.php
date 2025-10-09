@@ -320,7 +320,7 @@ class IntervenantController extends Controller
         }
 }
 
-    public function destroy(Intervenant $intervenant)
+    public function destroy(Intervenant $intervenant, Request $request)
 {
     try {
         DB::beginTransaction();

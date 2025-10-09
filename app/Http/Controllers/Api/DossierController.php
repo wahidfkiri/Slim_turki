@@ -25,12 +25,13 @@ class DossierController extends Controller
             abort(403, 'Unauthorized action.');
         }
     if(auth()->user()->hasRole('admin')){
-        $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])->paginate(10);
+        $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])->where('archive', false)->paginate(10);
     }else{
 $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])
     ->whereHas('users', function($query) {
         $query->where('users.id', auth()->id());
     })
+    ->where('archive', false)
     ->paginate(10);
 }
     $domaines = Domaine::all(); // Ajouter cette ligne
@@ -95,6 +96,11 @@ $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])
         
         // Créer le dossier
         $dossier = Dossier::create($validatedData);
+        if($request->has('archive')){
+            $dossier->archive = true;
+            $dossier->date_archive = now();
+            $dossier->save();
+        }
         
         // Attacher le client principal comme intervenant
         if ($request->has('client_id')) {
@@ -175,14 +181,17 @@ $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])
         DB::commit();
         
         // Redirection avec message de succès
+        if($request->ajax()){
+            return response()->json([
+                'message' => 'Dossier créé avec succès.'
+            ], 201);
+        }
         return redirect()->route('dossiers.index')
             ->with('success', 'Dossier créé avec succès.');
             
     } catch (\Exception $e) {
-        // En cas d'erreur, annuler la transaction
         DB::rollBack();
         
-        // Supprimer les fichiers uploadés en cas d'erreur
         if (isset($uploadedFiles) && !empty($uploadedFiles)) {
             foreach ($uploadedFiles as $filePath) {
                 if (Storage::disk('public')->exists($filePath)) {
@@ -191,13 +200,15 @@ $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])
             }
         }
         
-        // Log de l'erreur pour le débogage
         \Log::error('Erreur création dossier: ' . $e->getMessage(), [
             'exception' => $e,
             'request_data' => $request->except(['fichiers']) // Exclure les fichiers pour la sécurité
         ]);
-        
-        // Redirection avec message d'erreur
+        if($request->ajax()){
+            return response()->json([
+                'error' => 'Erreur lors de la création du dossier. Veuillez réessayer.'
+            ], 500);
+        }
         return redirect()->back()
             ->withInput()
             ->withErrors(['error' => 'Erreur lors de la création du dossier. Veuillez réessayer.']);
