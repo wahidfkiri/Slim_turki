@@ -24,8 +24,6 @@ class Liste extends Component
      */
     public function render()
     {
-        return view('components.dossier.task.liste', [
-            'dossier' => $this->dossier
-        ]);
+        return view('components.dossier.task.liste');
     }
 }
