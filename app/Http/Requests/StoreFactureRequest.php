@@ -14,8 +14,8 @@ class StoreFactureRequest extends FormRequest
     public function rules()
     {
         return [
-            'dossier_id' => 'required|exists:dossiers,id',
-            'client_id' => 'required|exists:intervenants,id',
+            'dossier_id' => 'nullable|exists:dossiers,id',
+            'client_id' => 'nullable|exists:intervenants,id',
             'type_piece' => 'required|in:facture,note_frais,note_provision,avoir',
             'numero' => 'required|string|max:100|unique:factures,numero',
             'date_emission' => 'required|date',

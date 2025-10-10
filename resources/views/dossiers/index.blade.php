@@ -94,7 +94,6 @@
                     <th>Objet du Dossier</th>
                     <th>Date Entrée</th>
                     <th>Type</th>
-                    <th>Statut</th>
                     <th>Archivé</th>
                     <th>Actions</th>
                   </tr>
@@ -166,7 +165,6 @@ $(document).ready(function() {
                 { data: 'objet', name: 'objet' },
                 { data: 'date_entree', name: 'date_entree' },
                 { data: 'type_badge', name: 'type_badge', orderable: false, searchable: false },
-                { data: 'statut_badge', name: 'statut_badge', orderable: false, searchable: false },
                 { data: 'archive_text', name: 'archive' },
                 { data: 'action', name: 'action', orderable: false, searchable: false }
             ],

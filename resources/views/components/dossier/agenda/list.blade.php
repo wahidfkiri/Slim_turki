@@ -11,7 +11,7 @@
                         </div>
                         <div class="card-body">
                             <!-- Filtre par date -->
-                            <div class="form-group">
+                            <div class="form-group d-none">
                                 <label>Filtre par date</label>
                                 
                                 <!-- Année -->
@@ -113,7 +113,7 @@
                                 <label for="filter_dossier">Dossier</label>
                                 <select class="form-control" id="filter_dossier">
                                     <option value="">Tous les dossiers</option>
-                                        <option value="{{ $dossier->id }}">{{ $dossier->numero_dossier }}</option>
+                                        <option value="{{ $dossier->id }}" selected>{{ $dossier->numero_dossier }}</option>
                                 </select>
                             </div>
 
@@ -310,7 +310,7 @@
                                 <label for="dossier_id">Dossier</label>
                                 <select class="form-control" id="dossier_id" name="dossier_id">
                                     <option value="">Sélectionnez un dossier</option>
-                                        <option value="{{ $dossier->id }}">{{ $dossier->numero_dossier }}</option>
+                                        <option value="{{ $dossier->id }}" selected>{{ $dossier->numero_dossier }}</option>
                                 </select>
                             </div>
                         </div>
@@ -440,7 +440,7 @@
                                 <label for="edit_dossier_id">Dossier</label>
                                 <select class="form-control" id="edit_dossier_id" name="dossier_id">
                                     <option value="">Sélectionnez un dossier</option>
-                                        <option value="{{ $dossier->id }}">{{ $dossier->reference }}</option>
+                                        <option value="{{ $dossier->id }}" selected>{{ $dossier->reference }}</option>
                                 </select>
                             </div>
                         </div>

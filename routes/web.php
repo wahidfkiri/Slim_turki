@@ -78,6 +78,10 @@ Route::get('/get/tasks/data', [TaskController::class, 'getTasksData'])->name('ta
 
 Route::resource('factures', FactureController::class);
  Route::get('/get/factures/data', [FactureController::class, 'getFacturesData'])->name('factures.data');
+ Route::get('/get/factures/data/paid', [FactureController::class, 'getPaidFacturesData'])->name('factures.paid.data');
+ Route::get('/factures/data/paid', [FactureController::class, 'indexpaid'])->name('factures.paid.index');
+ Route::get('/get/factures/data/unpaid', [FactureController::class, 'getUnpaidFacturesData'])->name('factures.unpaid.data');
+ Route::get('/factures/data/unpaid', [FactureController::class, 'indexUnpaid'])->name('factures.unpaid.index');
  Route::get('/factures/{facture}/pdf', [FactureController::class, 'downloadPDF'])->name('factures.pdf');
 Route::get('dossiers/{dossierId}/factures', [FactureController::class, 'byDossier']);
 Route::get('factures/status/{statut}', [FactureController::class, 'byStatus']);

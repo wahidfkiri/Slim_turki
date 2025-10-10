@@ -20,7 +20,8 @@ class Facture extends Model
         'montant',
         'statut',
         'commentaires',
-        'piece_jointe' 
+        'piece_jointe',
+        'file_name',
     ];
 
     protected $casts = [

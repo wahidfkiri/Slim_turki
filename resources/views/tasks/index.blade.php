@@ -103,7 +103,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <!-- <div class="col-md-3">
                                     <label for="filter_intervenant">Intervenant</label>
                                     <select class="form-control" id="filter_intervenant">
                                         <option value="">Tous les intervenants</option>
@@ -111,7 +111,7 @@
                                             <option value="{{ $intervenant->id }}">{{ $intervenant->identite_fr }}</option>
                                         @endforeach
                                     </select>
-                                </div>
+                                </div> -->
                                 <div class="col-md-3">
                                     <label for="filter_date_debut">Date début</label>
                                     <input type="date" class="form-control" id="filter_date_debut">
@@ -138,13 +138,11 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Titre</th>
-                                        <th>Description</th>
                                         <th>Date Début</th>
                                         <th>Date Fin</th>
                                         <th>Priorité</th>
                                         <th>Statut</th>
                                         <th>Dossier</th>
-                                        <th>Intervenant</th>
                                         @if(auth()->user()->hasRole('admin'))
                                         <th>Assigné à</th>
                                         @endif
@@ -225,6 +223,7 @@ $(document).ready(function() {
                 data: null,
                 orderable: false,
                 searchable: false,
+                visible: false,
                 render: function(data, type, row, meta) {
                     return meta.settings._iDisplayStart + meta.row + 1;
                 }
@@ -234,13 +233,6 @@ $(document).ready(function() {
                 name: 'titre',
                 render: function(data) {
                     return data || '-';
-                }
-            },
-            { 
-                data: 'description', 
-                name: 'description',
-                render: function(data) {
-                    return data ? (data.length > 50 ? data.substr(0, 50) + '...' : data) : '-';
                 }
             },
             { 
@@ -306,13 +298,6 @@ $(document).ready(function() {
                 name: 'dossier.numero_dossier',
                 render: function(data) {
                     return data ? data.numero_dossier : '-';
-                }
-            },
-            { 
-                data: 'intervenant', 
-                name: 'intervenant.identite_fr',
-                render: function(data) {
-                    return data ? data.identite_fr : '-';
                 }
             },
             @if(auth()->user()->hasRole('admin'))

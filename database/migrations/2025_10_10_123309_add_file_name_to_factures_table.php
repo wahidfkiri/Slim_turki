@@ -8,25 +8,21 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::table('factures', function (Blueprint $table) {
-            //
+            $table->string('file_name')->nullable()->after('piece_jointe');
         });
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::table('factures', function (Blueprint $table) {
-            //
+            $table->dropColumn('file_name');
         });
     }
 };

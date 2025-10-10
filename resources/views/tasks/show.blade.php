@@ -95,9 +95,9 @@
                                     <div class="form-group">
                                         <label for="utilisateur_id">Assigné à</label>
                                         <p class="form-control-plaintext bg-light p-2 rounded">
-                                            {{ $task->utilisateur->name ?? 'Non assigné' }}
-                                            @if($task->utilisateur && $task->utilisateur->fonction)
-                                                <small class="text-muted">({{ $task->utilisateur->fonction }})</small>
+                                            {{ $task->user->name ?? 'Non assigné' }}
+                                            @if($task->user && $task->user->fonction)
+                                                <small class="text-muted">({{ $task->user->fonction }})</small>
                                             @endif
                                         </p>
                                     </div>

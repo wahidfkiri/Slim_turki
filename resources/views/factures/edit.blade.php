@@ -90,9 +90,9 @@
                                     <!-- Dossier -->
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="dossier_id">Dossier *</label>
+                                            <label for="dossier_id">Dossier</label>
                                             <select class="form-control @error('dossier_id') is-invalid @enderror" 
-                                                    id="dossier_id" name="dossier_id" required>
+                                                    id="dossier_id" name="dossier_id">
                                                 <option value="">Sélectionnez un dossier</option>
                                                 @foreach($dossiers as $dossier)
                                                     <option value="{{ $dossier->id }}" 
@@ -113,9 +113,9 @@
                                     <!-- Client -->
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="client_id">Client *</label>
+                                            <label for="client_id">Client</label>
                                             <select class="form-control @error('client_id') is-invalid @enderror" 
-                                                    id="client_id" name="client_id" required>
+                                                    id="client_id" name="client_id">
                                                 <option value="">Sélectionnez un client</option>
                                                 @foreach($clients as $client)
                                                     <option value="{{ $client->id }}" {{ old('client_id', $facture->client_id) == $client->id ? 'selected' : '' }}>
@@ -462,12 +462,12 @@
                 date_emission: {
                     required: true
                 },
-                dossier_id: {
-                    required: true
-                },
-                client_id: {
-                    required: true
-                },
+                // dossier_id: {
+                //     required: true
+                // },
+                // client_id: {
+                //     required: true
+                // },
                 montant_ht: {
                     required: true,
                     min: 0
@@ -499,12 +499,12 @@
                 date_emission: {
                     required: "La date d'émission est obligatoire"
                 },
-                dossier_id: {
-                    required: "Le dossier est obligatoire"
-                },
-                client_id: {
-                    required: "Le client est obligatoire"
-                },
+                // dossier_id: {
+                //     required: "Le dossier est obligatoire"
+                // },
+                // client_id: {
+                //     required: "Le client est obligatoire"
+                // },
                 montant_ht: {
                     required: "Le montant HT est obligatoire",
                     min: "Le montant HT doit être positif"

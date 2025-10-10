@@ -225,10 +225,10 @@
                                                     <strong>Créé le:</strong> {{ $task->created_at->format('d/m/Y H:i') }}<br>
                                                     <strong>Modifié le:</strong> {{ $task->updated_at->format('d/m/Y H:i') }}
                                                     @if($task->dossier)
-                                                        <br><strong>Dossier:</strong> {{ $task->dossier->reference }}
+                                                        <br><strong>Dossier:</strong> {{ $task->dossier->numero_dossier }}
                                                     @endif
                                                     @if($task->intervenant)
-                                                        <br><strong>Intervenant:</strong> {{ $task->intervenant->name }}
+                                                        <br><strong>Intervenant:</strong> {{ $task->intervenant->identite_fr }}
                                                     @endif
                                                 </small>
                                             </div>

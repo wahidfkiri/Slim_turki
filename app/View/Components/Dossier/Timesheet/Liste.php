@@ -11,9 +11,10 @@ class Liste extends Component
      *
      * @return void
      */
-    public function __construct()
+    public $dossier;
+    public function __construct($dossier)
     {
-        //
+        $this->dossier = $dossier;
     }
 
     /**
@@ -23,6 +24,8 @@ class Liste extends Component
      */
     public function render()
     {
-        return view('components.dossier.timesheet.liste');
+        return view('components.dossier.timesheet.liste', [
+            'dossier' => $this->dossier
+        ]);
     }
 }

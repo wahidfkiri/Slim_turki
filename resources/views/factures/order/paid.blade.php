@@ -7,7 +7,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Gestion des Factures</h1>
+                    <h1>Gestion des Factures Payées</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -69,15 +69,7 @@
                                         <option value="avoir">Avoir</option>
                                     </select>
                                 </div>
-                                <div class="col-md-2">
-                                    <label for="filter_statut">Statut</label>
-                                    <select class="form-control" id="filter_statut">
-                                        <option value="">Tous les statuts</option>
-                                        <option value="payé">Payé</option>
-                                        <option value="non_payé">Non payé</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label for="filter_dossier">Dossier</label>
                                     <select class="form-control" id="filter_dossier">
                                         <option value="">Tous les dossiers</option>
@@ -86,7 +78,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label for="filter_client">Client</label>
                                     <select class="form-control" id="filter_client">
                                         <option value="">Tous les clients</option>
@@ -96,7 +88,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label for="filter_date_debut">Date émission </label>
+                                    <label for="filter_date_debut">Date émission début</label>
                                     <input type="date" class="form-control" id="filter_date_debut">
                                 </div>
                             </div>
@@ -195,7 +187,7 @@ $(document).ready(function() {
         processing: true,
         serverSide: true,
         ajax: {
-            url: '{{ route("factures.data") }}',
+            url: '{{ route("factures.paid.data") }}',
             data: function (d) {
                 d.numero = $('#filter_numero').val();
                 d.type_piece = $('#filter_type_piece').val();
