@@ -12,7 +12,7 @@ class Liste extends Component
      * @return void
      */
     public $dossier;
-    public function __construct($dossier)
+    public function __construct($dossier = null)
     {
         $this->dossier = $dossier;
     }
