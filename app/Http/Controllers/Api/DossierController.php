@@ -16,10 +16,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Yajra\DataTables\Facades\DataTables;
 
 class DossierController extends Controller
 {
-    public function index()
+    public function index(Request $request)
 {
         if (!auth()->user()->hasPermission('view_dossiers')) {
             abort(403, 'Unauthorized action.');
@@ -27,7 +28,7 @@ class DossierController extends Controller
     if(auth()->user()->hasRole('admin')){
         $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])->where('archive', false)->paginate(10);
     }else{
-$dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])
+     $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])
     ->whereHas('users', function($query) {
         $query->where('users.id', auth()->id());
     })
@@ -35,7 +36,11 @@ $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])
     ->paginate(10);
 }
     $domaines = Domaine::all(); // Ajouter cette ligne
-    return view('dossiers.index', compact('dossiers', 'domaines'));
+     if ($request->ajax()) {
+        // DataTables AJAX response
+        return $this->getDossiersData($request);
+    }
+    return view('dossiers.index', compact('domaines'));
 }
 
     public function create()
@@ -121,6 +126,36 @@ $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])
                 ]);
             }
         }
+
+          // Gestion des intervenants liés avec les deux relations
+        if ($request->has('linked_intervenants')) {
+            $intervenantsLiesFrom = []; // Relations de cet intervenant vers les autres
+            $intervenantsLiesTo = [];   // Relations des autres intervenants vers celui-ci
+            
+            foreach ($request->linked_intervenants as $linkedIntervenant) {
+                if (!empty($linkedIntervenant['intervenant_id']) && 
+                    !empty($linkedIntervenant['role'])) {
+                    
+                    // Relation de cet intervenant vers l'intervenant lié
+                    $intervenantsLiesFrom[$linkedIntervenant['intervenant_id']] = [
+                        'intervenant_id' => $linkedIntervenant['intervenant_id'],
+                        'dossier_id' => $dossier->id,
+                        'role' => $linkedIntervenant['role'],
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ];
+                    
+                }
+            }
+            
+            if (!empty($intervenantsLiesFrom)) {
+                // Attacher les relations de cet intervenant vers les autres
+                $dossier->intervenants()->attach($intervenantsLiesFrom);
+                
+                
+            }
+        }
+
 
         if($request->has('autres_dossiers')){
             foreach ($request->autres_dossiers as $dossierLieId) {
@@ -217,8 +252,16 @@ $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])
 
     public function show(Dossier $dossier)
     {
-    $this->authorize('view_dossiers', Dossier::class);
-        return view('dossiers.show', compact('dossier'));
+        if (!auth()->user()->hasPermission('view_dossiers')) {
+            abort(403, 'Unauthorized action.');
+        }
+        $users = User::where('is_active', true)
+            ->orderBy('name')
+            ->get();
+        $intervenants = Intervenant::orderBy('identite_fr')->get();
+        $categories = \App\Models\Categorie::all();
+        $types = \App\Models\Type::all();
+        return view('dossiers.show', compact('dossier', 'users', 'intervenants', 'categories', 'types'));
     }
 public function update(UpdateDossierRequest $request, Dossier $dossier)
 {
@@ -500,5 +543,145 @@ public function update(UpdateDossierRequest $request, Dossier $dossier)
         ->pluck('nom', 'id');
     
     return response()->json($sousDomaines);
+}
+
+public function getDossiersData(Request $request)
+{
+    $this->authorize('view_dossiers', Dossier::class);
+
+
+    // Use globalSearch instead of DataTables search
+    if ($request->has('globalSearch') && !empty($request->globalSearch)) {
+        $query = Dossier::with(['domaine'])->select('dossiers.*');
+        $search = $request->globalSearch;
+        $query->where(function ($q) use ($search) {
+            $q->where('numero_dossier', 'LIKE', "%{$search}%")
+              ->orWhere('nom_dossier', 'LIKE', "%{$search}%")
+              ->orWhere('objet', 'LIKE', "%{$search}%")
+              ->orWhereHas('domaine', function ($q) use ($search) {
+                  $q->where('nom', 'LIKE', "%{$search}%");
+              });
+        });
+    }else{
+        $query = Dossier::with(['domaine'])->where('archive', false)->select('dossiers.*');
+    }
+
+    // Filtre par domaine
+    if ($request->has('domaineFilter') && !empty($request->domaineFilter)) {
+        $query->whereHas('domaine', function ($q) use ($request) {
+            $q->where('nom', $request->domaineFilter);
+        });
+    }
+
+    // Filtre par statut
+    if ($request->has('statutFilter') && !empty($request->statutFilter)) {
+        switch ($request->statutFilter) {
+            case 'conseil':
+                $query->where('conseil', true);
+                break;
+            case 'contentieux':
+                $query->where('contentieux', true);
+                break;
+            case 'archive':
+                $query->where('archive', true);
+                break;
+        }
+    }
+
+    // Tri personnalisé si nécessaire
+    if ($request->has('order') && !empty($request->order)) {
+        $order = $request->order[0];
+        $column_index = $order['column'];
+        $column_name = $request->columns[$column_index]['data'];
+        $direction = $order['dir'];
+
+        // Mapping des colonnes triables
+        $sortable_columns = [
+            'numero_dossier' => 'numero_dossier',
+            'nom_dossier' => 'nom_dossier',
+            'objet' => 'objet',
+            'date_entree' => 'date_entree',
+            'archive' => 'archive'
+        ];
+
+        if (array_key_exists($column_name, $sortable_columns)) {
+            $query->orderBy($sortable_columns[$column_name], $direction);
+        }
+    } else {
+        // Tri par défaut
+        $query->orderBy('dossiers.created_at', 'desc');
+    }
+
+    return DataTables::eloquent($query)
+        ->addColumn('type_badge', function (Dossier $dossier) {
+            if ($dossier->conseil && $dossier->contentieux) {
+                return '<span class="badge badge-warning">Mixte</span>';
+            } elseif ($dossier->conseil) {
+                return '<span class="badge badge-info">Conseil</span>';
+            } elseif ($dossier->contentieux) {
+                return '<span class="badge badge-primary">Contentieux</span>';
+            } else {
+                return '<span class="badge badge-secondary">Non défini</span>';
+            }
+        })
+        ->addColumn('statut_badge', function (Dossier $dossier) {
+            if ($dossier->numero_role) {
+                return '<span class="badge badge-success">En cours</span>';
+            } else {
+                return '<span class="badge badge-secondary">En préparation</span>';
+            }
+        })
+        ->addColumn('archive_text', function (Dossier $dossier) {
+            return $dossier->archive ? 'Oui' : 'Non';
+        })
+        ->addColumn('action', function (Dossier $dossier) {
+            $actions = '<div class="btn-group btn-group-sm">';
+            
+            if (auth()->user()->hasPermission('view_dossiers')) {
+                $actions .= '<a href="' . route('dossiers.show', $dossier->id) . '" class="btn btn-info" title="Voir">
+                    <i class="fas fa-eye"></i>
+                </a>';
+            }
+            
+            if (auth()->user()->hasPermission('edit_dossiers')) {
+                $actions .= '<a href="' . route('dossiers.edit', $dossier->id) . '" class="btn btn-warning" title="Modifier">
+                    <i class="fas fa-edit"></i>
+                </a>';
+            }
+            
+            if (auth()->user()->hasPermission('delete_dossiers')) {
+                $actions .= '<button type="button" class="btn btn-danger delete-dossier-btn" 
+                    title="Supprimer" 
+                    data-id="' . $dossier->id . '"
+                    data-numero="' . $dossier->numero_dossier . '"
+                    data-nom="' . $dossier->nom_dossier . '">
+                    <i class="fas fa-trash"></i>
+                </button>';
+            }
+            
+            $actions .= '</div>';
+            return $actions;
+        })
+        ->editColumn('date_entree', function (Dossier $dossier) {
+            return $dossier->date_entree ? $dossier->date_entree->format('d/m/Y') : '-';
+        })
+        ->filterColumn('numero_dossier', function ($query, $keyword) {
+            $query->where('numero_dossier', 'LIKE', "%{$keyword}%");
+        })
+        ->filterColumn('nom_dossier', function ($query, $keyword) {
+            $query->where('nom_dossier', 'LIKE', "%{$keyword}%");
+        })
+        ->filterColumn('objet', function ($query, $keyword) {
+            $query->where('objet', 'LIKE', "%{$keyword}%");
+        })
+        ->filterColumn('date_entree', function ($query, $keyword) {
+            // Convertir la date du format français au format database
+            if (preg_match('/\d{2}\/\d{2}\/\d{4}/', $keyword)) {
+                $date = \Carbon\Carbon::createFromFormat('d/m/Y', $keyword)->format('Y-m-d');
+                $query->whereDate('date_entree', $date);
+            }
+        })
+        ->rawColumns(['action', 'type_badge', 'statut_badge'])
+        ->make(true);
 }
 }

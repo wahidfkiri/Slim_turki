@@ -68,7 +68,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label for="filter_dossier">Dossier</label>
                                     <select class="form-control" id="filter_dossier">
                                         <option value="">Tous les dossiers</option>
@@ -77,7 +77,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label for="filter_categorie">Catégorie</label>
                                     <select class="form-control" id="filter_categorie">
                                         <option value="">Toutes les catégories</option>
@@ -86,9 +86,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label for="filter_type">Type</label>
                                     <select class="form-control" id="filter_type">
                                         <option value="">Tous les types</option>
@@ -96,18 +94,6 @@
                                             <option value="{{ $type->id }}">{{ $type->nom }}</option>
                                         @endforeach
                                     </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="filter_description">Description</label>
-                                    <input type="text" class="form-control" id="filter_description" placeholder="Rechercher dans la description">
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="filter_min_total">Total min</label>
-                                    <input type="number" class="form-control" id="filter_min_total" placeholder="Total minimum" step="0.01">
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="filter_max_total">Total max</label>
-                                    <input type="number" class="form-control" id="filter_max_total" placeholder="Total maximum" step="0.01">
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -127,9 +113,9 @@
                                     <tr>
                                         <th>ID</th>
                                         <th>Date</th>
+                                        <th>Description</th>
                                         <th>Utilisateur</th>
                                         <th>Dossier</th>
-                                        <th>Description</th>
                                         <th>Catégorie</th>
                                         <th>Type</th>
                                         <th>Quantité</th>
@@ -218,7 +204,7 @@ $(document).ready(function() {
             }
         },
         columns: [
-            { data: 'id', name: 'id' },
+            { data: 'id', name: 'id' , visible: false,  searchable: false},
             { 
                 data: 'date_timesheet', 
                 name: 'date_timesheet',
@@ -227,6 +213,13 @@ $(document).ready(function() {
                         return data;
                     }
                     return data || '-';
+                }
+            },
+            { 
+                data: 'description', 
+                name: 'description',
+                render: function(data) {
+                    return data ? (data.length > 50 ? data.substr(0, 50) + '...' : data) : '-';
                 }
             },
             { 
@@ -241,13 +234,6 @@ $(document).ready(function() {
                 name: 'dossier.numero_dossier',
                 render: function(data) {
                     return data ? data.numero_dossier + ' - ' + (data.client ? data.client.name : '') : '';
-                }
-            },
-            { 
-                data: 'description', 
-                name: 'description',
-                render: function(data) {
-                    return data ? (data.length > 50 ? data.substr(0, 50) + '...' : data) : '-';
                 }
             },
             { 
@@ -314,10 +300,9 @@ $(document).ready(function() {
         language: {
             url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json'
         },
-        createdRow: function(row, data, dataIndex) {
-            // Add ID to row for easy removal
-            $(row).attr('id', 'timesheet-row-' + data.id);
-        },
+        // createdRow: function(row, data, dataIndex) {
+        //     $(row).attr('id', 'timesheet-row-' + data.id);
+        // },
         drawCallback: function(settings) {
             // Calculate total
             var api = this.api();
@@ -341,7 +326,7 @@ $(document).ready(function() {
 
     // Delete button click handler
     $(document).on('click', '.delete-timesheet-btn', function() {
-        const timesheetId = $(this).data('id');
+        // const timesheetId = $(this).data('id');
         const timesheetDate = $(this).data('date');
         const timesheetUser = $(this).data('user');
         const timesheetDossier = $(this).data('dossier');

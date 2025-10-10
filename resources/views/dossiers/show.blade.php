@@ -67,13 +67,28 @@
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" id="facturation-tab" data-toggle="tab" href="#facturation" role="tab" aria-controls="facturation" aria-selected="false">
-                                                <i class="fas fa-file-invoice-dollar"></i> Facturation
+                                            <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">
+                                                <i class="fas fa-sticky-note"></i> Notes
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">
-                                                <i class="fas fa-sticky-note"></i> Notes
+                                            <a class="nav-link" id="agenda-tab" data-toggle="tab" href="#agenda" role="tab" aria-controls="agenda" aria-selected="false">
+                                                <i class="fas fa-calendar-alt"></i> Agenda
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="tasks-tab" data-toggle="tab" href="#tasks" role="tab" aria-controls="tasks" aria-selected="false">
+                                                <i class="fas fa-tasks"></i> Tâches
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="facturation-tab" data-toggle="tab" href="#facturation" role="tab" aria-controls="facturation" aria-selected="false">
+                                                <i class="fas fa-file-invoice-dollar"></i> Factures
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="timesheet-tab" data-toggle="tab" href="#timesheet" role="tab" aria-controls="timesheet" aria-selected="false">
+                                                <i class="fas fa-clock"></i> Timesheet
                                             </a>
                                         </li>
                                     </ul>
@@ -292,27 +307,71 @@
                                                     <div class="col-md-12">
                                                         <div class="form-group">
                                                             <label>Autres intervenants</label>
-                                                            @php
-                                                                $autresIntervenants = $dossier->intervenants()->get();
-                                                            @endphp
-                                                            @if($autresIntervenants->count() > 0)
-                                                                <div class="bg-light p-3 rounded">
-                                                                    @foreach($autresIntervenants as $intervenant)
-                                                                        <div class="mb-2 pb-2 border-bottom">
-                                                                            <h6 class="mb-1">{{ $intervenant->identite_fr }}</h6>
-                                                                            <small class="text-muted">
-                                                                                Rôle: {{ $intervenant->pivot->role }} • 
-                                                                                {{ $intervenant->categorie }} • 
-                                                                                {{ $intervenant->email ?? 'Email non disponible' }}
-                                                                            </small>
+                                                            <div class="p-3">
+                                                @if($dossier->intervenants && count($dossier->intervenants) > 0)
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Intervenant</th>
+                                                                    <th>Role</th>
+                                                                    <th>Type</th>
+                                                                    <th>Actions</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach($dossier->intervenants as $intervenantLie)
+                                                                @if($intervenantLie->id !== $clientPrincipal->id)
+                                                                <tr>
+                                                                    <td>
+                                                                        <div class="d-flex align-items-center">
+                                                                            <div class="mr-3">
+                                                                                <i class="fas fa-user-circle fa-2x text-primary"></i>
+                                                                            </div>
+                                                                            <div>
+                                                                                <strong>{{ $intervenantLie->identite_fr }}</strong>
+                                                                                @if($intervenantLie->identite_ar)
+                                                                                    <br>
+                                                                                    <small class="text-muted">{{ $intervenantLie->identite_ar }}</small>
+                                                                                @endif
+                                                                            </div>
                                                                         </div>
-                                                                    @endforeach
-                                                                </div>
-                                                            @else
-                                                                <p class="form-control-plaintext bg-light p-2 rounded text-muted">
-                                                                    Aucun autre intervenant
-                                                                </p>
-                                                            @endif
+                                                                    </td>
+                                                                    <td> {{ $intervenantLie->pivot->role ?? 'N/A' }} </td>
+                                                                    <td>
+                                                                        {{ $intervenantLie->type }}
+                                                                    </td>
+                                                                    <td>
+                                                                        <div class="btn-group btn-group-sm">
+                                                                            <a href="{{ route('intervenants.show', $intervenantLie->id) }}" 
+                                                                               class="btn btn-info" title="Voir">
+                                                                                <i class="fas fa-eye"></i>
+                                                                            </a>
+                                                                            <a href="{{ route('intervenants.edit', $intervenantLie->id) }}" 
+                                                                               class="btn btn-warning" title="Modifier">
+                                                                                <i class="fas fa-edit"></i>
+                                                                            </a>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                                @endif
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+
+                                                @else
+                                                    <div class="text-center py-5">
+                                                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                                        <h4 class="text-muted">Aucun intervenant lié</h4>
+                                                        <p class="text-muted">Cet dossier n'est pas encore lié à d'autres intervenants.</p>
+                                                        <a href="{{ route('dossiers.edit', $dossier->id) }}#intervenants-lies" 
+                                                           class="btn btn-primary mt-2">
+                                                            <i class="fas fa-link mr-1"></i> Ajouter des liens
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -429,62 +488,6 @@
                                                 @endif
                                             </div>
                                         </div>
-
-                                        <!-- Onglet Facturation -->
-                                        <div class="tab-pane fade" id="facturation" role="tabpanel" aria-labelledby="facturation-tab">
-                                            <div class="p-3">
-                                                <h5 class="text-primary mb-3"><i class="fas fa-money-bill-wave"></i> Informations de facturation</h5>
-                                                
-                                                 @if($dossier->factures && $dossier->factures->count() > 0)
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered table-hover">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Numéro</th>
-                                                                    <th>Date émission</th>
-                                                                    <th>Montant HT</th>
-                                                                    <th>Montant TVA</th>
-                                                                    <th>Montant</th>
-                                                                    <th>Statut</th>
-                                                                    <th>Actions</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach($dossier->factures as $facture)
-                                                                <tr>
-                                                                    <td>
-                                                                        {{ $facture->numero }}
-                                                                    </td>
-                                                                    <td>{{ $facture->date_emission->format('d/m/Y') }}</td>
-                                                                    <td>{{ number_format($facture->montant_ht, 2) }} DT</td>
-                                                                    <td>{{ number_format($facture->montant_tva, 2) }} DT</td>
-                                                                    <td>{{ number_format($facture->montant, 2) }} DT</td>
-                                                                    <td>{{ $facture->statut }}</td>
-                                                                    <td>
-                                                                        <a href="{{route('factures.show', $facture)}}" class="btn btn-sm btn-info" title="Voir">
-                                                                            <i class="fas fa-eye"></i>
-                                                                        </a>
-                                                                        <a href="{{ route('factures.pdf', $facture) }}" 
-                                                                           download class="btn btn-sm btn-success" title="Télécharger">
-                                                                            <i class="fas fa-download"></i>
-                                                                        </a>
-                                                                    </td>
-                                                                </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                @else
-                                                    <div class="alert alert-info" style="color:black;">
-                                                        <h6><i class="icon fas fa-info"></i> Information</h6>
-                                                        <p class="mb-0">
-                                                            Aucune facture n'a été ajoutée à ce dossier.
-                                                        </p>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-
                                         <!-- Onglet Notes -->
                                         <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
                                             <div class="p-3">
@@ -519,6 +522,10 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <x-dossier.agenda.list :dossier="$dossier" :users="$users" :intervenants="$intervenants" :categories="$categories" :types="$types" />
+                                        <x-dossier.task.liste :dossier="$dossier" />
+                                        <x-dossier.facturation.list :dossier="$dossier" />
+                                        <x-dossier.timesheet.liste :dossier="$dossier" />
                                     </div>
                                 </div>
                             </div>

@@ -50,7 +50,7 @@ Route::post('intervenants/detach-intervenant', [IntervenantController::class, 'd
 Route::delete('intervenant-files/{file}', [IntervenantController::class, 'destroyFile'])->name('intervenants.files.destroy');
 
 Route::resource('dossiers', DossierController::class);
-Route::get('dossiers/search', [DossierController::class, 'search']);
+Route::get('get/dossiers/data', [DossierController::class, 'getDossiersData'])->name('dossiers.data');
 Route::post('dossiers/{dossier}/attach-user', [DossierController::class, 'attachUser']);
 Route::post('dossiers/{dossier}/attach-intervenant', [DossierController::class, 'attachIntervenant']);
 Route::post('dossiers/{dossier}/link-dossier', [DossierController::class, 'linkDossier']);
@@ -68,6 +68,7 @@ Route::resource('agendas', AgendaController::class);
 Route::get('agendas/by-date-range', [AgendaController::class, 'byDateRange']);
 Route::get('dossiers/{dossierId}/agendas', [AgendaController::class, 'byDossier']);
 Route::get('/get/agendas/data', [AgendaController::class, 'getAgendasData'])->name('agendas.data');
+Route::get('/get/agendas/data/{dossierId}', [AgendaController::class, 'getAgendasDataByDossierId'])->name('agendas.data.by.dossier');
 
 Route::resource('tasks', TaskController::class);
 Route::get('tasks/status/{statut}', [TaskController::class, 'byStatus']);

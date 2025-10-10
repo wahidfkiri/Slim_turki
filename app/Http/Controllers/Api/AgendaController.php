@@ -94,6 +94,85 @@ class AgendaController extends Controller
         return response()->json($events);
     }
 
+    public function getAgendasDataByDossierId(Request $request, $dossierId)
+    {
+        $this->authorize('view_agendas', Agenda::class);
+
+        $query = Agenda::with([
+            'dossier:id,numero_dossier',
+            'intervenant:id,identite_fr',
+            'user:id,name'
+        ])->where('dossier_id', $dossierId);
+
+        if(!auth()->user()->hasRole('admin')){
+            $query->where('utilisateur_id', auth()->user()->id);
+        }
+
+        // Filtre par catégories
+        if ($request->has('categories') && !empty($request->categories)) {
+            $categories = explode(',', $request->categories);
+            $query->whereIn('categorie', $categories);
+        }
+
+        // Filtre par utilisateur
+        if ($request->has('utilisateur_id') && !empty($request->utilisateur_id)) {
+            $query->where('utilisateur_id', $request->utilisateur_id);
+        }
+
+        // Filtre par dossier
+        if ($request->has('dossier_id') && !empty($request->dossier_id)) {
+            $query->where('dossier_id', $request->dossier_id);
+        }
+
+        // Filtre par période (pour FullCalendar)
+        if ($request->has('start') && !empty($request->start)) {
+            $start = Carbon::parse($request->start);
+            $query->where(function($q) use ($start) {
+                $q->where('date_fin', '>=', $start->format('Y-m-d'))
+                  ->orWhereNull('date_fin');
+            });
+        }
+
+        if ($request->has('end') && !empty($request->end)) {
+            $end = Carbon::parse($request->end);
+            $query->where('date_debut', '<=', $end->format('Y-m-d'));
+        }
+
+        $agendas = $query->get();
+
+        $events = [];
+
+        foreach ($agendas as $agenda) {
+            $event = [
+                'id' => $agenda->id,
+                'title' => $agenda->titre,
+                'start' => $this->formatEventDate($agenda, 'start'),
+                'end' => $this->formatEventDate($agenda, 'end'),
+                'allDay' => (bool)$agenda->all_day,
+                'color' => $agenda->couleur,
+                'textColor' => $this->getTextColor($agenda->couleur),
+                'extendedProps' => [
+                    'categorie' => $agenda->categorie,
+                    'description' => $agenda->description,
+                    'dossier' => $agenda->dossier ? $agenda->dossier->reference : null,
+                    'intervenant' => $agenda->intervenant ? $agenda->intervenant->name : null,
+                    'utilisateur' => $agenda->utilisateur ? $agenda->utilisateur->name : null,
+                    'heure_debut' => $agenda->heure_debut,
+                    'heure_fin' => $agenda->heure_fin,
+                ]
+            ];
+
+            // Si pas de couleur définie, utiliser les couleurs par défaut par catégorie
+            if (!$agenda->couleur || $agenda->couleur == '#3c8dbc') {
+                $event['color'] = $this->getCategoryColor($agenda->categorie);
+            }
+
+            $events[] = $event;
+        }
+
+        return response()->json($events);
+    }
+
     /**
      * Format event date for FullCalendar
      */

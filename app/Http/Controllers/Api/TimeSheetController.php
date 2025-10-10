@@ -21,7 +21,9 @@ class TimeSheetController extends Controller
 {
     public function index()
 {
-    $this->authorize('view_timesheets', Timesheet::class);
+    if (!auth()->user()->hasPermission('view_timesheets')) {
+            abort(403, 'Unauthorized action.');
+        }
     
     $users = User::where('is_active', true)->get();
     $dossiers = Dossier::with('intervenants')->get();
@@ -44,7 +46,9 @@ public function create()
 }
     public function store(Request $request)
 {
-    $this->authorize('create_timesheets', Timesheet::class);
+    if (!auth()->user()->hasPermission('create_timesheets')) {
+            abort(403, 'Unauthorized action.');
+        }
     $validated = $request->validate([
         'date_timesheet' => 'required|date',
         'utilisateur_id' => 'required|exists:users,id',
@@ -65,13 +69,18 @@ public function create()
         ->with('success', 'Feuille de temps créée avec succès.');
 }
 
-    public function show(TimeSheet $time_sheet): TimeSheetResource
+    public function show(TimeSheet $time_sheet)
     {
-        return new TimeSheetResource($time_sheet->load(['user', 'dossier', 'categorieRelation', 'typeRelation']));
+        if (!auth()->user()->hasPermission('view_timesheets')) {
+            abort(403, 'Unauthorized action.');
+        }
+        return view('timesheets.show', compact('time_sheet'));
     }
 public function edit(Timesheet $time_sheet)
 {
-    $this->authorize('edit_timesheets', $time_sheet);
+         if (!auth()->user()->hasPermission('edit_timesheets')) {
+            abort(403, 'Unauthorized action.');
+        }
     $users = User::where('is_active', true)->get();
     $dossiers = Dossier::with('intervenants')->get();
     $categories = Categorie::all();
@@ -83,7 +92,9 @@ public function edit(Timesheet $time_sheet)
 }
    public function update(Request $request, Timesheet $time_sheet)
 {
-    $this->authorize('edit_timesheets', $time_sheet);
+    if (!auth()->user()->hasPermission('edit_timesheets')) {
+            abort(403, 'Unauthorized action.');
+        }
     
     $validated = $request->validate([
         'date_timesheet' => 'required|date',
@@ -107,7 +118,9 @@ public function edit(Timesheet $time_sheet)
 
 public function destroy(Timesheet $time_sheet)
 {
-    $this->authorize('delete_timesheets', $time_sheet);
+    if (!auth()->user()->hasPermission('delete_timesheets')) {
+            abort(403, 'Unauthorized action.');
+        }
     
     $time_sheet->delete();
 
@@ -230,13 +243,13 @@ public function destroy(Timesheet $time_sheet)
                         ->orWhereHas('intervenants', function ($q) use ($search) {
                             $q->where('identite_fr', 'LIKE', "%{$search}%");
                         });
-                  })
-                  ->orWhereHas('categorieRelation', function ($q) use ($search) {
-                      $q->where('nom', 'LIKE', "%{$search}%");
-                  })
-                  ->orWhereHas('typeRelation', function ($q) use ($search) {
-                      $q->where('nom', 'LIKE', "%{$search}%");
                   });
+                //   ->orWhereHas('categorieRelation', function ($q) use ($search) {
+                //       $q->where('nom', 'LIKE', "%{$search}%");
+                //   })
+                //   ->orWhereHas('typeRelation', function ($q) use ($search) {
+                //       $q->where('nom', 'LIKE', "%{$search}%");
+                //   });
             });
         }
 

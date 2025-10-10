@@ -1,7 +1,6 @@
 @extends('layouts.app')
 @section('content')
 <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
     <section class="content-header">
       <div class="container-fluid">
         <div class="row mb-2">
@@ -15,10 +14,9 @@
             </ol>
           </div>
         </div>
-      </div><!-- /.container-fluid -->
+      </div>
     </section>
 
-    <!-- Main content -->
     <section class="content">
       <div class="container-fluid">
         <div class="row">
@@ -52,13 +50,13 @@
                 </div>
                 @endif
               </div>
-              <!-- /.card-header -->
+              
               <div class="card-body">
                 <!-- Search and Filter Form -->
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <div class="input-group">
-                      <input type="text" class="form-control" placeholder="Rechercher par numéro ou nom..." id="searchInput">
+                      <input type="text" class="form-control" placeholder="Rechercher par numéro ou nom..." id="globalSearch">
                       <div class="input-group-append">
                         <button type="button" class="btn btn-secondary" id="resetSearch">
                           <i class="fas fa-times"></i>
@@ -94,8 +92,6 @@
                     <th>Numéro</th>
                     <th>Nom du Dossier</th>
                     <th>Objet du Dossier</th>
-                    <!-- <th>Domaine</th>
-                    <th>Sous-domaine</th> -->
                     <th>Date Entrée</th>
                     <th>Type</th>
                     <th>Statut</th>
@@ -104,74 +100,15 @@
                   </tr>
                   </thead>
                   <tbody>
-                    @foreach($dossiers as $dossier)
-                    <tr id="dossier-row-{{ $dossier->id }}">
-                      <td>{{ $dossier->numero_dossier }}</td>
-                      <td>{{ $dossier->nom_dossier }}</td>
-                      <td>{{ $dossier->objet }}</td>
-                      <!-- <td>{{ $dossier->domaine->nom ?? 'N/A' }}</td>
-                      <td>{{ $dossier->sousDomaine->nom ?? 'N/A' }}</td> -->
-                      <td>{{ $dossier->date_entree->format('d/m/Y') }}</td>
-                      <td>
-                        @if($dossier->conseil && $dossier->contentieux)
-                          <span class="badge badge-warning">Mixte</span>
-                        @elseif($dossier->conseil)
-                          <span class="badge badge-info">Conseil</span>
-                        @elseif($dossier->contentieux)
-                          <span class="badge badge-primary">Contentieux</span>
-                        @else
-                          <span class="badge badge-secondary">Non défini</span>
-                        @endif
-                      </td>
-                      <td>
-                        @if($dossier->numero_role)
-                          <span class="badge badge-success">En cours</span>
-                        @else
-                          <span class="badge badge-secondary">En préparation</span>
-                        @endif
-                      </td>
-                      <td>{{ $dossier->archive ? 'Oui' : 'Non' }}</td>
-                      <td>
-                        <div class="btn-group btn-group-sm">
-                         @if(auth()->user()->hasPermission('view_dossiers'))
-                          <a href="{{ route('dossiers.show', $dossier->id) }}" 
-                             class="btn btn-info" title="Voir">
-                            <i class="fas fa-eye"></i>
-                          </a>
-                          @endif
-                          @if(auth()->user()->hasPermission('edit_dossiers'))
-                          <a href="{{ route('dossiers.edit', $dossier->id) }}" 
-                             class="btn btn-warning" title="Modifier">
-                            <i class="fas fa-edit"></i>
-                          </a>
-                          @endif
-                          @if(auth()->user()->hasPermission('delete_dossiers'))
-                          <button type="button" class="btn btn-danger delete-dossier-btn" 
-                                  title="Supprimer" 
-                                  data-id="{{ $dossier->id }}"
-                                  data-numero="{{ $dossier->numero_dossier }}"
-                                  data-nom="{{ $dossier->nom_dossier }}">
-                            <i class="fas fa-trash"></i>
-                          </button>
-                          @endif
-                        </div>
-                      </td>
-                    </tr>
-                    @endforeach
+                    <!-- Data will be loaded via AJAX -->
                   </tbody>
                 </table>
               </div>
-              <!-- /.card-body -->
             </div>
-            <!-- /.card -->
           </div>
-          <!-- /.col -->
         </div>
-        <!-- /.row -->
       </div>
-      <!-- /.container-fluid -->
     </section>
-    <!-- /.content -->
   </div>
 
   <!-- Confirmation Modal -->
@@ -195,40 +132,83 @@
       </div>
     </div>
   </div>
-<style>
-.badge {
-    font-size: 0.8em;
-}
-.btn-group .btn {
-    margin-right: 2px;
-}
-.dataTables_wrapper {
-    padding: 0;
-}
-/* Style pour la pagination */
-.dataTables_paginate .paginate_button {
-    margin: 0 2px;
-    padding: 6px 12px;
-}
-/* Réduire l'espacement des cellules */
-.table td, .table th {
-    padding: 0.5rem;
-}
-.delete-dossier-btn {
-    transition: all 0.3s ease;
-}
-.delete-dossier-btn:hover {
-    transform: scale(1.05);
-}
-</style>
+
 <!-- jQuery -->
 <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap4.min.js"></script>
 <script>
 $(document).ready(function() {
+    let table;
+    
+    function initializeDataTable() {
+        // Destroy existing instance if it exists
+        if ($.fn.DataTable.isDataTable('#dossiersTable')) {
+            $('#dossiersTable').DataTable().destroy();
+        }
+        
+        table = $('#dossiersTable').DataTable({
+            processing: true,
+            serverSide: true,
+            searching: false, // ← DISABLE DataTables default search
+            ajax: {
+                url: '{{ route("dossiers.index") }}',
+                data: function (d) {
+                    // Pass custom search parameters
+                    d.domaineFilter = $('#domaineFilter').val();
+                    d.statutFilter = $('#statutFilter').val();
+                    d.globalSearch = $('#globalSearch').val();
+                }
+            },
+            columns: [
+                { data: 'numero_dossier', name: 'numero_dossier' },
+                { data: 'nom_dossier', name: 'nom_dossier' },
+                { data: 'objet', name: 'objet' },
+                { data: 'date_entree', name: 'date_entree' },
+                { data: 'type_badge', name: 'type_badge', orderable: false, searchable: false },
+                { data: 'statut_badge', name: 'statut_badge', orderable: false, searchable: false },
+                { data: 'archive_text', name: 'archive' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json',
+                // Remove search text from language since we're not using it
+                search: "",
+                searchPlaceholder: ""
+            },
+            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"p>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>', // Remove search box from dom
+            pageLength: 25,
+            responsive: true
+        });
+    }
+    
+    // Initialize DataTable
+    initializeDataTable();
+    
     let dossierToDelete = null;
     
-    // Delete button click handler
-    $('.delete-dossier-btn').on('click', function() {
+    // Global search handler with debounce
+    let searchTimeout;
+    $('#globalSearch').on('keyup', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            table.draw();
+        }, 500); // Wait 500ms after user stops typing
+    });
+
+    // Filter handlers
+    $('#domaineFilter, #statutFilter').on('change', function() {
+        table.draw();
+    });
+
+    // Reset search handler
+    $('#resetSearch').on('click', function() {
+        $('#globalSearch').val('');
+        table.draw();
+    });
+
+    // Delete button handler (using event delegation)
+    $(document).on('click', '.delete-dossier-btn', function() {
         const dossierId = $(this).data('id');
         const dossierNumero = $(this).data('numero');
         const dossierNom = $(this).data('nom');
@@ -258,16 +238,8 @@ $(document).ready(function() {
             success: function(response) {
                 $('#deleteDossierModal').modal('hide');
                 
-                // Remove the row from the table
-                $('#dossier-row-' + dossierToDelete).fadeOut(300, function() {
-                    $(this).remove();
-                    // Show message if no more rows
-                    if ($('#dossiersTable tbody tr').length === 0) {
-                        $('#dossiersTable tbody').html(
-                            '<tr><td colspan="10" class="text-center">Aucun dossier trouvé</td></tr>'
-                        );
-                    }
-                });
+                // Refresh the DataTable
+                table.draw();
                 
                 // Show success message
                 showAlert('success', 'Dossier supprimé avec succès!');
@@ -317,18 +289,6 @@ $(document).ready(function() {
             });
         }, 5000);
     }
-    
-    // Close modal when clicking the X button
-    $('#deleteDossierModal .close, #deleteDossierModal [data-dismiss="modal"]').on('click', function() {
-        dossierToDelete = null;
-    });
-    
-    // Handle escape key to close modal
-    $(document).on('keydown', function(e) {
-        if (e.key === 'Escape' && $('#deleteDossierModal').is(':visible')) {
-            dossierToDelete = null;
-        }
-    });
 });
 </script>
 @endsection

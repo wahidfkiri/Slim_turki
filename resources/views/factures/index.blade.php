@@ -55,11 +55,11 @@
                         <div class="card-body">
                             <!-- Filtres -->
                             <div class="row mb-3">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label for="filter_numero">Numéro</label>
                                     <input type="text" class="form-control" id="filter_numero" placeholder="Rechercher par numéro">
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label for="filter_type_piece">Type de pièce</label>
                                     <select class="form-control" id="filter_type_piece">
                                         <option value="">Tous les types</option>
@@ -69,7 +69,7 @@
                                         <option value="avoir">Avoir</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label for="filter_statut">Statut</label>
                                     <select class="form-control" id="filter_statut">
                                         <option value="">Tous les statuts</option>
@@ -77,7 +77,7 @@
                                         <option value="non_payé">Non payé</option>
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label for="filter_dossier">Dossier</label>
                                     <select class="form-control" id="filter_dossier">
                                         <option value="">Tous les dossiers</option>
@@ -86,9 +86,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label for="filter_client">Client</label>
                                     <select class="form-control" id="filter_client">
                                         <option value="">Tous les clients</option>
@@ -97,25 +95,13 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label for="filter_date_debut">Date émission début</label>
                                     <input type="date" class="form-control" id="filter_date_debut">
                                 </div>
-                                <div class="col-md-3">
-                                    <label for="filter_date_fin">Date émission fin</label>
-                                    <input type="date" class="form-control" id="filter_date_fin">
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="filter_min_montant">Montant min</label>
-                                    <input type="number" class="form-control" id="filter_min_montant" placeholder="Montant minimum" step="0.01">
-                                </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-md-3">
-                                    <label for="filter_max_montant">Montant max</label>
-                                    <input type="number" class="form-control" id="filter_max_montant" placeholder="Montant maximum" step="0.01">
-                                </div>
-                                <div class="col-md-9 text-right" style="margin-top: 25px;">
+                                <div class="col-md-12 text-right" style="margin-top: 25px;">
                                     <button type="button" id="btn_reset_filters" class="btn btn-secondary">
                                         <i class="fas fa-redo"></i> Réinitialiser
                                     </button>
@@ -227,6 +213,7 @@ $(document).ready(function() {
                 data: null,
                 orderable: false,
                 searchable: false,
+                visible: false,  // This hides the column
                 render: function(data, type, row, meta) {
                     return meta.settings._iDisplayStart + meta.row + 1;
                 }
