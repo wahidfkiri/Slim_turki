@@ -523,7 +523,7 @@
                                             </div>
                                         </div>
                                         <x-dossier.agenda.list :dossier="$dossier" :users="$users" :intervenants="$intervenants" :categories="$categories" :types="$types" />
-                                        <x-dossier.task.liste :dossier="$dossier" />
+                                        
                                         <x-dossier.facturation.list :dossier="$dossier" />
                                         <x-dossier.timesheet.liste :dossier="$dossier" />
                                     </div>
