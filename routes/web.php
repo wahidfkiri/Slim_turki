@@ -14,6 +14,7 @@ use Firebase\JWT\Key;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\DesktopDatabaseController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -56,6 +57,12 @@ Route::post('dossiers/{dossier}/attach-intervenant', [DossierController::class, 
 Route::post('dossiers/{dossier}/link-dossier', [DossierController::class, 'linkDossier']);
 Route::get('/sous-domaines/by-domaine', [DossierController::class, 'getSousDomainesByDomaine'])->name('sous-domaines.by-domaine');
 Route::get('/get-sous-domaines', [DossierController::class, 'getSousDomaines'])->name('get.sous-domaines');
+Route::get('dossier/task/create/{dossier}', [DossierController::class, 'createForDossier'])->name('dossiers.tasks.create');
+Route::post('dossier/task/create/{dossier}', [DossierController::class, 'storeForDossier'])->name('dossiers.tasks.store');
+Route::get('dossier/timeSheets/create/{dossier}', [DossierController::class, 'createTimeSheetForDossier'])->name('dossiers.timesheets.create');
+Route::post('dossier/timeSheets/create/{dossier}', [DossierController::class, 'storeTimeSheetForDossier'])->name('dossiers.timesheets.store');
+Route::get('dossier/facturation/create/{dossier}', [DossierController::class, 'createFactureForDossier'])->name('dossiers.facturation.create');
+Route::post('dossier/facturation/create/{dossier}', [DossierController::class, 'storeFactureForDossier'])->name('dossiers.facturation.store');
 Route::resource('domaines', DomaineController::class);
 
 Route::resource('time-sheets', TimeSheetController::class);
@@ -75,6 +82,7 @@ Route::get('tasks/status/{statut}', [TaskController::class, 'byStatus']);
 Route::get('users/{userId}/tasks', [TaskController::class, 'byUser']);
 Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus']);
 Route::get('/get/tasks/data', [TaskController::class, 'getTasksData'])->name('tasks.data');
+Route::get('tasks/{taskId}/download', [TaskController::class, 'downloadFile'])->name('tasks.download');
 
 Route::resource('factures', FactureController::class);
  Route::get('/get/factures/data', [FactureController::class, 'getFacturesData'])->name('factures.data');
@@ -181,4 +189,25 @@ Route::post('/onlyoffice/callback', function (Request $request) {
     }
 
     return response()->json(['error' => 0]);
+});
+
+
+// Desktop API routes
+Route::prefix('api/desktop')->group(function () {
+    Route::get('/test-db', [DesktopDatabaseController::class, 'testConnection']);
+    Route::get('/db-stats', [DesktopDatabaseController::class, 'getStats']);
+    Route::post('/backup-database', [DesktopDatabaseController::class, 'backupDatabase']);
+    
+    Route::get('/info', function () {
+        return response()->json([
+            'version' => config('app.version', '1.0.0'),
+            'environment' => app()->environment(),
+            'is_desktop' => is_desktop(),
+            'database' => [
+                'connection' => config('database.default'),
+                'name' => config('database.connections.mysql.database'),
+                'host' => config('database.connections.mysql.host')
+            ]
+        ]);
+    });
 });

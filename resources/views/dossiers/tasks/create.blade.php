@@ -25,17 +25,32 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-12">
+                         @if(session('success'))
+            <div class="alert alert-success alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas fa-check"></i> Succès!</h5>
+                {{ session('success') }}
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="alert alert-danger alert-dismissible">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                <h5><i class="icon fas fa-ban"></i> Erreur!</h5>
+                {{ session('error') }}
+            </div>
+            @endif
                     <div class="card card-primary">
                         <div class="card-header">
                             <h3 class="card-title">Informations de la tâche</h3>
                         </div>
                         <!-- form start -->
-                        <form action="{{ route('tasks.store') }}" method="POST" id="taskForm" enctype="multipart/form-data">
+                        <form action="{{ route('dossiers.tasks.store', ['dossier' => $dossier->id]) }}" method="POST" id="taskForm">
                             @csrf
                             <div class="card-body">
                                 <div class="row">
                                     <!-- Titre -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="titre">Titre *</label>
                                             <input type="text" class="form-control @error('titre') is-invalid @enderror" 
@@ -50,7 +65,7 @@
                                     </div>
 
                                     <!-- Priorité -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="priorite">Priorité *</label>
                                             <select class="form-control @error('priorite') is-invalid @enderror" 
@@ -68,8 +83,11 @@
                                             @enderror
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="row">
                                     <!-- Statut -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="statut">Statut *</label>
                                             <select class="form-control @error('statut') is-invalid @enderror" 
@@ -90,7 +108,7 @@
 
                                     <!-- Utilisateur assigné -->
                                      @if(auth()->user()->hasRole('admin'))
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="utilisateur_id">Assigné à *</label>
                                             <select class="form-control @error('utilisateur_id') is-invalid @enderror" 
@@ -112,8 +130,11 @@
                                     @else 
                                     <input type="hidden" name="utilisateur_id" value="{{ auth()->id() }}">
                                     @endif
+                                </div>
+
+                                <div class="row">
                                     <!-- Date de début -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="date_debut">Date de début</label>
                                             <input type="date" class="form-control @error('date_debut') is-invalid @enderror" 
@@ -127,7 +148,7 @@
                                     </div>
 
                                     <!-- Date de fin -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="date_fin">Date de fin</label>
                                             <input type="date" class="form-control @error('date_fin') is-invalid @enderror" 
@@ -141,17 +162,15 @@
                                     </div>
 
                                     <!-- Dossier -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="dossier_id">Dossier</label>
                                             <select class="form-control @error('dossier_id') is-invalid @enderror" 
                                                     id="dossier_id" name="dossier_id">
                                                 <option value="">Sélectionnez un dossier</option>
-                                                @foreach($dossiers as $dossier)
-                                                    <option value="{{ $dossier->id }}" {{ old('dossier_id') == $dossier->id ? 'selected' : '' }}>
+                                                    <option value="{{ $dossier->id }}" selected>
                                                         {{ $dossier->numero_dossier }}
                                                     </option>
-                                                @endforeach
                                             </select>
                                             @error('dossier_id')
                                                 <span class="invalid-feedback" role="alert">
@@ -162,13 +181,13 @@
                                     </div>
 
                                     <!-- Intervenant -->
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <div class="form-group">
                                             <label for="intervenant_id">Intervenant</label>
                                             <select class="form-control @error('intervenant_id') is-invalid @enderror" 
                                                     id="intervenant_id" name="intervenant_id">
                                                 <option value="">Sélectionnez un intervenant</option>
-                                                @foreach($intervenants as $intervenant)
+                                                @foreach($dossier->intervenants as $intervenant)
                                                     <option value="{{ $intervenant->id }}" {{ old('intervenant_id') == $intervenant->id ? 'selected' : '' }}>
                                                         {{ $intervenant->identite_fr }}
                                                     </option>
@@ -179,26 +198,6 @@
                                                     <strong>{{ $message }}</strong>
                                                 </span>
                                             @enderror
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="file">Fichier joint</label>
-                                            <div class="custom-file">
-                                                <input type="file" class="custom-file-input @error('file') is-invalid @enderror" 
-                                                       id="file" name="file" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.xlsx,.xls">
-                                                <label class="custom-file-label" for="file" id="file-label">
-                                                    {{ old('file') ? old('file') : 'Choisir un fichier...' }}
-                                                </label>
-                                            </div>
-                                            @error('file')
-                                                <span class="invalid-feedback d-block" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                            <small class="form-text text-muted">
-                                                Formats acceptés: PDF, Word, Excel, TXT, JPG, PNG (Max: 10MB)
-                                            </small>
                                         </div>
                                     </div>
                                 </div>

@@ -12,11 +12,14 @@ use App\Models\SousDomaine;
 use App\Models\Intervenant;
 use App\Models\User;
 use App\Models\Fichier;
+use App\Models\Categorie;
+use App\Models\Type;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Yajra\DataTables\Facades\DataTables;
+
 
 class DossierController extends Controller
 {
@@ -684,4 +687,133 @@ public function getDossiersData(Request $request)
         ->rawColumns(['action', 'type_badge', 'statut_badge'])
         ->make(true);
 }
+
+   public function createForDossier(Dossier $dossier)
+   {
+    if(!auth()->user()->hasPermission('create_tasks')){
+        abort(403, 'Unauthorized action.');
+    }
+        $users = \App\Models\User::where('is_active', true)->get();
+        return view('dossiers.tasks.create', compact('users','dossier'));
+    }
+
+
+   public function storeForDossier(Request $request, Dossier $dossier)
+   {
+    if(!auth()->user()->hasPermission('create_tasks')){
+        abort(403, 'Unauthorized action.');
+    }
+   $validated = $request->validate([
+            'titre' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'date_debut' => 'nullable|date',
+            'date_fin' => 'nullable|date|after_or_equal:date_debut',
+            'priorite' => 'required|in:basse,normale,haute,urgente',
+            'statut' => 'required|in:a_faire,en_cours,terminee,en_retard',
+            'dossier_id' => 'nullable|exists:dossiers,id',
+            'intervenant_id' => 'nullable|exists:intervenants,id',
+            'utilisateur_id' => 'required|exists:users,id',
+            'note' => 'nullable|string',
+        ]);
+
+        \App\Models\Task::create($validated);
+
+        return redirect()->back()->with('success', 'Tâche créée avec succès.');
+    }
+
+    public function createFactureForDossier(Dossier $dossier)
+    {
+        if(!auth()->user()->hasPermission('create_factures')){
+            abort(403, 'Unauthorized action.');
+        }
+
+        $clients = $dossier->intervenants()
+            ->wherePivot('role', 'client')
+            ->get();
+        // Générer le prochain numéro de facture
+        $lastFacture = \App\Models\Facture::orderBy('id', 'desc')->first();
+        $nextNumber = 'FACT-' . date('Y') . '-' . str_pad(($lastFacture ? $lastFacture->id + 1 : 1), 4, '0', STR_PAD_LEFT);
+        return view('dossiers.factures.create', compact('dossier', 'nextNumber', 'clients'));
+    }
+
+    public function storeFactureForDossier(Request $request, Dossier $dossier)
+    {
+        if(!auth()->user()->hasPermission('create_factures')){
+            abort(403, 'Unauthorized action.');
+        }
+        $validated = $request->validate([
+            'dossier_id' => 'nullable|exists:dossiers,id',
+            'client_id' => 'nullable|exists:intervenants,id',
+            'type_piece' => 'required|in:facture,note_frais,note_provision,avoir',
+            'numero' => 'required|string|max:100|unique:factures,numero',
+            'date_emission' => 'required|date',
+            'montant_ht' => 'required|numeric|min:0',
+            'montant_tva' => 'required|numeric|min:0',
+            'montant' => 'required|numeric|min:0',
+            'statut' => 'required|in:payé,non_payé',
+            'commentaires' => 'nullable|string',
+            'piece_jointe' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx|max:10240', 
+        ]);
+
+        // Vérifier la cohérence des montants
+        $calculatedMontant = $validated['montant_ht'] + $validated['montant_tva'];
+        if (abs($calculatedMontant - $validated['montant']) > 0.01) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Le montant TTC doit être égal à HT + TVA.');
+        }
+
+        // Gestion de la pièce jointe
+    if ($request->hasFile('piece_jointe')) {
+        $file = $request->file('piece_jointe');
+        $fileName = time() . '_' . $file->getClientOriginalName();
+        $filePath = $file->storeAs('factures', $fileName, 'public');
+        $validated['piece_jointe'] = $fileName;
+    }
+
+        $facture = \App\Models\Facture::create($validated);
+         if($request->hasFile('piece_jointe')) {
+        $facture->file_name = $file->getClientOriginalName();
+        $facture->save();
+        }
+
+        return redirect()->back()->with('success', 'Facture créée avec succès.');
+    }   
+
+    public function createTimeSheetForDossier(Dossier $dossier)
+    {
+        if(!auth()->user()->hasPermission('create_timesheets')){
+            abort(403, 'Unauthorized action.');
+        }
+        
+    $users = User::where('is_active', true)->get();
+    $categories = Categorie::all();
+    $types = Type::all();
+        return view('dossiers.timesheets.create', compact('dossier', 'users', 'categories', 'types'));
+    }
+
+    public function storeTimeSheetForDossier(Request $request, Dossier $dossier)
+    {
+        if(!auth()->user()->hasPermission('create_timesheets')){
+            abort(403, 'Unauthorized action.');
+        }
+       $validated = $request->validate([
+        'date_timesheet' => 'required|date',
+        'utilisateur_id' => 'required|exists:users,id',
+        'dossier_id' => 'nullable|exists:dossiers,id',
+        'description' => 'required|string|max:1000',
+        'categorie' => 'nullable|exists:categories,id',
+        'type' => 'nullable|exists:types,id',
+        'quantite' => 'required|numeric|min:0',
+        'prix' => 'required|numeric|min:0',
+    ]);
+
+    // Calculer le total
+    $validated['total'] = $validated['quantite'] * $validated['prix'];
+
+    \App\Models\TimeSheet::create($validated);
+
+        return redirect()->back()->with('success', 'Feuille de temps créée avec succès.');
+    }
+
 }

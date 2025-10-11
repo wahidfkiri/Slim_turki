@@ -64,34 +64,11 @@
                 </li>
                 @endif
                 @if(auth()->user()->hasPermission('view_factures'))
-                <li class="nav-item has-treeview {{ request()->routeIs('factures.*') ? 'menu-open' : '' }}">
-                    <a href="#" class="nav-link {{ request()->routeIs('factures.*') ? 'active' : '' }}">
+                <li class="nav-item">
+                    <a href="{{ route('factures.index') }}" class="nav-link {{ request()->routeIs('factures.*') ? 'active' : '' }}">
                         <i class="nav-icon fas fa-file-invoice-dollar"></i>
-                        <p>
-                            Facturation
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
+                        <p>Facturation</p>
                     </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{{ route('factures.index') }}" class="nav-link {{ request()->routeIs('factures.index') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Toutes les factures</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('factures.paid.index') }}" class="nav-link {{ request()->is('factures/data/paid') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Payé</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('factures.unpaid.index') }}" class="nav-link {{ request()->is('factures/data/unpaid') ? 'active' : '' }}">
-                                <i class="far fa-circle nav-icon"></i>
-                                <p>Non payé</p>
-                            </a>
-                        </li>
-                    </ul>
                 </li>
                 @endif
                 @if(auth()->user()->hasPermission('view_timesheets'))

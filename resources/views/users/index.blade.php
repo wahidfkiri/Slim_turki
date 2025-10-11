@@ -78,7 +78,7 @@
                   </div>
                 </div>
 
-                <table id="intervenantsTable" class="table table-bordered table-striped">
+                <table id="intervenantsTable" class="table table-bordered table-striped w-100">
                   <thead>
                   <tr>
                     <th>ID</th>

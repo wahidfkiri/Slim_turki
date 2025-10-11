@@ -86,7 +86,7 @@
                   </div>
                 </div>
 
-                <table id="dossiersTable" class="table table-bordered table-striped">
+                <table id="dossiersTable" class="table table-bordered table-striped w-100">
                   <thead>
                   <tr>
                     <th>Numéro</th>

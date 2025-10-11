@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Dossier;
 use App\Models\Intervenant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 class TaskController extends Controller
@@ -108,7 +109,16 @@ class TaskController extends Controller
                         <i class="fas fa-trash"></i>
                     </button>';
                 }
-                
+
+                // Button Download
+                if (auth()->user()->hasPermission('view_tasks') && $task->file_path) {
+                    if (file_exists(public_path($task->file_path))) {
+                        $actions .= '<a href="' . route('tasks.download', $task) . '" class="btn btn-danger btn-sm" title="Télécharger">
+                            <i class="fas fa-download"></i>
+                        </a>';
+                    }
+                }
+
                 $actions .= '</div>';
                 return $actions;
             })
@@ -168,27 +178,44 @@ class TaskController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $this->authorize('create_tasks', Task::class);
-        
-        $validated = $request->validate([
-            'titre' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'date_debut' => 'nullable|date',
-            'date_fin' => 'nullable|date|after_or_equal:date_debut',
-            'priorite' => 'required|in:basse,normale,haute,urgente',
-            'statut' => 'required|in:a_faire,en_cours,terminee,en_retard',
-            'dossier_id' => 'nullable|exists:dossiers,id',
-            'intervenant_id' => 'nullable|exists:intervenants,id',
-            'utilisateur_id' => 'required|exists:users,id',
-            'note' => 'nullable|string',
-        ]);
-
-        Task::create($validated);
-
-        return redirect()->route('tasks.index')
-            ->with('success', 'Tâche créée avec succès.');
+{
+    if(!auth()->user()->hasPermission('create_tasks')){
+        return abort(403, 'Unauthorized action.');
     }
+    
+    $validated = $request->validate([
+        'titre' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'date_debut' => 'nullable|date',
+        'date_fin' => 'nullable|date|after_or_equal:date_debut',
+        'priorite' => 'required|in:basse,normale,haute,urgente',
+        'statut' => 'required|in:a_faire,en_cours,terminee,en_retard',
+        'dossier_id' => 'nullable|exists:dossiers,id',
+        'intervenant_id' => 'nullable|exists:intervenants,id',
+        'utilisateur_id' => 'required|exists:users,id',
+        'note' => 'nullable|string',
+        'file' => 'nullable|file|mimes:pdf,doc,docx,txt,jpg,jpeg,png,xlsx,xls|max:10240', // 10MB max
+    ]);
+
+    // Create the task with basic data
+    $taskData = $validated;
+    
+    // Handle file upload before creating the task
+    if ($request->hasFile('file')) {
+        $file = $request->file('file');
+        $filePath = $file->store('tasks/files', 'public');
+        
+        // Add file data to task data
+        $taskData['file_path'] = $filePath;
+        $taskData['file_name'] = $file->getClientOriginalName();
+    }
+
+    // Create the task with all data including file info
+    $task = Task::create($taskData);
+
+    return redirect()->route('tasks.index')
+        ->with('success', 'Tâche créée avec succès.');
+}
 
     /**
      * Display the specified resource.
@@ -205,7 +232,9 @@ class TaskController extends Controller
      */
   public function edit(Task $task)
 {
-    $this->authorize('edit_tasks', $task);
+    if(!auth()->user()->hasPermission('edit_tasks')){
+        return abort(403, 'Unauthorized action.');
+    }
     
     $users = User::where('is_active', true)->get();
     $dossiers = Dossier::all();
@@ -219,7 +248,9 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
 {
-    $this->authorize('edit_tasks', $task);
+    if(!auth()->user()->hasPermission('edit_tasks')){
+        return abort(403, 'Unauthorized action.');
+    }
     
     $validated = $request->validate([
         'titre' => 'required|string|max:255',
@@ -232,9 +263,45 @@ class TaskController extends Controller
         'intervenant_id' => 'nullable|exists:intervenants,id',
         'utilisateur_id' => 'required|exists:users,id',
         'note' => 'nullable|string',
+        'file' => 'nullable|file|mimes:pdf,doc,docx,txt,jpg,jpeg,png,xlsx,xls|max:10240', // 10MB max
+        'remove_file' => 'nullable|boolean',
     ]);
 
-    $task->update($validated);
+    $updateData = $validated;
+
+    // Handle file removal if requested
+    if ($request->has('remove_file') && $request->boolean('remove_file')) {
+        // Delete the physical file from storage
+        if ($task->file_path && Storage::disk('public')->exists($task->file_path)) {
+            Storage::disk('public')->delete($task->file_path);
+        }
+        
+        // Remove file data from database
+        $updateData['file_path'] = null;
+        $updateData['file_name'] = null;
+    }
+
+    // Handle new file upload
+    if ($request->hasFile('file')) {
+        // Delete old file if exists
+        if ($task->file_path && Storage::disk('public')->exists($task->file_path)) {
+            Storage::disk('public')->delete($task->file_path);
+        }
+
+        // Store new file
+        $file = $request->file('file');
+        $filePath = $file->store('tasks/files', 'public');
+        
+        // Add file data to update data
+        $updateData['file_path'] = $filePath;
+        $updateData['file_name'] = $file->getClientOriginalName();
+    }
+
+    // Remove the file and remove_file keys from update data as they're not in the database
+    unset($updateData['file']);
+    unset($updateData['remove_file']);
+
+    $task->update($updateData);
 
     return redirect()->route('tasks.index')
         ->with('success', 'Tâche mise à jour avec succès.');
@@ -258,5 +325,19 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.index')
             ->with('success', 'Tâche supprimée avec succès.');
+    }
+
+    public function downloadFile($taskId)
+    {
+        $task = Task::findOrFail($taskId);
+       if(!auth()->user()->hasPermission('view_tasks')){
+            return abort(403, 'Unauthorized action.');
+        }
+
+        if ($task->file_path && Storage::disk('public')->exists($task->file_path)) {
+            return Storage::disk('public')->download($task->file_path, $task->file_name);
+        }
+
+        return redirect()->back()->with('error', 'Fichier non trouvé.');
     }
 }

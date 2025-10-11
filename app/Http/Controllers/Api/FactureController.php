@@ -453,7 +453,9 @@ class FactureController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('create_factures', Facture::class);
+        if(!auth()->user()->hasPermission('create_factures')) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         
         $validated = $request->validate([
             'dossier_id' => 'nullable|exists:dossiers,id',
@@ -485,7 +487,12 @@ class FactureController extends Controller
         $validated['piece_jointe'] = $fileName;
     }
 
-        Facture::create($validated);
+        $facture = Facture::create($validated);
+
+        if($request->hasFile('piece_jointe')) {
+        $facture->file_name = $file->getClientOriginalName();
+        $facture->save();
+        }
 
         return redirect()->route('factures.index')
             ->with('success', 'Facture créée avec succès.');

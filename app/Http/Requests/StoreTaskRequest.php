@@ -23,7 +23,8 @@ class StoreTaskRequest extends FormRequest
             'dossier_id' => 'nullable|exists:dossiers,id',
             'intervenant_id' => 'nullable|exists:intervenants,id',
             'utilisateur_id' => 'required|exists:users,id',
-            'note' => 'nullable|string'
+            'note' => 'nullable|string',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,txt,jpg,png|max:10240', // 10MB max
         ];
     }
 

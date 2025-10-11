@@ -74,7 +74,7 @@
                                     <select class="form-control" id="filter_statut">
                                         <option value="">Tous les statuts</option>
                                         <option value="payé">Payé</option>
-                                        <option value="non_payé">Non payé</option>
+                                        <option value="non_payé" selected>Non payé</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2">
@@ -112,7 +112,7 @@
                             </div>
 
                             <!-- Table -->
-                            <table id="factures-table" class="table table-bordered table-striped">
+                            <table id="factures-table" class="table table-bordered table-striped w-100">
                                 <thead>
                                     <tr>
                                         <th>#</th>

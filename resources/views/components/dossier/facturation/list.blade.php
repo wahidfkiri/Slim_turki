@@ -3,7 +3,9 @@
                                         <div class="tab-pane fade" id="facturation" role="tabpanel" aria-labelledby="facturation-tab">
                                             <div class="p-3">
                                                 <h5 class="text-primary mb-3"><i class="fas fa-money-bill-wave"></i> Informations de facturation</h5>
-                                                
+                                                <a href="{{ route('dossiers.facturation.create', ['dossier' => $dossier->id]) }}" class="btn btn-primary mb-3" style="float: right;">
+                                                    <i class="fas fa-plus"></i> Ajouter une facture </a>
+
                                                  @if($dossier->factures && $dossier->factures->count() > 0)
                                                     <div class="table-responsive">
                                                         <table class="table table-bordered table-hover">

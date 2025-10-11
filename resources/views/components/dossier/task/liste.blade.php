@@ -3,7 +3,9 @@
                                         <!-- Onglet Tâches -->
                                         <div class="tab-pane fade" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
                                             <div class="p-3">
-                                                <h5 class="text-primary mb-3"><i class="fas fa-money-bill-wave"></i> Informations de facturation</h5>
+                                                <h5 class="text-primary mb-3"><i class="fas fa-money-bill-wave"></i> Informations des taches</h5>
+                                                <a href="{{ route('dossiers.tasks.create', ['dossier' => $dossier->id]) }}" class="btn btn-primary mb-3" style="float: right;">
+                                                    <i class="fas fa-plus"></i> Ajouter une tâche </a>
 
                                                  @if($dossier->tasks && $dossier->tasks->count() > 0)
                                                     <div class="table-responsive">

@@ -540,6 +540,7 @@ visibility:hidden
   padding-left:5px;
   text-decoration:underline
 }
+
 </style>
 </head>
 <body class="hold-transition sidebar-mini">

@@ -133,7 +133,7 @@
                             </div>
 
                             <!-- Table -->
-                            <table id="tasks-table" class="table table-bordered table-striped">
+                            <table id="tasks-table" class="table table-bordered table-striped w-100">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -327,6 +327,11 @@ $(document).ready(function() {
                     
                     @if(auth()->user()->hasPermission('delete_tasks'))
                         actions += '<button type="button" class="btn btn-danger btn-sm delete-task-btn" data-id="' + row.id + '" data-title="' + (row.titre || '') + '" title="Supprimer"><i class="fas fa-trash"></i></button>';
+                    @endif
+                    @if(auth()->user()->hasPermission('view_tasks'))
+                        if (row.file_path != null) {
+                            actions += '<a href="/tasks/' + row.id + '/download" class="btn btn-secondary btn-sm" title="Télécharger"><i class="fas fa-download"></i></a>';
+                        }
                     @endif
                     
                     actions += '</div>';

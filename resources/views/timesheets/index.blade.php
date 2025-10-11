@@ -108,7 +108,7 @@
                             </div>
 
                             <!-- Table -->
-                            <table id="timesheets-table" class="table table-bordered table-striped">
+                            <table id="timesheets-table" class="table table-bordered table-striped w-100">
                                 <thead>
                                     <tr>
                                         <th>ID</th>

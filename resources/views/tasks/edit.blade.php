@@ -30,13 +30,13 @@
                             <h3 class="card-title">Modifier les informations de la tâche</h3>
                         </div>
                         <!-- form start -->
-                        <form action="{{ route('tasks.update', $task) }}" method="POST" id="taskForm">
+                        <form action="{{ route('tasks.update', $task) }}" method="POST" id="taskForm" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
                             <div class="card-body">
                                 <div class="row">
                                     <!-- Titre -->
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="titre">Titre *</label>
                                             <input type="text" class="form-control @error('titre') is-invalid @enderror" 
@@ -51,7 +51,7 @@
                                     </div>
 
                                     <!-- Priorité -->
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="priorite">Priorité *</label>
                                             <select class="form-control @error('priorite') is-invalid @enderror" 
@@ -69,11 +69,8 @@
                                             @enderror
                                         </div>
                                     </div>
-                                </div>
-
-                                <div class="row">
                                     <!-- Statut -->
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="statut">Statut *</label>
                                             <select class="form-control @error('statut') is-invalid @enderror" 
@@ -93,7 +90,7 @@
                                     </div>
 
                                     <!-- Utilisateur assigné -->
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="utilisateur_id">Assigné à *</label>
                                             <select class="form-control @error('utilisateur_id') is-invalid @enderror" 
@@ -112,11 +109,8 @@
                                             @enderror
                                         </div>
                                     </div>
-                                </div>
-
-                                <div class="row">
                                     <!-- Date de début -->
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="date_debut">Date de début</label>
                                             <input type="date" class="form-control @error('date_debut') is-invalid @enderror" 
@@ -130,7 +124,7 @@
                                     </div>
 
                                     <!-- Date de fin -->
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="date_fin">Date de fin</label>
                                             <input type="date" class="form-control @error('date_fin') is-invalid @enderror" 
@@ -144,7 +138,7 @@
                                     </div>
 
                                     <!-- Dossier -->
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="dossier_id">Dossier</label>
                                             <select class="form-control @error('dossier_id') is-invalid @enderror" 
@@ -165,7 +159,7 @@
                                     </div>
 
                                     <!-- Intervenant -->
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="intervenant_id">Intervenant</label>
                                             <select class="form-control @error('intervenant_id') is-invalid @enderror" 
@@ -182,6 +176,28 @@
                                                     <strong>{{ $message }}</strong>
                                                 </span>
                                             @enderror
+                                        </div>
+                                    </div>
+
+                                    
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="file">Fichier joint</label>
+                                            <div class="custom-file">
+                                                <input type="file" class="custom-file-input @error('file') is-invalid @enderror" 
+                                                       id="file" name="file" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.xlsx,.xls">
+                                                <label class="custom-file-label" for="file" id="file-label">
+                                                    {{ old('file') ? old('file') : 'Choisir un fichier...' }}
+                                                </label>
+                                            </div>
+                                            @error('file')
+                                                <span class="invalid-feedback d-block" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                            <small class="form-text text-muted">
+                                                Formats acceptés: PDF, Word, Excel, TXT, JPG, PNG (Max: 10MB)
+                                            </small>
                                         </div>
                                     </div>
                                 </div>
