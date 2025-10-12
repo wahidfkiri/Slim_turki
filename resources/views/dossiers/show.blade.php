@@ -91,6 +91,11 @@
                                                 <i class="fas fa-clock"></i> Timesheet
                                             </a>
                                         </li>
+                                        <li class="nav-item d-none">
+                                           <a class="nav-link" href="openfolder://C:/Users/Wahid Fkiri/Desktop">
+                                             <i class="fas fa-clock"></i> Ouvrir le chemin du dossier
+                                            </a>
+                                        </li>
                                     </ul>
                                     
                                     <div class="tab-content" id="dossierTabsContent">

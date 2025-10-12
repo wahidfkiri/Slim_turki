@@ -174,7 +174,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="createEventForm" method="POST">
+            <form id="createEventForm" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
                     <div class="row">
@@ -281,8 +281,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="couleur">Couleur</label>
-                        <input type="color" class="form-control" id="couleur" name="couleur" value="#3c8dbc">
+                        <label for="file">Pièce Jointe</label>
+                        <input type="file" class="form-control" id="file" name="file">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -304,7 +304,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="editEventForm" method="POST">
+            <form id="editEventForm" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <input type="hidden" id="edit_event_id" name="id">
@@ -414,7 +414,7 @@
 
                     <div class="form-group">
                         <label for="edit_couleur">Couleur</label>
-                        <input type="color" class="form-control" id="edit_couleur" name="couleur" value="#3c8dbc">
+                        <input type="file" class="form-control" id="file" name="file">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -517,10 +517,10 @@ document.addEventListener('DOMContentLoaded', function() {
             showEventDetails(info.event);
         },
         dateClick: function(info) {
-            @can('create_agendas')
+            @if(auth()->user()->hasPermission('create_agendas'))
                 $('#date_debut').val(info.dateStr);
                 $('#createEventModal').modal('show');
-            @endcan
+            @endif
         },
         eventDidMount: function(info) {
             // Tooltip avec les détails de l'événement
@@ -567,6 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ${event.extendedProps.dossier ? `<p><strong>Dossier:</strong> ${event.extendedProps.dossier}</p>` : ''}
                 ${event.extendedProps.intervenant ? `<p><strong>Intervenant:</strong> ${event.extendedProps.intervenant}</p>` : ''}
                 ${event.extendedProps.utilisateur ? `<p><strong>Assigné à:</strong> ${event.extendedProps.utilisateur}</p>` : ''}
+                ${event.extendedProps.file_name ? `<p><strong>Fichier:</strong> ${event.extendedProps.file_name}</p>` : ''}
             </div>
         `;
         
@@ -625,11 +626,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Création d'événement
     $('#createEventForm').submit(function(e) {
         e.preventDefault();
-        
+
+        var formData = new FormData(this);
+
         $.ajax({
             url: '{{ route("agendas.store") }}',
             type: 'POST',
-            data: $(this).serialize(),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
                 $('#createEventModal').modal('hide');
                 calendar.refetchEvents();
@@ -639,11 +644,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 showAlert('Succès', 'Événement créé avec succès', 'success');
             },
             error: function(xhr) {
-                var errors = xhr.responseJSON.errors;
-                var errorMessage = 'Erreur de validation:\n';
-                $.each(errors, function(key, value) {
-                    errorMessage += '• ' + value[0] + '\n';
-                });
+                let errorMessage = 'Erreur de validation:\n';
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    $.each(xhr.responseJSON.errors, function(key, value) {
+                        errorMessage += '• ' + value[0] + '\n';
+                    });
+                } else {
+                    errorMessage += 'Une erreur est survenue.';
+                }
                 showAlert('Erreur', errorMessage, 'error');
             }
         });
@@ -674,6 +682,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 $('#editEventForm select[name="dossier_id"]').val(response.dossier_id).trigger('change');
                 $('#editEventForm select[name="intervenant_id"]').val(response.intervenant_id).trigger('change');
                 $('#editEventForm input[name="couleur"]').val(response.couleur);
+                $('#editEventForm input[name="file"]').val(response.file);
 
                 if (response.all_day) {
                     $('#editEventForm input[name="heure_debut"], #editEventForm input[name="heure_fin"]').prop('disabled', true);
@@ -690,10 +699,15 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#editEventForm').submit(function(e) {
         e.preventDefault();
         
+        var formData = new FormData(this);
+        formData.append('_method', 'PUT');
+
         $.ajax({
             url: '/agendas/' + $('#edit_event_id').val(),
             type: 'POST',
-            data: $(this).serialize() + '&_method=PUT',
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(response) {
                 $('#editEventModal').modal('hide');
                 calendar.refetchEvents();

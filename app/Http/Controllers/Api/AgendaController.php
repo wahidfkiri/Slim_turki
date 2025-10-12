@@ -9,6 +9,8 @@ use App\Models\Dossier;
 use App\Models\Intervenant;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+
 
 class AgendaController extends Controller
 {
@@ -299,6 +301,7 @@ class AgendaController extends Controller
             'utilisateur_id' => 'required|exists:users,id',
             'categorie' => 'required|in:rdv,audience,delai,tache,autre',
             'couleur' => 'nullable|string|max:20',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:2048', // max 2MB
         ]);
 
         // Si all_day est coché, vider les heures
@@ -310,6 +313,13 @@ class AgendaController extends Controller
         // Si pas de couleur fournie, utiliser la couleur par défaut de la catégorie
         if (empty($validated['couleur'])) {
             $validated['couleur'] = $this->getCategoryColor($validated['categorie']);
+        }
+
+        if($request->hasFile('file')){
+            $file = $request->file('file');
+            $path = $file->store('agenda_files', 'public');
+            $validated['file_path'] = $path;
+            $validated['file_name'] = $file->getClientOriginalName();
         }
 
         Agenda::create($validated);
@@ -375,6 +385,7 @@ public function edit(Agenda $agenda)
             'utilisateur_id' => 'required|exists:users,id',
             'categorie' => 'required|in:rdv,audience,delai,tache,autre',
             'couleur' => 'nullable|string|max:20',
+            'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:2048', // max 2MB
         ]);
 
 
@@ -382,6 +393,13 @@ public function edit(Agenda $agenda)
         if ($request->has('all_day') && $request->all_day) {
             $validated['heure_debut'] = null;
             $validated['heure_fin'] = null;
+        }
+
+        if($request->hasFile('file')){
+            $file = $request->file('file');
+            $path = $file->store('agenda_files', 'public');
+            $validated['file_path'] = $path;
+            $validated['file_name'] = $file->getClientOriginalName();
         }
 
         $agenda->update($validated);
@@ -398,6 +416,11 @@ public function edit(Agenda $agenda)
         $this->authorize('delete_agendas', $agenda);
         
         $agenda->delete();
+
+        // Delete File
+        if ($agenda->file_path) {
+            Storage::disk('public')->delete($agenda->file_path);
+        }
 
         if (request()->ajax()) {
             return response()->json([

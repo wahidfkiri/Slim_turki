@@ -18,7 +18,9 @@ class TimeSheet extends Model
         'type',
         'quantite',
         'prix',
-        'total'
+        'total',
+        'file_path',
+        'file_name',
     ];
 
     protected $casts = [
@@ -46,5 +48,37 @@ class TimeSheet extends Model
     public function typeRelation()
     {
         return $this->belongsTo(Type::class, 'type');
+    }
+    
+    /**
+     * Get the full file URL (if stored in storage)
+     */
+    public function getFileUrlAttribute()
+    {
+        return $this->file_path ? asset('storage/' . $this->file_path) : null;
+    }
+
+    /**
+     * Check if task has a file
+     */
+    public function hasFile()
+    {
+        return !is_null($this->file_path) && !is_null($this->file_name);
+    }
+
+      /**
+     * Scope for tasks with files
+     */
+    public function scopeWithFiles($query)
+    {
+        return $query->whereNotNull('file_path');
+    }
+
+    /**
+     * Scope for tasks without files
+     */
+    public function scopeWithoutFiles($query)
+    {
+        return $query->whereNull('file_path');
     }
 }

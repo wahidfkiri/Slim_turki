@@ -30,7 +30,7 @@
                             <h3 class="card-title">Informations de la feuille de temps</h3>
                         </div>
                         <!-- form start -->
-                        <form action="{{ route('time-sheets.store') }}" method="POST" id="timesheetForm">
+                        <form action="{{ route('time-sheets.store') }}" method="POST" id="timesheetForm" enctype="multipart/form-data">
                             @csrf
                             <div class="card-body">
                                 <div class="row">
@@ -177,6 +177,16 @@
                                                    value="0.00 DT" readonly style="background-color: #f8f9fa; font-weight: bold;">
                                             <small class="form-text text-muted">
                                                 Calcul automatique : Quantité × Prix
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="piece_jointe">Pièce Jointe</label>
+                                            <input type="file" name="file" class="form-control" id="piece_jointe">
+                                            <small class="form-text text-muted">
+                                                Téléchargez une pièce jointe (PDF, image, etc.)
                                             </small>
                                         </div>
                                     </div>

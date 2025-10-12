@@ -30,7 +30,7 @@
                             <h3 class="card-title">Modifier les informations de la feuille de temps</h3>
                         </div>
                         <!-- form start -->
-                        <form action="{{ route('time-sheets.update', ['time_sheet' => $timesheet]) }}" method="POST" id="timesheetForm">
+                        <form action="{{ route('time-sheets.update', ['time_sheet' => $timesheet]) }}" method="POST" id="timesheetForm" enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
                             <div class="card-body">
@@ -182,6 +182,12 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="file">Pièce Jointe</label>
+                        <input type="file" class="form-control" id="file" name="file">
+                    </div>
+                                    </div>
+                                    <div class="col-md-12">
                                         <div class="form-group">
                                             <label>Informations</label>
                                             <div class="alert alert-info" style="color:black;">

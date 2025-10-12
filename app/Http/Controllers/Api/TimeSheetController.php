@@ -58,10 +58,18 @@ public function create()
         'type' => 'nullable|exists:types,id',
         'quantite' => 'required|numeric|min:0',
         'prix' => 'required|numeric|min:0',
+        'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:2048', // max 2MB
     ]);
 
     // Calculer le total
     $validated['total'] = $validated['quantite'] * $validated['prix'];
+
+        if($request->hasFile('file')){
+            $file = $request->file('file');
+            $path = $file->store('timesheet_files', 'public');
+            $validated['file_path'] = $path;
+            $validated['file_name'] = $file->getClientOriginalName();
+        }
 
     Timesheet::create($validated);
 
@@ -105,7 +113,16 @@ public function edit(Timesheet $time_sheet)
         'type' => 'nullable|exists:types,id',
         'quantite' => 'required|numeric|min:0',
         'prix' => 'required|numeric|min:0',
+        'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:2048', // max 2MB
     ]);
+
+    
+        if($request->hasFile('file')){
+            $file = $request->file('file');
+            $path = $file->store('agenda_files', 'public');
+            $validated['file_path'] = $path;
+            $validated['file_name'] = $file->getClientOriginalName();
+        }
 
     // Calculer le total
     $validated['total'] = $validated['quantite'] * $validated['prix'];
@@ -123,6 +140,13 @@ public function destroy(Timesheet $time_sheet)
         }
     
     $time_sheet->delete();
+
+    
+
+        // Delete File
+        if ($time_sheet->file_path) {
+            Storage::disk('public')->delete($time_sheet->file_path);
+        }
 
     if (request()->ajax()) {
         return response()->json([

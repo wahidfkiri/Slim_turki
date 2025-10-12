@@ -343,19 +343,22 @@ public function update(UpdateDossierRequest $request, Dossier $dossier)
     }
     
     // Synchroniser l'avocat responsable comme utilisateur
-    if ($request->has('avocat_id')) {
-        // Supprimer l'ancien avocat responsable
-        $dossier->users()->wherePivot('role', 'avocat')->detach();
+    // if ($request->has('avocat_id')) {
+    //     $avocatIds = $dossier->users()->wherePivot('role', 'avocat')->pluck('users.id')->toArray();
+    //     if (!empty($avocatIds)) {
+    //         $dossier->users()->detach($avocatIds);
+    //     }
         
-        // Attacher le nouvel avocat responsable
-        $dossier->users()->attach($request->avocat_id, [
-            'role' => 'avocat',
-            'ordre' => $request->ordre ?? 1
-        ]);
-    } else {
-        // Si aucun avocat n'est sélectionné, supprimer l'ancien avocat
-        $dossier->users()->wherePivot('role', 'avocat')->detach();
-    }
+    //     $dossier->users()->attach($request->avocat_id, [
+    //         'role' => 'avocat',
+    //         'ordre' => $request->ordre ?? 1
+    //     ]);
+    // } else {
+    //     $avocatIds = $dossier->users()->wherePivot('role', 'avocat')->pluck('users.id')->toArray();
+    //     if (!empty($avocatIds)) {
+    //         $dossier->users()->detach($avocatIds);
+    //     }
+    // }
     
     // Synchroniser l'équipe supplémentaire
     if ($request->has('equipe_supplementaire')) {

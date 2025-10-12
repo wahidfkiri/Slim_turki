@@ -1254,16 +1254,16 @@ $(document).ready(function() {
             categorie: {
                 required: true
             },
-            portable1: {
-                required: true
-            },
-            mail1: {
-                required: true,
-                email: true
-            },
-            adresse1: {
-                required: true
-            },
+            // portable1: {
+            //     required: true
+            // },
+            // mail1: {
+            //     required: true,
+            //     email: true
+            // },
+            // adresse1: {
+            //     required: true
+            // },
             mail2: {
                 email: true
             },
