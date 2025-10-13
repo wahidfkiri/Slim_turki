@@ -45,9 +45,11 @@
               <div class="card-header">
                 <h3 class="card-title">Liste des utilisateurs</h3>
                 <div class="card-tools">
+                  @if(auth()->user()->hasPermission('create_users'))
                   <a href="{{ route('users.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nouvel Utilisateur
                   </a>
+                  @endif
                 </div>
               </div>
               <!-- /.card-header -->
@@ -108,14 +110,19 @@
                       </td>
                       <td>
                         <div class="btn-group btn-group-sm">
+                          @if(auth()->user()->hasPermission('view_users'))
                           <a href="{{ route('users.show', $user->id) }}" 
                              class="btn btn-info" title="Voir">
                             <i class="fas fa-eye"></i>
                           </a>
+                          @endif
+                          @if(auth()->user()->hasPermission('edit_users'))
                           <a href="{{ route('users.edit', $user->id) }}" 
                              class="btn btn-warning" title="Modifier">
                             <i class="fas fa-edit"></i>
                           </a>
+                          @endif
+                          @if(auth()->user()->hasPermission('delete_users'))
                           <button type="button" class="btn btn-danger delete-user-btn" 
                                   title="Supprimer" 
                                   data-id="{{ $user->id }}"
@@ -123,6 +130,7 @@
                                   data-email="{{ $user->email }}">
                             <i class="fas fa-trash"></i>
                           </button>
+                          @endif
                         </div>
                       </td>
                     </tr>

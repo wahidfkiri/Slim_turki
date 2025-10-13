@@ -93,7 +93,9 @@ class DossierController extends Controller
 
     public function store(StoreDossierRequest $request)
 {
-    $this->authorize('create_dossiers', Dossier::class);
+    if(!auth()->user()->hasPermission('create_dossiers')) {
+        abort(403, 'Unauthorized action.');
+    }
     
     // Démarrer une transaction de base de données
     DB::beginTransaction();
@@ -109,6 +111,10 @@ class DossierController extends Controller
             $dossier->date_archive = now();
             $dossier->save();
         }
+
+        // Créer un dossier dans Storage
+        $storagePath = 'dossiers/' . $dossier->numero_dossier . '-' . $dossier->id;
+        \Illuminate\Support\Facades\Storage::disk('public')->makeDirectory($storagePath);
         
         // Attacher le client principal comme intervenant
         if ($request->has('client_id')) {
@@ -118,17 +124,17 @@ class DossierController extends Controller
         }
         
         // Attacher les autres intervenants
-        if ($request->has('autres_intervenants')) {
-            foreach ($request->autres_intervenants as $intervenantId) {
-                // Déterminer le rôle selon la catégorie de l'intervenant
-                $intervenant = Intervenant::find($intervenantId);
-                $role = $intervenant->categorie; // ou une logique plus spécifique
+        // if ($request->has('autres_intervenants')) {
+        //     foreach ($request->autres_intervenants as $intervenantId) {
+        //         // Déterminer le rôle selon la catégorie de l'intervenant
+        //         $intervenant = Intervenant::find($intervenantId);
+        //         $role = $intervenant->categorie; // ou une logique plus spécifique
                 
-                $dossier->intervenants()->attach($intervenantId, [
-                    'role' => $role
-                ]);
-            }
-        }
+        //         $dossier->intervenants()->attach($intervenantId, [
+        //             'role' => $role
+        //         ]);
+        //     }
+        // }
 
           // Gestion des intervenants liés avec les deux relations
         if ($request->has('linked_intervenants')) {
@@ -268,14 +274,27 @@ class DossierController extends Controller
     }
 public function update(UpdateDossierRequest $request, Dossier $dossier)
 {
-    $this->authorize('edit_dossiers', Dossier::class);
+    if(!auth()->user()->hasPermission('edit_dossiers')) {
+        abort(403, 'Unauthorized action.');
+    }
     
-    // Valider les données de base du dossier
     $validatedData = $request->validated();
     
     // Mettre à jour le dossier
     $dossier->update($validatedData);
     
+    // Valider les données de base du dossier
+    if($request->has('conseil')){
+        $dossier->conseil = true;
+    }else{
+        $dossier->conseil = false;
+    }
+    if($request->has('contentieux')){
+        $dossier->contentieux = true;
+    }else{
+        $dossier->contentieux = false;
+    }
+    $dossier->save();
     // Synchroniser le client principal comme intervenant
     if ($request->has('client_id')) {
         // Supprimer l'ancien client et ajouter le nouveau
@@ -288,33 +307,57 @@ public function update(UpdateDossierRequest $request, Dossier $dossier)
         $dossier->intervenants()->wherePivot('role', 'client')->detach();
     }
     
-    // Synchroniser les autres intervenants
-    if ($request->has('autres_intervenants')) {
-        // Récupérer les IDs des intervenants actuels (sauf le client)
-        $currentIntervenants = $dossier->intervenants()
-            ->wherePivot('role', '!=', 'client')
-            ->pluck('intervenants.id')
-            ->toArray();
-        
-        // Détacher les intervenants supprimés
-        $intervenantsToDetach = array_diff($currentIntervenants, $request->autres_intervenants);
-        $dossier->intervenants()->detach($intervenantsToDetach);
-        
-        // Attacher les nouveaux intervenants
-        foreach ($request->autres_intervenants as $intervenantId) {
-            if (!in_array($intervenantId, $currentIntervenants)) {
-                $intervenant = Intervenant::find($intervenantId);
-                $role = $intervenant->categorie; // ou une logique plus spécifique
-                
-                $dossier->intervenants()->attach($intervenantId, [
-                    'role' => $role
-                ]);
+    if ($request->has('linked_intervenants')) {
+            foreach ($request->linked_intervenants as $linkedIntervenant) {
+                if (!empty($linkedIntervenant['intervenant_id']) && 
+                    !empty($linkedIntervenant['role'])) {
+                    
+                    // Relation de cet intervenant vers l'intervenant lié
+                    $intervenantsLiesFrom[$linkedIntervenant['intervenant_id']] = [
+                        'intervenant_id' => $linkedIntervenant['intervenant_id'],
+                        'dossier_id' => $dossier->id,
+                        'role' => $linkedIntervenant['role'],
+                        'updated_at' => now()
+                    ];
+                }
             }
         }
-    } else {
-        // Si aucun autre intervenant n'est sélectionné, supprimer tous les intervenants sauf le client
-        $dossier->intervenants()->wherePivot('role', '!=', 'client')->detach();
-    }
+       // dd($intervenantsLiesFrom);die;
+        // Synchroniser les relations de cet intervenant vers les autres
+        foreach(\DB::table('dossier_intervenant')->where('dossier_id', $dossier->id)->get() as $dossier_inter){
+            //dd($dossier_inter);die;
+            \DB::table('dossier_intervenant')->where('id', $dossier_inter->id)->delete();
+        }
+       if (!empty($intervenantsLiesFrom)) {
+                // Attacher les relations de cet intervenant vers les autres
+                $dossier->intervenants()->attach($intervenantsLiesFrom);
+                
+                
+            }
+    // Synchroniser les autres intervenants
+    // if ($request->has('autres_intervenants')) {
+    //     $currentIntervenants = $dossier->intervenants()
+    //         ->wherePivot('role', '!=', 'client')
+    //         ->pluck('intervenants.id')
+    //         ->toArray();
+    //     $intervenantsToDetach = array_diff($currentIntervenants, $request->autres_intervenants);
+    //     $dossier->intervenants()->detach($intervenantsToDetach);
+        
+    //     // Attacher les nouveaux intervenants
+    //     foreach ($request->autres_intervenants as $intervenantId) {
+    //         if (!in_array($intervenantId, $currentIntervenants)) {
+    //             $intervenant = Intervenant::find($intervenantId);
+    //             $role = $intervenant->categorie; // ou une logique plus spécifique
+                
+    //             $dossier->intervenants()->attach($intervenantId, [
+    //                 'role' => $role
+    //             ]);
+    //         }
+    //     }
+    // } else {
+    //     // Si aucun autre intervenant n'est sélectionné, supprimer tous les intervenants sauf le client
+    //     $dossier->intervenants()->wherePivot('role', '!=', 'client')->detach();
+    // }
 
     if($request->has('autres_dossiers')){
         // Récupérer les IDs des dossiers liés actuels

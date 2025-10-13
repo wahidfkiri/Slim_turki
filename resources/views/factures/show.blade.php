@@ -29,11 +29,11 @@
                         <div class="card-header">
                             <h3 class="card-title">Informations de la facture</h3>
                             <div class="card-tools">
-                                @can('edit_factures')
+                                @if(auth()->user()->hasPermission('edit_factures'))
                                     <a href="{{ route('factures.edit', $facture) }}" class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i> Modifier
                                     </a>
-                                @endcan
+                                @endif
                             </div>
                         </div>
                         <div class="card-body">
@@ -241,18 +241,18 @@
                                 <i class="fas fa-arrow-left"></i> Retour à la liste
                             </a>
 
-                            @can('edit_factures')
+                            @if(auth()->user()->hasPermission('edit_factures'))
                                 <a href="{{ route('factures.edit', $facture) }}" class="btn btn-warning btn-lg">
                                     <i class="fas fa-edit"></i> Modifier
                                 </a>
-                            @endcan
+                            @endif
 
-                            @can('delete_factures')
+                            @if(auth()->user()->hasPermission('delete_factures'))
                                 <button type="button" class="btn btn-danger btn-lg float-right" 
                                         onclick="confirmDelete({{ $facture->id }}, '{{ addslashes($facture->numero) }}')">
                                     <i class="fas fa-trash"></i> Supprimer
                                 </button>
-                            @endcan
+                            @endif
                         </div>
                     </div>
                     <!-- /.card -->
@@ -264,14 +264,14 @@
 </div>
 
 <!-- Formulaire de suppression -->
-@can('delete_factures')
+@if(auth()->user()->hasPermission('delete_factures'))
     <form id="delete-form-{{ $facture->id }}" 
           action="{{ route('factures.destroy', $facture) }}" 
           method="POST" class="d-none">
         @csrf
         @method('DELETE')
     </form>
-@endcan
+@endif
 
 <!-- jQuery -->
 <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>

@@ -254,7 +254,7 @@
                                                     <!-- Informations juridiques -->
                                                     <h5 class="text-primary mb-3"><i class="fas fa-scale-balanced"></i> Informations sur la procédure</h5>
                                                     <div class="row">
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-3">
                                                             <div class="form-group">
                                                                 <label for="numero_role">Numéro de rôle</label>
                                                                 <input type="text" class="form-control @error('numero_role') is-invalid @enderror" 
@@ -268,7 +268,7 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-3">
                                                             <div class="form-group">
                                                                 <label for="chambre">Chambre</label>
                                                                 <select class="form-control @error('chambre') is-invalid @enderror" 
@@ -286,7 +286,7 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-3">
                                                             <div class="form-group">
                                                                 <label for="numero_chambre">Numéro de chambre</label>
                                                                 <input type="text" class="form-control @error('numero_chambre') is-invalid @enderror" 
@@ -300,7 +300,7 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-3">
                                                             <div class="form-group">
                                                                 <label for="numero_parquet">Numéro de parquet</label>
                                                                 <input type="text" class="form-control @error('numero_parquet') is-invalid @enderror" 
@@ -314,7 +314,7 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-3">
                                                             <div class="form-group">
                                                                 <label for="numero_instruction">Numéro d'instruction</label>
                                                                 <input type="text" class="form-control @error('numero_instruction') is-invalid @enderror" 
@@ -328,7 +328,7 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-4">
+                                                        <div class="col-md-3">
                                                             <div class="form-group">
                                                                 <label for="numero_plainte">Numéro de plainte</label>
                                                                 <input type="text" class="form-control @error('numero_plainte') is-invalid @enderror" 

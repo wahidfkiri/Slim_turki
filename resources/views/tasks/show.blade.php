@@ -29,11 +29,11 @@
                         <div class="card-header">
                             <h3 class="card-title">Informations de la tâche</h3>
                             <div class="card-tools">
-                                @can('edit_tasks')
+                                @if(auth()->user()->hasPermission('edit_tasks'))
                                     <a href="{{ route('tasks.edit', $task) }}" class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i> Modifier
                                     </a>
-                                @endcan
+                                @endif
                             </div>
                         </div>
                         <div class="card-body">
@@ -201,17 +201,17 @@
                                 <i class="fas fa-arrow-left"></i> Retour à la liste
                             </a>
 
-                            @can('edit_tasks')
+                            @if(auth()->user()->hasPermission('edit_tasks'))
                                 <a href="{{ route('tasks.edit', $task) }}" class="btn btn-warning btn-lg">
                                     <i class="fas fa-edit"></i> Modifier
                                 </a>
-                            @endcan
+                            @endif
 
-                            @can('delete_tasks')
+                            @if(auth()->user()->hasPermission('delete_tasks'))
                                 <button type="button" class="btn btn-danger btn-lg float-right delete-task-btn" data-id="{{ $task->id }}">
                                     <i class="fas fa-trash"></i> Supprimer
                                 </button>
-                            @endcan
+                            @endif
                         </div>
                     </div>
                     <!-- /.card -->
@@ -223,14 +223,14 @@
 </div>
 
 <!-- Formulaire de suppression -->
-@can('delete_tasks')
+@if(auth()->user()->hasPermission('delete_tasks'))
     <form id="delete-form-{{ $task->id }}" 
           action="{{ route('tasks.destroy', $task) }}" 
           method="POST" class="d-none">
         @csrf
         @method('DELETE')
     </form>
-@endcan
+@endif
 <!-- Confirmation Modal -->
 <div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

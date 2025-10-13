@@ -36,9 +36,11 @@
                                 @endif
                             </h3>
                             <div class="card-tools">
+                                @if(auth()->user()->hasPermission('edit_intervenants'))
                                 <a href="{{ route('intervenants.edit', $intervenant->id) }}" class="btn btn-warning btn-sm">
                                     <i class="fas fa-edit"></i> Modifier
                                 </a>
+                                @endif
                                 <a href="{{ route('intervenants.index') }}" class="btn btn-secondary btn-sm ml-1">
                                     <i class="fas fa-arrow-left"></i> Retour
                                 </a>
@@ -495,14 +497,18 @@
                                                                     </td>
                                                                     <td>
                                                                         <div class="btn-group btn-group-sm">
+                                                                            @if(auth()->user()->hasPermission('view_intervenants'))
                                                                             <a href="{{ route('intervenants.show', $intervenantLie->id) }}" 
                                                                                class="btn btn-info" title="Voir">
                                                                                 <i class="fas fa-eye"></i>
                                                                             </a>
+                                                                            @endif
+                                                                            @if(auth()->user()->hasPermission('edit_intervenants'))
                                                                             <a href="{{ route('intervenants.edit', $intervenantLie->id) }}" 
                                                                                class="btn btn-warning" title="Modifier">
                                                                                 <i class="fas fa-edit"></i>
                                                                             </a>
+                                                                            @endif
                                                                         </div>
                                                                     </td>
                                                                 </tr>
@@ -707,14 +713,19 @@
                                                                     <td>{{ $dossier->archive ? 'Oui' : 'Non' }}</td>
                                                                     <td>
                                                                         <div class="btn-group btn-group-sm">
+                                                                            @if(auth()->user()->hasPermission('view_dossiers'))
                           <a href="{{ route('dossiers.show', $dossier->id) }}" 
                              class="btn btn-info" title="Voir">
                             <i class="fas fa-eye"></i>
                           </a>
+                          @endif
+                          @if(auth()->user()->hasPermission('edit_dossiers'))
                           <a href="{{ route('dossiers.edit', $dossier->id) }}" 
                              class="btn btn-warning" title="Modifier">
                             <i class="fas fa-edit"></i>
                           </a>
+                            @endif
+                            @if(auth()->user()->hasPermission('delete_dossiers'))
                           <form action="{{ route('dossiers.destroy', $dossier->id) }}" 
                                 method="POST" class="d-inline delete-form">
                             @csrf
@@ -724,6 +735,7 @@
                               <i class="fas fa-trash"></i>
                             </button>
                           </form>
+                          @endif
                         </div>
                       </td>
                                                                 </tr>
@@ -758,9 +770,11 @@
                                     @endif
                                 </div>
                                 <div>
+                                    @if(auth()->user()->hasPermission('edit_intervenants'))
                                     <a href="{{ route('intervenants.edit', $intervenant->id) }}" class="btn btn-warning">
                                         <i class="fas fa-edit"></i> Modifier
                                     </a>
+                                    @endif
                                     <a href="{{ route('intervenants.index') }}" class="btn btn-secondary ml-1">
                                         <i class="fas fa-arrow-left"></i> Retour à la liste
                                     </a>
@@ -839,7 +853,7 @@
 }
 .form-control-plaintext {
     min-height: 38px;
-    /* border: 1px solid #ced4da; */
+    border: 1px solid #ced4da;
 }
 .btn-lg {
     padding: 0.75rem 1.5rem;

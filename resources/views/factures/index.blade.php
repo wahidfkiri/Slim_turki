@@ -44,11 +44,11 @@
                         <div class="card-header">
                             <h3 class="card-title">Liste des factures</h3>
                             <div class="card-tools">
-                                @can('create_factures')
+                                @if(auth()->user()->hasPermission('create_factures'))
                                     <a href="{{ route('factures.create') }}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-plus"></i> Nouvelle facture
                                     </a>
-                                @endcan
+                                @endif
                             </div>
                         </div>
                         <!-- /.card-header -->

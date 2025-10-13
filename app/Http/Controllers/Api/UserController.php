@@ -22,19 +22,19 @@ class UserController extends Controller
 {
     public function index()
     {
-       $this->authorize('view_users', User::class);
-        if(auth()->user()->hasRole('admin')){
+      if(!auth()->user()->hasPermission('view_users')){
+        abort(403, 'Unauthorized action.');
+        }
         $users = User::with('roles')->where('id', '!=', auth()->id())->get();
         $roles = Role::all();
         return view('users.index', compact('users','roles'));
-        }
-        return redirect()->back();
-        
     }
 
     public function create()
     {
-       $this->authorize('create_users', User::class);
+       if(!auth()->user()->hasPermission('create_users')){
+           abort(403, 'Unauthorized action.');
+       }
 
         $roles = Role::all();
 
@@ -43,7 +43,9 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request)
 {
-   $this->authorize('create_users', User::class);
+   if(!auth()->user()->hasPermission('create_users')){
+         abort(403, 'Unauthorized action.');
+    }
     
     try {
         $validated = $request->validated();
@@ -52,6 +54,13 @@ class UserController extends Controller
         // Utiliser une transaction pour s'assurer de l'intégrité des données
         DB::transaction(function () use ($validated, $request) {
             $user = User::create($validated);
+
+            if($request->has('is_active')){
+                $user->is_active = true;
+            } else {
+                $user->is_active = false;
+            }
+            $user->save();
             
             // Synchroniser les rôles
             if ($request->has('roles')) {
@@ -87,7 +96,9 @@ class UserController extends Controller
 
     public function edit(User $user)
 {
-    $this->authorize('edit_users', $user);
+    if(!auth()->user()->hasPermission('edit_users')){
+        abort(403, 'Unauthorized action.');
+    }
     
     $roles = Role::all();
     return view('users.edit', compact('user', 'roles'));
@@ -95,7 +106,9 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user)
 {
-    $this->authorize('edit_users', $user);
+    if(!auth()->user()->hasPermission('edit_users')){
+        abort(403, 'Unauthorized action.');
+    }   
     
     $validated = $request->validated();
     
@@ -113,6 +126,13 @@ class UserController extends Controller
     }
     
     $user->update($generalData);
+
+    if($request->has('is_active')){
+        $user->is_active = true;
+    } else {
+        $user->is_active = false;
+    }
+    $user->save();
     
     // Synchroniser les rôles (onglet Privilèges)
     if ($request->has('roles')) {
@@ -133,8 +153,10 @@ class UserController extends Controller
 
     public function destroy(User $user): JsonResponse
     {
-        $this->authorize('delete_users', $user);
-        
+        if(!auth()->user()->hasPermission('delete_users')){
+            abort(403, 'Unauthorized action.');
+        }
+
         // Empêcher la suppression de son propre compte
         if ($user->id === auth()->id()) {
             return response()->json([
@@ -175,7 +197,9 @@ class UserController extends Controller
 
     public function updateGeneralInfo(UpdateUserGeneralRequest $request, User $user)
 {
-    $this->authorize('edit_users', $user);
+    if(!auth()->user()->hasPermission('edit_users')){
+        abort(403, 'Unauthorized action.');
+    }
     
     $validated = $request->validated();
     
@@ -195,7 +219,9 @@ class UserController extends Controller
 
 public function updateSecurity(UpdateUserSecurityRequest $request, User $user)
 {
-    $this->authorize('edit_users', $user);
+    if(!auth()->user()->hasPermission('edit_users')){
+        abort(403, 'Unauthorized action.');
+    }
     
     $validated = $request->validated();
     
@@ -217,7 +243,9 @@ public function updateSecurity(UpdateUserSecurityRequest $request, User $user)
 
 public function updatePrivileges(UpdateUserPrivilegesRequest $request, User $user)
 {
-    $this->authorize('edit_users', $user);
+    if(!auth()->user()->hasPermission('edit_users')){
+        abort(403, 'Unauthorized action.');
+    }   
     
     $validated = $request->validated();
     

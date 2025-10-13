@@ -724,9 +724,9 @@ $(document).ready(function() {
                     loadingBtn.hide();
                     
                     // Redirection après 2 secondes
-                    // setTimeout(() => {
-                    //     window.location.href = response.redirect_url || '{{ route("intervenants.index") }}';
-                    // }, 2000);
+                    setTimeout(() => {
+                        window.location.href = response.redirect_url || '{{ route("intervenants.index") }}';
+                    }, 1500);
                 } else {
                     showAlert(response.message || 'Une erreur est survenue.');
                     submitBtn.show();

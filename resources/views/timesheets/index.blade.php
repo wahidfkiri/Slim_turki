@@ -44,11 +44,11 @@
                         <div class="card-header">
                             <h3 class="card-title">Liste des feuilles de temps</h3>
                             <div class="card-tools">
-                                @can('create_timesheets')
+                                @if(auth()->user()->hasPermission('create_timesheets'))
                                     <a href="{{ route('time-sheets.create') }}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-plus"></i> Nouvelle feuille de temps
                                     </a>
-                                @endcan
+                                @endif
                             </div>
                         </div>
                         <!-- /.card-header -->
@@ -279,17 +279,17 @@ $(document).ready(function() {
                 render: function(data, type, row) {
                     var actions = '<div class="btn-group">';
                     
-                    @can('view_timesheets')
+                    @if(auth()->user()->hasPermission('view_timesheets'))
                         actions += '<a href="/time-sheets/' + row.id + '" class="btn btn-info btn-sm" title="Voir"><i class="fas fa-eye"></i></a>';
-                    @endcan
+                    @endif
                     
-                    @can('edit_timesheets')
+                    @if(auth()->user()->hasPermission('edit_timesheets'))
                         actions += '<a href="/time-sheets/' + row.id + '/edit" class="btn btn-primary btn-sm" title="Modifier"><i class="fas fa-edit"></i></a>';
-                    @endcan
-                    
-                    @can('delete_timesheets')
+                    @endif
+
+                    @if(auth()->user()->hasPermission('delete_timesheets'))
                         actions += '<button type="button" class="btn btn-danger btn-sm delete-timesheet-btn" data-id="' + row.id + '" data-date="' + (row.date_timesheet || '') + '" data-user="' + (row.user ? row.user.name : '') + '" data-dossier="' + (row.dossier ? row.dossier.numero_dossier : '') + '" title="Supprimer"><i class="fas fa-trash"></i></button>';
-                    @endcan
+                    @endif
                     
                     actions += '</div>';
                     return actions;

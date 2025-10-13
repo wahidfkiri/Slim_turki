@@ -85,11 +85,11 @@
                                 <button type="button" id="btn_reset_filters" class="btn btn-secondary btn-sm btn-block">
                                     Réinitialiser
                                 </button>
-                                @can('create_agendas')
+                                @if(auth()->user()->hasPermission('create_agendas'))
                                     <button type="button" class="btn btn-primary btn-sm btn-block" data-toggle="modal" data-target="#createEventModal">
                                         <i class="fas fa-plus"></i> Nouvel événement
                                     </button>
-                                @endcan
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -152,12 +152,12 @@
                 <!-- Les détails seront chargés ici -->
             </div>
             <div class="modal-footer">
-                @can('edit_agendas')
+                @if(auth()->user()->hasPermission('edit_agendas'))
                     <button type="button" class="btn btn-primary" id="btnEditEvent">Modifier</button>
-                @endcan
-                @can('delete_agendas')
+                @endif
+                @if(auth()->user()->hasPermission('delete_agendas'))
                     <button type="button" class="btn btn-danger" id="btnDeleteEvent">Supprimer</button>
-                @endcan
+                @endif
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
             </div>
         </div>

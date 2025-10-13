@@ -45,9 +45,11 @@
               <div class="card-header">
                 <h3 class="card-title">Liste des Intervenants</h3>
                 <div class="card-tools">
+                  @if(auth()->user()->hasPermission('create_intervenants'))
                   <a href="{{ route('intervenants.create') }}" class="btn btn-primary btn-sm">
                     <i class="fas fa-plus"></i> Nouvel Intervenant
                   </a>
+                  @endif
                 </div>
               </div>
               <!-- /.card-header -->
@@ -69,7 +71,7 @@
                       <div class="col-md-6">
                         <select class="form-control" id="categorieFilter">
                           <option value="">Toutes les catégories</option>
-                          @foreach(['contact','client','avocat','notaire','huissier','juridiction','administrateur_judiciaire','mandataire_judiciaire','adversaire','expert_judiciaire'] as $categorie)
+                          @foreach(['contact','client','avocat','notaire','huissier','juridiction','administrateur judiciaire','mandataire judiciaire','adversaire','expert judiciaire','traducteur'] as $categorie)
                             <option value="{{ $categorie }}">{{ ucfirst($categorie) }}</option>
                           @endforeach
                         </select>
@@ -89,7 +91,7 @@
                 <table id="intervenantsTable" class="table table-bordered table-striped">
                   <thead>
                   <tr>
-                    <th>ID</th>
+                    <!-- <th>ID</th> -->
                     <th>Identité FR</th>
                     <th>Identité AR</th>
                     <th>Type</th>
@@ -104,7 +106,7 @@
                   <tbody>
                     @foreach($intervenants as $intervenant)
                     <tr id="intervenant-row-{{ $intervenant->id }}">
-                      <td>{{ $intervenant->id }}</td>
+                      <!-- <td>{{ $intervenant->id }}</td> -->
                       <td>{{ $intervenant->identite_fr }}</td>
                       <td>{{ $intervenant->identite_ar ?? 'N/A' }}</td>
                       <td>{{ $intervenant->type }}</td>
@@ -115,20 +117,26 @@
                       <!-- <td>{{ $intervenant->archive ? 'Oui' : 'Non' }}</td> -->
                       <td>
                         <div class="btn-group btn-group-sm">
-                          <a href="{{ route('intervenants.show', $intervenant->id) }}" 
+                        @if(auth()->user()->hasPermission('view_intervenants'))
+                        <a href="{{ route('intervenants.show', $intervenant->id) }}" 
                              class="btn btn-info" title="Voir">
                             <i class="fas fa-eye"></i>
                           </a>
+                          @endif
+                          @if(auth()->user()->hasPermission('edit_intervenants'))
                           <a href="{{ route('intervenants.edit', $intervenant->id) }}" 
                              class="btn btn-warning" title="Modifier">
                             <i class="fas fa-edit"></i>
                           </a>
+                          @endif
+                          @if(auth()->user()->hasPermission('delete_intervenants'))
                           <button type="button" class="btn btn-danger delete-btn" 
                                   title="Supprimer" 
                                   data-id="{{ $intervenant->id }}"
                                   data-name="{{ $intervenant->identite_fr }}">
                             <i class="fas fa-trash"></i>
                           </button>
+                          @endif
                         </div>
                       </td>
                     </tr>
