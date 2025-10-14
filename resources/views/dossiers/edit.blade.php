@@ -353,36 +353,7 @@
                                                 </div>
                                             </div>
 
-                                            
-                                            <!-- Onglet Dossiers -->
-                                            <div class="tab-pane fade" id="dossiers" role="tabpanel" aria-labelledby="dossiers-tab">
-                                                <div class="p-3">
-                                                    <h5 class="text-primary mb-3"><i class="fas fa-handshake"></i> Gestion des dossiers</h5>
-                                                    
-
-                                                    <!-- Autres dossiers -->
-                                                    <div class="row">
-                                                        <div class="col-md-12">
-                                                            <div class="form-group">
-                                                                <label>Autres dossiers</label>
-                                                                <select class="form-control" id="autres_dossiers" name="autres_dossiers[]" multiple>
-                                                                    @foreach($dossiers as $dossier)
-                                                                        @php
-    $isSelected = \DB::table('dossier_dossier')
-        ->where('dossier_id', $dossier->id)
-        ->orWhere('dossier_lie_id', $dossier->id)
-        ->exists();
-@endphp
-<option value="{{ $dossier->id }}" {{ $isSelected ? 'selected' : '' }}>
-    {{ $dossier->numero_dossier }} - {{ $dossier->nom_dossier }}
-</option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                         <x-dossier.tab-edit :dossier="$dossier" :dossiers="$dossiers"/>
 
 <!-- Onglet Intervenants -->
 <div class="tab-pane fade" id="intervenants" role="tabpanel" aria-labelledby="intervenants-tab">
@@ -591,80 +562,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
                                             <!-- Onglet Équipe -->
-                                            <div class="tab-pane fade" id="equipe" role="tabpanel" aria-labelledby="equipe-tab">
-                                                <div class="p-3">
-                                                    <h5 class="text-primary mb-3"><i class="fas fa-users-cog"></i> Attribution de l'équipe</h5>
-                                                    
-                                                    <!-- Avocat responsable -->
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label for="avocat_id">Avocat responsable</label>
-                                                                <select class="form-control @error('avocat_id') is-invalid @enderror" 
-                                                                        id="avocat_id" name="avocat_id">
-                                                                    <option value="">Sélectionnez l'avocat responsable</option>
-                                                                    @foreach($users as $user)
-                                                                        @if($user->hasRole('avocat') || $user->hasRole('admin'))
-                                                                            @php
-                                                                                $isAvocat = $dossier->users()
-                                                                                    ->where('users.id', $user->id)
-                                                                                    ->wherePivot('role', 'avocat')
-                                                                                    ->exists();
-                                                                            @endphp
-                                                                            <option value="{{ $user->id }}" {{ old('avocat_id', $isAvocat ? $user->id : '') == $user->id ? 'selected' : '' }}>
-                                                                                {{ $user->name }} ({{ $user->fonction }})
-                                                                            </option>
-                                                                        @endif
-                                                                    @endforeach
-                                                                </select>
-                                                                @error('avocat_id')
-                                                                    <span class="invalid-feedback" role="alert">
-                                                                        <strong>{{ $message }}</strong>
-                                                                    </span>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label for="ordre">Ordre de priorité</label>
-                                                                <select class="form-control @error('ordre') is-invalid @enderror" 
-                                                                        id="ordre" name="ordre">
-                                                                    <option value="1" {{ old('ordre', $dossier->users()->wherePivot('role', 'avocat')->first()?->pivot->ordre ?? 1) == 1 ? 'selected' : '' }}>1 - Priorité haute</option>
-                                                                    <option value="2" {{ old('ordre', $dossier->users()->wherePivot('role', 'avocat')->first()?->pivot->ordre ?? 1) == 2 ? 'selected' : '' }}>2 - Priorité moyenne</option>
-                                                                    <option value="3" {{ old('ordre', $dossier->users()->wherePivot('role', 'avocat')->first()?->pivot->ordre ?? 1) == 3 ? 'selected' : '' }}>3 - Priorité basse</option>
-                                                                </select>
-                                                                @error('ordre')
-                                                                    <span class="invalid-feedback" role="alert">
-                                                                        <strong>{{ $message }}</strong>
-                                                                    </span>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Équipe supplémentaire -->
-                                                    <div class="row">
-                                                        <div class="col-md-12">
-                                                            <div class="form-group">
-                                                                <label>Membres supplémentaires de l'équipe</label>
-                                                                <select class="form-control" id="equipe_supplementaire" name="equipe_supplementaire[]" multiple>
-                                                                    @foreach($users as $user)
-                                                                        @php
-                                                                            $isInTeam = $dossier->users()
-                                                                                ->where('users.id', $user->id)
-                                                                                ->wherePivot('role', '!=', 'avocat')
-                                                                                ->exists();
-                                                                        @endphp
-                                                                        <option value="{{ $user->id }}" {{ $isInTeam ? 'selected' : '' }}>
-                                                                            {{ $user->name }} ({{ $user->fonction }})
-                                                                        </option>
-                                                                    @endforeach
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <x-dossier.equipe.tab-edit :users="$users" :dossier="$dossier"/>
 
                                             <!-- Onglet Facturation -->
                                             <div class="tab-pane fade d-none" id="facturation" role="tabpanel" aria-labelledby="facturation-tab">

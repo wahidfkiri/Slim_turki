@@ -7,10 +7,6 @@ use Illuminate\Validation\Rule;
 
 class UpdateDomaineRequest extends FormRequest
 {
-    public function authorize()
-    {
-        return $this->user()->hasAnyRole(['admin', 'avocat']);
-    }
 
     public function rules()
     {

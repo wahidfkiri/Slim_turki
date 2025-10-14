@@ -7,10 +7,6 @@ use Illuminate\Validation\Rule;
 
 class StoreUserRequest extends FormRequest
 {
-    public function authorize()
-    {
-        return $this->user()->hasRole('admin');
-    }
 
     public function rules()
     {

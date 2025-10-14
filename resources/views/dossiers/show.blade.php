@@ -458,8 +458,6 @@
                                                                     <th>Numéro Dossier</th>
                                                                     <th>Nom Dossier</th>
                                                                     <th>Date Entrée</th>
-                                                                    <th>Domaine</th>
-                                                                    <th>Sous Domaine</th>
                                                                     <th>Actions</th>
                                                                 </tr>
                                                             </thead>
@@ -471,8 +469,6 @@
                                                                     </td>
                                                                     <td>{{ $dossierLie->nom_dossier }}</td>
                                                                     <td>{{ $dossierLie->date_entree->format('d/m/Y') }}</td>
-                                                                    <td>{{ $dossierLie->domaine->nom }}</td>
-                                                                    <td>{{ $dossierLie->sousDomaine->nom ?? null}}</td>
                                                                     <td>
                                                                         <a href="{{route('dossiers.show', $dossierLie)}}" class="btn btn-sm btn-info" title="Voir">
                                                                             <i class="fas fa-eye"></i>

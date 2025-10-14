@@ -2,9 +2,10 @@
                                         <!-- Onglet Facturation -->
                                         <div class="tab-pane fade" id="facturation" role="tabpanel" aria-labelledby="facturation-tab">
                                             <div class="p-3">
+                                                <div style="display: flow-root;">
                                                 <h5 class="text-primary mb-3"><i class="fas fa-money-bill-wave"></i> Informations de facturation</h5>
                                                 <a href="{{ route('dossiers.facturation.create', ['dossier' => $dossier->id]) }}" class="btn btn-primary mb-3" style="float: right;">
-                                                    <i class="fas fa-plus"></i> Ajouter une facture </a>
+                                                    <i class="fas fa-plus"></i> Ajouter une facture </a></div>
 
                                                  @if($dossier->factures && $dossier->factures->count() > 0)
                                                     <div class="table-responsive">

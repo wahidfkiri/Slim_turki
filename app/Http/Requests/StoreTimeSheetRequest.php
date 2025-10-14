@@ -6,11 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTimeSheetRequest extends FormRequest
 {
-    public function authorize()
-    {
-        return $this->user()->hasAnyRole(['admin', 'avocat', 'secrétaire']);
-    }
-
     public function rules()
     {
         return [

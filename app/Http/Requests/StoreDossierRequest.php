@@ -6,15 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreDossierRequest extends FormRequest
 {
-    public function authorize()
-    {
-        if (!$this->user()) {
-            return false;
-        }
-        
-        return $this->user()->hasAnyRole(['admin', 'avocat', 'secrétaire']);
-    }
-
     public function rules()
     {
         return [

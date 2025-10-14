@@ -6,15 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreIntervenantRequest extends FormRequest
 {
-    public function authorize()
-    {
-        // Vérifier si l'utilisateur est authentifié
-        if (!$this->user()) {
-            return false;
-        }
-        
-        return $this->user()->hasAnyRole(['admin', 'avocat', 'secrétaire']);
-    }
 
     public function rules()
     {

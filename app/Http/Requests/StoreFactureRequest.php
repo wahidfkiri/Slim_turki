@@ -6,10 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreFactureRequest extends FormRequest
 {
-    public function authorize()
-    {
-        return $this->user()->hasAnyRole(['admin', 'avocat']) && $this->user()->can_facture;
-    }
 
     public function rules()
     {

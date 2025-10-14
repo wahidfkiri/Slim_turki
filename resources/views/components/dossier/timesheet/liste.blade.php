@@ -3,9 +3,11 @@
                                         <!-- Onglet Feuille de temps -->
                                         <div class="tab-pane fade" id="timesheet" role="tabpanel" aria-labelledby="timesheet-tab">
                                             <div class="p-3">
+                                                <div style="display: flow-root;">
                                                 <h5 class="text-primary mb-3"><i class="fas fa-money-bill-wave"></i> Informations des feuilles de temps</h5>
                                                 <a href="{{ route('dossiers.timesheets.create', ['dossier' => $dossier->id]) }}" class="btn btn-primary mb-3" style="float: right;">
                                                     <i class="fas fa-plus"></i> Ajouter une feuille de temps </a>
+                                                </div>
 
                                                  @if($dossier->timeSheets && $dossier->timeSheets->count() > 0)
                                                     <div class="table-responsive">

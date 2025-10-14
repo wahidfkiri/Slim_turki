@@ -6,10 +6,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreAgendaRequest extends FormRequest
 {
-    public function authorize()
-    {
-        return $this->user()->hasAnyRole(['admin', 'avocat', 'secrétaire']);
-    }
 
     public function rules()
     {

@@ -8,10 +8,6 @@ use Spatie\Permission\Models\Permission;
 
 class UpdateUserPrivilegesRequest extends FormRequest
 {
-    public function authorize()
-    {
-        return true;
-    }
 
     public function rules()
     {

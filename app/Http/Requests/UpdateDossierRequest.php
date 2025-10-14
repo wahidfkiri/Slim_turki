@@ -7,10 +7,6 @@ use Illuminate\Validation\Rule;
 
 class UpdateDossierRequest extends FormRequest
 {
-    public function authorize()
-    {
-        return $this->user()->hasAnyRole(['admin', 'avocat', 'secrétaire']);
-    }
 
     public function rules()
     {
