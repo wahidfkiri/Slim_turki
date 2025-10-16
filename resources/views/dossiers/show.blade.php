@@ -328,7 +328,7 @@
                                                             </thead>
                                                             <tbody>
                                                                 @foreach($dossier->intervenants as $intervenantLie)
-                                                                @if($intervenantLie->id !== $clientPrincipal->id)
+                                                               @if($intervenantLie?->id !== $clientPrincipal?->id)
                                                                 <tr>
                                                                     <td>
                                                                         <div class="d-flex align-items-center">
