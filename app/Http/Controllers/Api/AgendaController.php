@@ -298,7 +298,7 @@ class AgendaController extends Controller
             'all_day' => 'boolean',
             'dossier_id' => 'nullable|exists:dossiers,id',
             'intervenant_id' => 'nullable|exists:intervenants,id',
-            'utilisateur_id' => 'required|exists:users,id',
+            'utilisateur_id' => 'nullable|exists:users,id',
             'categorie' => 'required|in:rdv,audience,delai,tache,autre',
             'couleur' => 'nullable|string|max:20',
             'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:2048', // max 2MB
@@ -382,7 +382,7 @@ public function edit(Agenda $agenda)
             'all_day' => 'boolean',
             'dossier_id' => 'nullable|exists:dossiers,id',
             'intervenant_id' => 'nullable|exists:intervenants,id',
-            'utilisateur_id' => 'required|exists:users,id',
+            'utilisateur_id' => 'nullable|exists:users,id',
             'categorie' => 'required|in:rdv,audience,delai,tache,autre',
             'couleur' => 'nullable|string|max:20',
             'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:2048', // max 2MB

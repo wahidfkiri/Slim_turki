@@ -17,7 +17,9 @@ class FactureController extends Controller
      */
     public function getFacturesData(Request $request)
     {
-        $this->authorize('view_factures', Facture::class);
+       if(!auth()->user()->hasPermission('view_factures')){
+         abort(403, 'Unauthorized action.');
+       }
 
         $query = Facture::with([
             'dossier:id,numero_dossier',
@@ -145,7 +147,9 @@ class FactureController extends Controller
     
     public function getPaidFacturesData(Request $request)
     {
-        $this->authorize('view_factures', Facture::class);
+       if(!auth()->user()->hasPermission('view_factures')){
+         abort(403, 'Unauthorized action.');
+       }
 
         $query = Facture::with([
             'dossier:id,numero_dossier',
@@ -273,7 +277,9 @@ class FactureController extends Controller
     
     public function getUnpaidFacturesData(Request $request)
     {
-        $this->authorize('view_factures', Facture::class);
+       if(!auth()->user()->hasPermission('view_factures')){
+         abort(403, 'Unauthorized action.');
+       }
 
         $query = Facture::with([
             'dossier:id,numero_dossier',
@@ -403,9 +409,19 @@ class FactureController extends Controller
      */
     public function index()
     {
-        $this->authorize('view_factures', Facture::class);
-        
+       if(!auth()->user()->hasPermission('view_factures')){
+         abort(403, 'Unauthorized action.');
+       }
+        if(auth()->user()->hasRole('admin')){
         $dossiers = Dossier::all();
+        }else{
+        $dossiers = Dossier::with(['domaine', 'sousDomaine', 'users', 'intervenants'])
+    ->whereHas('users', function($query) {
+        $query->where('users.id', auth()->id());
+    })
+    ->where('archive', false)
+    ->get();
+        }
         $clients = Intervenant::where('categorie', 'client')->get();
         
         return view('factures.index', compact('dossiers', 'clients'));
@@ -413,8 +429,9 @@ class FactureController extends Controller
     
     public function indexPaid()
     {
-        $this->authorize('view_factures', Facture::class);
-        
+       if(!auth()->user()->hasPermission('view_factures')){
+         abort(403, 'Unauthorized action.');
+       }
         $dossiers = Dossier::all();
         $clients = Intervenant::where('categorie', 'client')->get();
         
@@ -423,7 +440,9 @@ class FactureController extends Controller
     
     public function indexUnpaid()
     {
-        $this->authorize('view_factures', Facture::class);
+       if(!auth()->user()->hasPermission('view_factures')){
+         abort(403, 'Unauthorized action.');
+       }
         
         $dossiers = Dossier::all();
         $clients = Intervenant::where('categorie', 'client')->get();
@@ -436,7 +455,9 @@ class FactureController extends Controller
      */
     public function create()
     {
-        $this->authorize('create_factures', Facture::class);
+       if(!auth()->user()->hasPermission('create_factures')){
+         abort(403, 'Unauthorized action.');
+       }
         
         $dossiers = Dossier::with('intervenants')->get();
         $clients = Intervenant::where('categorie', 'client')->get();
@@ -503,7 +524,9 @@ class FactureController extends Controller
      */
     public function show(Facture $facture)
     {
-        $this->authorize('view_factures', $facture);
+       if(!auth()->user()->hasPermission('view_factures')){
+         abort(403, 'Unauthorized action.');
+       }
         
         return view('factures.show', compact('facture'));
     }
@@ -513,7 +536,9 @@ class FactureController extends Controller
      */
     public function edit(Facture $facture)
     {
-        $this->authorize('edit_factures', $facture);
+       if(!auth()->user()->hasPermission('edit_factures')){
+         abort(403, 'Unauthorized action.');
+       }
         
         $dossiers = Dossier::with('intervenants')->get();
         $clients = Intervenant::where('categorie', 'client')->get();
@@ -526,7 +551,9 @@ class FactureController extends Controller
      */
     public function update(Request $request, Facture $facture)
     {
-        $this->authorize('edit_factures', $facture);
+       if(!auth()->user()->hasPermission('edit_factures')){
+         abort(403, 'Unauthorized action.');
+       }
         
         $validated = $request->validate([
             'dossier_id' => 'nullable|exists:dossiers,id',
@@ -573,7 +600,9 @@ class FactureController extends Controller
      */
     public function destroy(Facture $facture)
     {
-        $this->authorize('delete_factures', $facture);
+       if(!auth()->user()->hasPermission('delete_factures')){
+         abort(403, 'Unauthorized action.');
+       }
         
         $facture->delete();
 
@@ -592,8 +621,7 @@ class FactureController extends Controller
      * Generate PDF for facture
      */
     public function downloadPDF(Facture $facture)
-{
-    $this->authorize('export_data');
+    {
     
     // Vérifier si la facture a un fichier PDF
     if (!$facture->piece_jointe) {

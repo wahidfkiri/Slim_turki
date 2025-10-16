@@ -21,7 +21,7 @@ class TaskController extends Controller
         $this->authorize('view_tasks', Task::class);
 
         $query = Task::with([
-            'dossier:id,numero_dossier',
+            'dossier:id,numero_dossier,nom_dossier',
             'intervenant:id,identite_fr',
             'user:id,name'
         ])->select('tasks.*');
@@ -143,7 +143,9 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $this->authorize('view_tasks', Task::class);
+        if(!auth()->user()->hasPermission('view_tasks')){
+         abort(403, 'Unauthorized action.');
+        }
         
         $users = User::where('is_active', true)->get();
         $dossiers = Dossier::all();
@@ -222,7 +224,9 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        $this->authorize('view_tasks', $task);
+        if(!auth()->user()->hasPermission('view_tasks')){
+         abort(403, 'Unauthorized action.');
+        }
         
         return view('tasks.show', compact('task'));
     }

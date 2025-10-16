@@ -53,14 +53,14 @@ $(document).ready(function() {
     // Ajouter des classes CSS pour les badges après le chargement
     table.on('draw', function() {
         // Badges pour la colonne Type (index 3)
-        table.cells(null, 3).every(function() {
+        table.cells(null, 2).every(function() {
             var cell = this;
             var type = cell.data();
             $(cell.node()).html('<span class="badge badge-info">' + type + '</span>');
         });
 
         // Badges pour la colonne Catégorie (index 4)
-        table.cells(null, 4).every(function() {
+        table.cells(null, 2).every(function() {
             var cell = this;
             var categorie = cell.data();
             var badgeClass = getBadgeClass(categorie);

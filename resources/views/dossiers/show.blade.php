@@ -28,7 +28,8 @@
                     <div class="card card-primary">
                         <div class="card-header">
                             <h3 class="card-title">Informations du dossier</h3>
-                            <div class="card-tools">
+                            <div class="card-tools" style="display:ruby;">
+                            <x-dossier.folder :dossier="$dossier"/>
                                 @if(auth()->user()->hasPermission('edit_dossiers'))
                                     <a href="{{ route('dossiers.edit', $dossier) }}" class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i> Modifier
@@ -40,6 +41,7 @@
                             <!-- Navigation par onglets -->
                             <div class="row">
                                 <div class="col-md-12">
+                        <div id="result" class="mt-3"></div>
                                     <ul class="nav nav-tabs" id="dossierTabs" role="tablist">
                                         <li class="nav-item">
                                             <a class="nav-link active" id="generale-tab" data-toggle="tab" href="#generale" role="tab" aria-controls="generale" aria-selected="true">
@@ -344,7 +346,7 @@
                                                                     </td>
                                                                     <td> {{ $intervenantLie->pivot->role ?? 'N/A' }} </td>
                                                                     <td>
-                                                                        {{ $intervenantLie->type }}
+                                                                        {{ $intervenantLie->type ?? 'N/A' }}
                                                                     </td>
                                                                     <td>
                                                                         <div class="btn-group btn-group-sm">

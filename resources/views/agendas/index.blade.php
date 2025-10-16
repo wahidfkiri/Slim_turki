@@ -22,12 +22,42 @@
     <!-- Main content -->
     <section class="content">
         <div class="container-fluid">
+            <!-- Boutons d'action en haut à droite -->
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-end">
+                        <div class="btn-group">
+                            <button type="button" id="btn_today" class="btn btn-info btn-sm">
+                                Aujourd'hui
+                            </button>
+                            <button type="button" id="btn_reset_filters" class="btn btn-secondary btn-sm">
+                                Réinitialiser
+                            </button>
+                            @if(auth()->user()->hasPermission('create_agendas'))
+                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#createEventModal">
+                                    <i class="fas fa-plus"></i> Créer un événement
+                                </button>
+                            @endif
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="toggleFiltersBtn">
+                                <i class="fas fa-filter"></i> Filtres
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
-                <div class="col-md-3">
+                <!-- Filtres - Caché par défaut -->
+                <div class="col-md-3 d-none" id="filtersSidebar">
                     <!-- Filtres -->
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Filtres</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" id="closeFiltersBtn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="card-body">
                             <!-- Filtre par catégorie -->
@@ -76,21 +106,6 @@
                                     @endforeach
                                 </select>
                             </div>
-
-                            <!-- Boutons d'action -->
-                            <div class="form-group">
-                                <button type="button" id="btn_today" class="btn btn-info btn-sm btn-block">
-                                    Aujourd'hui
-                                </button>
-                                <button type="button" id="btn_reset_filters" class="btn btn-secondary btn-sm btn-block">
-                                    Réinitialiser
-                                </button>
-                                @if(auth()->user()->hasPermission('create_agendas'))
-                                    <button type="button" class="btn btn-primary btn-sm btn-block" data-toggle="modal" data-target="#createEventModal">
-                                        <i class="fas fa-plus"></i> Nouvel événement
-                                    </button>
-                                @endif
-                            </div>
                         </div>
                     </div>
 
@@ -124,7 +139,8 @@
                     </div>
                 </div>
 
-                <div class="col-md-9">
+                <!-- Calendar - Prend toute la largeur -->
+                <div class="col-12" id="calendarContainer">
                     <!-- Calendar -->
                     <div class="card card-primary">
                         <div class="card-body p-0">
@@ -245,8 +261,8 @@
                         @if(auth()->user()->hasRole('admin'))
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="utilisateur_id">Assigné à *</label>
-                                <select class="form-control" id="utilisateur_id" name="utilisateur_id" required>
+                                <label for="utilisateur_id">Assigné à</label>
+                                <select class="form-control" id="utilisateur_id" name="utilisateur_id">
                                     <option value="">Sélectionnez un utilisateur</option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -377,8 +393,8 @@
                         @if(auth()->user()->hasRole('admin'))
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="edit_utilisateur_id">Assigné à *</label>
-                                <select class="form-control select2" id="edit_utilisateur_id" name="utilisateur_id" required>
+                                <label for="edit_utilisateur_id">Assigné à </label>
+                                <select class="form-control select2" id="edit_utilisateur_id" name="utilisateur_id">
                                     <option value="">Sélectionnez un utilisateur</option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -447,19 +463,69 @@
         </div>
     </div>
 </div>
+
 <!-- jQuery -->
 <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
-<!-- FullCalendar -->
 <!-- FullCalendar -->
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/fr.js'></script>
+
+<style>
+/* Style pour améliorer l'affichage du calendrier en plein écran */
+#calendar {
+    min-height: 700px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.legend-color {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border-radius: 3px;
+}
+
+.legend-text {
+    font-size: 14px;
+}
+
+/* Animation pour l'ouverture/fermeture des filtres */
+#filtersSidebar {
+    transition: all 0.3s ease;
+}
+
+/* Style pour les boutons en mode responsive */
+@media (max-width: 768px) {
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 5px;
+        width: 100%;
+    }
+}
+
+/* Assurer que le calendrier s'adapte correctement */
+.fc .fc-view-harness {
+    min-height: 600px;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var currentEventId = null;
     var currentEventTitle = null;
+    var filtersVisible = false;
+    var calendar;
 
     // Initialize Select2
     $('.select2').select2({
@@ -470,71 +536,126 @@ document.addEventListener('DOMContentLoaded', function() {
     $('#date_debut').val(new Date().toISOString().split('T')[0]);
 
     // Initialize Calendar
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        locale: 'fr',
-        timeZone: 'local',
-        initialView: 'dayGridMonth',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-        },
-        views: {
-            dayGridMonth: { buttonText: 'Mois' },
-            timeGridWeek: { buttonText: 'Semaine' },
-            timeGridDay: { buttonText: 'Jour' },
-            listWeek: { buttonText: 'Liste' }
-        },
-        buttonText: {
-            today: 'Aujourd\'hui',
-            month: 'Mois',
-            week: 'Semaine',
-            day: 'Jour',
-            list: 'Liste'
-        },
-        navLinks: true,
-        editable: false,
-        selectable: true,
-        nowIndicator: true,
-        dayMaxEvents: true,
-        events: {
-            url: '{{ route("agendas.data") }}',
-            method: 'GET',
-            extraParams: function() {
-                return {
-                    categories: getSelectedCategories(),
-                    utilisateur_id: $('#filter_utilisateur').val(),
-                    dossier_id: $('#filter_dossier').val()
-                };
+    function initializeCalendar() {
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'fr',
+            timeZone: 'local',
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
             },
-            failure: function() {
-                showAlert('Erreur', 'Erreur lors du chargement des événements', 'error');
+            views: {
+                dayGridMonth: { 
+                    buttonText: 'Mois',
+                    dayMaxEventRows: 3, // Limite le nombre d'événements affichés par jour
+                    dayMaxEvents: true // Affiche "+X more" si trop d'événements
+                },
+                timeGridWeek: { buttonText: 'Semaine' },
+                timeGridDay: { buttonText: 'Jour' },
+                listWeek: { buttonText: 'Liste' }
+            },
+            buttonText: {
+                today: 'Aujourd\'hui',
+                month: 'Mois',
+                week: 'Semaine',
+                day: 'Jour',
+                list: 'Liste'
+            },
+            navLinks: true,
+            editable: false,
+            selectable: true,
+            nowIndicator: true,
+            dayMaxEvents: true,
+            height: 'auto',
+            contentHeight: 'auto',
+            events: {
+                url: '{{ route("agendas.data") }}',
+                method: 'GET',
+                extraParams: function() {
+                    return {
+                        categories: getSelectedCategories(),
+                        utilisateur_id: $('#filter_utilisateur').val(),
+                        dossier_id: $('#filter_dossier').val()
+                    };
+                },
+                failure: function() {
+                    showAlert('Erreur', 'Erreur lors du chargement des événements', 'error');
+                }
+            },
+            eventClick: function(info) {
+                currentEventId = info.event.id;
+                currentEventTitle = info.event.title;
+                showEventDetails(info.event);
+            },
+            dateClick: function(info) {
+                @if(auth()->user()->hasPermission('create_agendas'))
+                    $('#date_debut').val(info.dateStr);
+                    $('#createEventModal').modal('show');
+                @endif
+            },
+            eventDidMount: function(info) {
+                // Tooltip avec les détails de l'événement
+                $(info.el).tooltip({
+                    title: info.event.title + '<br>' + 
+                           (info.event.extendedProps.description || '') + '<br>' +
+                           (info.event.extendedProps.dossier || ''),
+                    html: true,
+                    placement: 'top'
+                });
+            },
+            windowResize: function(view) {
+                // Redimensionner le calendrier quand la fenêtre change
+                calendar.updateSize();
             }
-        },
-        eventClick: function(info) {
-            currentEventId = info.event.id;
-            currentEventTitle = info.event.title;
-            showEventDetails(info.event);
-        },
-        dateClick: function(info) {
-            @if(auth()->user()->hasPermission('create_agendas'))
-                $('#date_debut').val(info.dateStr);
-                $('#createEventModal').modal('show');
-            @endif
-        },
-        eventDidMount: function(info) {
-            // Tooltip avec les détails de l'événement
-            $(info.el).tooltip({
-                title: info.event.title + '<br>' + 
-                       (info.event.extendedProps.description || '') + '<br>' +
-                       (info.event.extendedProps.dossier || ''),
-                html: true,
-                placement: 'top'
-            });
+        });
+
+        calendar.render();
+    }
+
+    // Initialiser le calendrier
+    initializeCalendar();
+
+    // Fonction pour afficher/masquer les filtres
+    $('#toggleFiltersBtn').click(function() {
+        if (filtersVisible) {
+            closeFilters();
+        } else {
+            openFilters();
         }
     });
 
-    calendar.render();
+    // Fermer les filtres
+    $('#closeFiltersBtn').click(function() {
+        closeFilters();
+    });
+
+    function openFilters() {
+        $('#filtersSidebar').removeClass('d-none');
+        $('#calendarContainer').removeClass('col-12').addClass('col-md-9');
+        filtersVisible = true;
+        
+        // Redimensionner le calendrier après un court délai pour permettre le rendu CSS
+        setTimeout(function() {
+            if (calendar) {
+                calendar.updateSize();
+            }
+        }, 100);
+    }
+
+    function closeFilters() {
+        $('#filtersSidebar').addClass('d-none');
+        $('#calendarContainer').removeClass('col-md-9').addClass('col-12');
+        filtersVisible = false;
+        
+        // Redimensionner le calendrier après un court délai pour permettre le rendu CSS
+        setTimeout(function() {
+            if (calendar) {
+                calendar.updateSize();
+            }
+        }, 100);
+    }
 
     // Fonction pour afficher les alertes
     function showAlert(title, message, type = 'info') {
@@ -770,6 +891,15 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#filter_utilisateur').val('').trigger('change');
         $('#filter_dossier').val('').trigger('change');
         calendar.refetchEvents();
+    });
+
+    // Redimensionner le calendrier quand la fenêtre change
+    $(window).resize(function() {
+        if (calendar) {
+            setTimeout(function() {
+                calendar.updateSize();
+            }, 150);
+        }
     });
 });
 </script>

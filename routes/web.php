@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\DesktopDatabaseController;
+use App\Http\Controllers\ExplorerController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -118,6 +120,10 @@ Route::prefix('email')->group(function () {
     Route::post('/backups/create', [App\Http\Controllers\BackupController::class, 'createBackup'])->name('backups.create');
     Route::delete('/backups/delete/{filename}', [App\Http\Controllers\BackupController::class, 'deleteBackup'])->name('backups.delete');
     Route::get('/backups/download/{filename}', [App\Http\Controllers\BackupController::class, 'downloadBackup'])->name('backups.download');
+
+    
+Route::get('/open-folder', [ExplorerController::class, 'showForm'])->name('folder.form');
+Route::post('/open-folder', [ExplorerController::class, 'openFolder'])->name('folder.open');
     });
 
 

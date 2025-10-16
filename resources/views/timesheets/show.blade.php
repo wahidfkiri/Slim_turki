@@ -84,12 +84,12 @@
                                         </tr>
                                         <tr>
                                             <th>Prix unitaire</th>
-                                            <td>{{ number_format($time_sheet->prix, 2, ',', ' ') }} €</td>
+                                            <td>{{ number_format($time_sheet->prix, 2, ',', ' ') }} DT</td>
                                         </tr>
                                         <tr>
                                             <th>Total</th>
                                             <td class="font-weight-bold text-success" style="font-size: 1.2em;">
-                                                {{ number_format($time_sheet->total, 2, ',', ' ') }} €
+                                                {{ number_format($time_sheet->total, 2, ',', ' ') }} DT
                                             </td>
                                         </tr>
                                     </table>
@@ -104,8 +104,8 @@
                                         <tr>
                                             <th style="width: 40%;">Catégorie</th>
                                             <td>
-                                                @if($time_sheet->categorieModel)
-                                                    {{ $time_sheet->categorieModel->nom }}
+                                                @if($time_sheet->categorieRelation)
+                                                    {{ $time_sheet->categorieRelation->nom }}
                                                 @else
                                                     <span class="text-muted">Non spécifiée</span>
                                                 @endif
@@ -114,8 +114,8 @@
                                         <tr>
                                             <th>Type</th>
                                             <td>
-                                                @if($time_sheet->typeModel)
-                                                    {{ $time_sheet->typeModel->nom }}
+                                                @if($time_sheet->typeRelation)
+                                                    {{ $time_sheet->typeRelation->nom }}
                                                 @else
                                                     <span class="text-muted">Non spécifié</span>
                                                 @endif

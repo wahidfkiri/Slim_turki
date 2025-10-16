@@ -94,7 +94,7 @@
                     <!-- <th>ID</th> -->
                     <th>Identité FR</th>
                     <th>Identité AR</th>
-                    <th>Type</th>
+                    <!-- <th>Type</th> -->
                     <th>Catégorie</th>
                     <!-- <th>Fonction</th> -->
                     <th>Téléphone</th>
@@ -109,7 +109,7 @@
                       <!-- <td>{{ $intervenant->id }}</td> -->
                       <td>{{ $intervenant->identite_fr }}</td>
                       <td>{{ $intervenant->identite_ar ?? 'N/A' }}</td>
-                      <td>{{ $intervenant->type }}</td>
+                      <!-- <td>{{ $intervenant->type }}</td> -->
                       <td>{{ $intervenant->categorie }}</td>
                       <!-- <td>{{ $intervenant->fonction ?? 'N/A' }}</td> -->
                       <td>{{ $intervenant->portable1 ?? $intervenant->fixe1 ?? 'N/A' }}</td>
@@ -180,6 +180,7 @@
   </div>
 <!-- jQuery -->
 <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
+<script src="{{ asset('assets/custom/intervenant-filter.js') }}"></script>
 <script>
 $(document).ready(function() {
     let intervenantToDelete = null;

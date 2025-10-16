@@ -22,7 +22,7 @@ class IntervenantController extends Controller
     public function index()
     {
         $formeSociales = FormeSociale::all();
-        $intervenants = Intervenant::with(['formeSociale', 'dossiers'])->orderBy('created_at', 'desc')->paginate(10);
+        $intervenants = Intervenant::with(['formeSociale', 'dossiers'])->orderBy('created_at', 'desc')->get();
         return view('intervenants.index', compact('intervenants', 'formeSociales'));
     }
 

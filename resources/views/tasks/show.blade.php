@@ -129,9 +129,9 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label for="dossier_id">Dossier</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
+                                        <a href="" class="form-control-plaintext bg-light p-2 rounded">
                                             {{ $task->dossier->numero_dossier ?? 'Non assigné' }}
-                                        </p>
+                                        </a>
                                     </div>
                                 </div>
 

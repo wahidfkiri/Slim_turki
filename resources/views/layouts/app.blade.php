@@ -576,7 +576,6 @@ visibility:hidden
 <!-- Dans layouts/app.blade.php avant la fermeture du body -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <!-- Scripts personnalisés (chargés en dernier) -->
-<script src="{{ asset('assets/custom/intervenant-filter.js') }}"></script>
 
 <script src="{{ asset('assets/custom/users.js') }}"></script>
 <script src="{{ asset('assets/custom/timesheets.js') }}"></script>    

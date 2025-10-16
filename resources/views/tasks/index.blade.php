@@ -142,7 +142,8 @@
                                         <th>Date Fin</th>
                                         <th>Priorité</th>
                                         <th>Statut</th>
-                                        <th>Dossier</th>
+                                        <th>Numéro Dossier</th>
+                                        <th>Nom Dossier</th>
                                         @if(auth()->user()->hasRole('admin'))
                                         <th>Assigné à</th>
                                         @endif
@@ -298,6 +299,13 @@ $(document).ready(function() {
                 name: 'dossier.numero_dossier',
                 render: function(data) {
                     return data ? data.numero_dossier : '-';
+                }
+            },
+            { 
+                data: 'dossier', 
+                name: 'dossier.nom_dossier',
+                render: function(data) {
+                    return data ? data.nom_dossier : '-';
                 }
             },
             @if(auth()->user()->hasRole('admin'))

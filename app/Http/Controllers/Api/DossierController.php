@@ -36,7 +36,7 @@ class DossierController extends Controller
         $query->where('users.id', auth()->id());
     })
     ->where('archive', false)
-    ->paginate(10);
+    ->get();
 }
     $domaines = Domaine::all(); // Ajouter cette ligne
      if ($request->ajax()) {

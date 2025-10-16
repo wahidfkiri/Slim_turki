@@ -209,7 +209,15 @@
 
                                                 <!-- Statut -->
                                                 <div class="row">
-                                                    <div class="col-md-12">
+                                                    <div class="col-md-6">
+                                                        <div class="info-group">
+                                                            <label class="font-weight-bold">ID Intervenanat</label>
+                                                            <p class="form-control-plaintext bg-light p-2 rounded text-muted">
+                                                                {{$intervenant->id}}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
                                                         <div class="info-group">
                                                             <label class="font-weight-bold">Statut</label>
                                                             <p class="form-control-plaintext bg-light p-2 rounded text-muted">
@@ -419,7 +427,7 @@
                                                                 @foreach($intervenant->files as $file)
                                                                     <tr>
                                                                         <td>
-                                                                            <span class="badge badge-info">{{ pathinfo($file->file_path, PATHINFO_EXTENSION) }}</span> {{$file->file_path ?? $file->file_name }}
+                                                                            <span class="badge badge-info">{{ pathinfo($file->file_path, PATHINFO_EXTENSION) }}</span> {{$file->file_name ?? $file->file_path }}
                                                                         </td>
                                                                         <td>{{ $file->created_at->format('d/m/Y H:i') }}</td>
                                                                         <td>

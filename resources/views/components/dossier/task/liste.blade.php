@@ -15,7 +15,7 @@
                                                             <thead>
                                                                 <tr>
                                                                     <th>Titre</th>
-                                                                    <th>Description</th>
+                                                                    <!-- <th>Description</th> -->
                                                                     <th>Date de début</th>
                                                                     <th>Date de fin</th>
                                                                     <th>Priorité</th>
@@ -30,7 +30,7 @@
                                                                     <td>
                                                                         {{ $task->titre }}
                                                                     </td>
-                                                                    <td>{{ $task->description }}</td>
+                                                                    <!-- <td>{{ $task->description }}</td> -->
                                                                     <td>{{ $task->date_debut->format('d/m/Y') }}</td>
                                                                     <td>{{ $task->date_fin->format('d/m/Y') }}</td>
                                                                     <td>{{ $task->priorite }}</td>
