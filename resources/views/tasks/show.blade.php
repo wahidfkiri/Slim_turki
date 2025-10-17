@@ -30,164 +30,166 @@
                             <h3 class="card-title">Informations de la tâche</h3>
                             <div class="card-tools">
                                 @if(auth()->user()->hasPermission('edit_tasks'))
-                                    <a href="{{ route('tasks.edit', $task) }}" class="btn btn-warning btn-sm">
+                                    <a href="{{ route('tasks.edit', $task->id ?? '') }}" class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i> Modifier
                                     </a>
                                 @endif
+                                <a href="{{ route('tasks.index') }}" class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-arrow-left"></i> Retour
+                                </a>
                             </div>
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <!-- Titre -->
+                                <!-- Informations principales -->
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="titre">Titre</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">{{ $task->titre }}</p>
-                                    </div>
+                                    <h5 class="section-title">Informations principales</h5>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th style="width: 40%;">Titre</th>
+                                            <td class="font-weight-bold">{{ $task->titre ?? 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Priorité</th>
+                                            <td>
+                                                @php
+                                                    $priorityColors = [
+                                                        'basse' => 'success',
+                                                        'normale' => 'info',
+                                                        'haute' => 'warning',
+                                                        'urgente' => 'danger'
+                                                    ];
+                                                    $priorityClass = $priorityColors[$task->priorite ?? ''] ?? 'secondary';
+                                                @endphp
+                                                <span class="badge badge-{{ $priorityClass }} text-uppercase">
+                                                    {{ $task->priorite ?? 'Non spécifiée' }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Statut</th>
+                                            <td>
+                                                @php
+                                                    $statusColors = [
+                                                        'a_faire' => 'secondary',
+                                                        'en_cours' => 'primary',
+                                                        'terminee' => 'success',
+                                                        'en_retard' => 'danger'
+                                                    ];
+                                                    $statusClass = $statusColors[$task->statut ?? ''] ?? 'secondary';
+                                                @endphp
+                                                <span class="badge badge-{{ $statusClass }} text-uppercase">
+                                                    {{ isset($task->statut) ? str_replace('_', ' ', $task->statut) : 'Non spécifié' }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
 
-                                <!-- Priorité -->
+                                <!-- Détails temporels -->
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="priorite">Priorité</label>
-                                        @php
-                                            $priorityColors = [
-                                                'basse' => 'success',
-                                                'normale' => 'info',
-                                                'haute' => 'warning',
-                                                'urgente' => 'danger'
-                                            ];
-                                            $priorityClass = $priorityColors[$task->priorite] ?? 'secondary';
-                                        @endphp
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            <span class="badge badge-{{ $priorityClass }} text-uppercase">
-                                                {{ $task->priorite }}
-                                            </span>
-                                        </p>
-                                    </div>
+                                    <h5 class="section-title">Détails temporels</h5>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th style="width: 40%;">Date de début</th>
+                                            <td>{{ $task->date_debut ? $task->date_debut->format('d/m/Y') : 'Non définie' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date de fin</th>
+                                            <td>{{ $task->date_fin ? $task->date_fin->format('d/m/Y') : 'Non définie' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Assigné à</th>
+                                            <td>
+                                                {{ $task->user->name ?? 'Non assigné' }}
+                                                @if(($task->user->fonction ?? null))
+                                                    <br><small class="text-muted">{{ $task->user->fonction }}</small>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <!-- Statut -->
+                            <div class="row mt-4">
+                                <!-- Relations -->
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="statut">Statut</label>
-                                        @php
-                                            $statusColors = [
-                                                'a_faire' => 'secondary',
-                                                'en_cours' => 'primary',
-                                                'terminee' => 'success',
-                                                'en_retard' => 'danger'
-                                            ];
-                                            $statusClass = $statusColors[$task->statut] ?? 'secondary';
-                                        @endphp
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            <span class="badge badge-{{ $statusClass }} text-uppercase">
-                                                {{ str_replace('_', ' ', $task->statut) }}
-                                            </span>
-                                        </p>
-                                    </div>
+                                    <h5 class="section-title">Relations</h5>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th style="width: 40%;">Dossier</th>
+                                            <td>
+                                                @if($task->dossier ?? null)
+                                                    <a href="{{ route('dossiers.show', $task->dossier->id ?? '') }}" class="text-primary">
+                                                        <i class="fa fa-eye"></i> {{ $task->dossier->numero_dossier ?? 'N/A' }}
+                                                    </a>
+                                                    @if($task->dossier->nom_dossier ?? null)
+                                                        <br><small class="text-muted">{{ $task->dossier->nom_dossier }}</small>
+                                                    @endif
+                                                @else
+                                                    <span class="text-muted">Non assigné</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Intervenant</th>
+                                            <td>
+                                                @if($task->intervenant ?? null)
+                                                    {{ $task->intervenant->identite_fr ?? $task->intervenant->identite_ar ?? 'N/A' }}
+                                                @if($task->intervenant->email ?? null)
+                                                    <br><small class="text-muted">{{ $task->intervenant->email }}</small>
+                                                @endif
+                                                @else
+                                                    <span class="text-muted">Non assigné</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
 
-                                <!-- Utilisateur assigné -->
+                                <!-- Métadonnées -->
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="utilisateur_id">Assigné à</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            {{ $task->user->name ?? 'Non assigné' }}
-                                            @if($task->user && $task->user->fonction)
-                                                <small class="text-muted">({{ $task->user->fonction }})</small>
-                                            @endif
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <!-- Date de début -->
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="date_debut">Date de début</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            {{ $task->date_debut ? $task->date_debut->format('d/m/Y') : 'Non définie' }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Date de fin -->
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="date_fin">Date de fin</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            {{ $task->date_fin ? $task->date_fin->format('d/m/Y') : 'Non définie' }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Dossier -->
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="dossier_id">Dossier</label>
-                                        <a href="" class="form-control-plaintext bg-light p-2 rounded">
-                                            {{ $task->dossier->numero_dossier ?? 'Non assigné' }}
-                                        </a>
-                                    </div>
-                                </div>
-
-                                <!-- Intervenant -->
-                                <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label for="intervenant_id">Intervenant</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            {{ $task->intervenant->identite_fr ?? 'Non assigné' }}
-                                        </p>
-                                    </div>
+                                    <h5 class="section-title">Métadonnées</h5>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th style="width: 40%;">Créé le</th>
+                                            <td>{{ ($task->created_at ?? now())->format('d/m/Y à H:i') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Modifié le</th>
+                                            <td>{{ ($task->updated_at ?? now())->format('d/m/Y à H:i') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Statut système</th>
+                                            <td>
+                                                <span class="badge badge-success">Actif</span>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
                             </div>
 
                             <!-- Description -->
-                            <div class="form-group">
-                                <label for="description">Description</label>
-                                <div class="bg-light p-3 rounded" style="min-height: 100px;">
-                                    @if($task->description)
-                                        {!! nl2br(e($task->description)) !!}
-                                    @else
-                                        <span class="text-muted">Aucune description fournie</span>
-                                    @endif
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h5 class="section-title">Description</h5>
+                                    <div class="card">
+                                        <div class="card-body bg-light">
+                                            <p class="mb-0" style="white-space: pre-wrap;">{{ $task->description ?? 'Aucune description fournie' }}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Note -->
-                            <div class="form-group">
-                                <label for="note">Notes supplémentaires</label>
-                                <div class="bg-light p-3 rounded" style="min-height: 80px;">
-                                    @if($task->note)
-                                        {!! nl2br(e($task->note)) !!}
-                                    @else
-                                        <span class="text-muted">Aucune note supplémentaire</span>
-                                    @endif
-                                </div>
-                                <small class="form-text text-muted">
-                                    Ces notes sont internes et ne sont pas visibles par le client.
-                                </small>
-                            </div>
-
-                            <!-- Informations de suivi -->
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label>Informations de suivi</label>
-                                        <div class="alert alert-info text-black" style="color:black;">
-                                            <small>
-                                                <strong>Créé le:</strong> {{ $task->created_at->format('d/m/Y H:i') }}<br>
-                                                <strong>Modifié le:</strong> {{ $task->updated_at->format('d/m/Y H:i') }}
-                                                @if($task->dossier)
-                                                    <br><strong>Dossier:</strong> {{ $task->dossier->numero_dossier }} - {{ $task->dossier->nom_dossier }}
-                                                @endif
-                                                @if($task->intervenant)
-                                                    <br><strong>Intervenant:</strong> {{ $task->intervenant->identite_fr }}
-                                                @endif
+                            <!-- Notes supplémentaires -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h5 class="section-title">Notes supplémentaires</h5>
+                                    <div class="card">
+                                        <div class="card-body bg-light">
+                                            <p class="mb-0" style="white-space: pre-wrap;">{{ $task->note ?? 'Aucune note supplémentaire' }}</p>
+                                            <small class="text-muted mt-2 d-block">
+                                                <i class="fas fa-info-circle"></i> Ces notes sont internes et ne sont pas visibles par le client.
                                             </small>
                                         </div>
                                     </div>
@@ -197,21 +199,26 @@
                         <!-- /.card-body -->
 
                         <div class="card-footer">
-                            <a href="{{ route('tasks.index') }}" class="btn btn-default btn-lg">
-                                <i class="fas fa-arrow-left"></i> Retour à la liste
-                            </a>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <a href="{{ route('tasks.index') }}" class="btn btn-default">
+                                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                                    </a>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    @if(auth()->user()->hasPermission('edit_tasks'))
+                                        <a href="{{ route('tasks.edit', $task->id ?? '') }}" class="btn btn-warning">
+                                            <i class="fas fa-edit"></i> Modifier
+                                        </a>
+                                    @endif
 
-                            @if(auth()->user()->hasPermission('edit_tasks'))
-                                <a href="{{ route('tasks.edit', $task) }}" class="btn btn-warning btn-lg">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </a>
-                            @endif
-
-                            @if(auth()->user()->hasPermission('delete_tasks'))
-                                <button type="button" class="btn btn-danger btn-lg float-right delete-task-btn" data-id="{{ $task->id }}">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            @endif
+                                    @if(auth()->user()->hasPermission('delete_tasks') && ($task->id ?? null))
+                                        <button type="button" class="btn btn-danger" onclick="confirmDelete({{ $task->id }})">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <!-- /.card -->
@@ -223,35 +230,15 @@
 </div>
 
 <!-- Formulaire de suppression -->
-@if(auth()->user()->hasPermission('delete_tasks'))
+@if(auth()->user()->hasPermission('delete_tasks') && ($task->id ?? null))
     <form id="delete-form-{{ $task->id }}" 
-          action="{{ route('tasks.destroy', $task) }}" 
+          action="{{ route('tasks.destroy', $task->id) }}" 
           method="POST" class="d-none">
         @csrf
         @method('DELETE')
     </form>
 @endif
-<!-- Confirmation Modal -->
-<div class="modal fade" id="deleteTaskModal" tabindex="-1" aria-labelledby="deleteTaskModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteTaskModalLabel">Confirmation de suppression</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p>Êtes-vous sûr de vouloir supprimer la tâche <strong id="task-title"></strong> ?</p>
-                <p class="text-danger"><small>Cette action est irréversible.</small></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-danger" id="confirm-task-delete">Supprimer</button>
-            </div>
-        </div>
-    </div>
-</div>
+
 <!-- jQuery -->
 <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
 <script>
@@ -263,114 +250,62 @@
     }
 
     $(document).ready(function() {
-        // Ajouter un style pour les badges de statut et priorité
-        $('.badge').css({
-            'font-size': '0.9em',
-            'padding': '0.4em 0.8em'
-        });
+        // Ajouter un effet de surbrillance sur les cartes au survol
+        $('.card').hover(
+            function() {
+                $(this).addClass('shadow-sm');
+            },
+            function() {
+                $(this).removeClass('shadow-sm');
+            }
+        );
     });
 </script>
-<script>
-    // Delete button click handler
-    $(document).on('click', '.delete-task-btn', function() {
-        const taskId = $(this).data('id');
-        const taskTitle = $(this).data('title') || 'cette tâche';
-        
-        taskToDelete = taskId;
-        taskRowToDelete = $(this).closest('tr');
-        $('#task-title').text(taskTitle);
-        $('#deleteTaskModal').modal('show');
-    });
-    
-    // Confirm delete button handler
-    $('#confirm-task-delete').on('click', function() {
-        if (!taskToDelete) return;
-        
-        const deleteButton = $(this);
-        const originalText = deleteButton.html();
-        
-        // Show loading state
-        deleteButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Suppression...');
-        
-        $.ajax({
-            url: '/tasks/' + taskToDelete,
-            type: 'DELETE',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                $('#deleteTaskModal').modal('hide');
-                
-                if (response.success) {
-                    window.location.href = '{{ route("tasks.index") }}';
-                    // Show success message
-                    showAlert('success', response.message || 'Tâche supprimée avec succès!');
-                } else {
-                    showAlert('danger', response.message || 'Erreur lors de la suppression.');
-                }
-            },
-            error: function(xhr) {
-                $('#deleteTaskModal').modal('hide');
-                
-                let errorMessage = 'Une erreur est survenue lors de la suppression de la tâche.';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                }
-                
-                showAlert('danger', errorMessage);
-            },
-            complete: function() {
-                // Reset button state
-                deleteButton.prop('disabled', false).html(originalText);
-                taskToDelete = null;
-                taskRowToDelete = null;
-            }
-        });
-    });
 
-    // Function to show alert messages
-    function showAlert(type, message) {
-        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-        const iconClass = type === 'success' ? 'fa-check' : 'fa-ban';
-        const title = type === 'success' ? 'Succès!' : 'Erreur!';
-        
-        const alertHtml = `
-            <div class="alert ${alertClass} alert-dismissible">
-                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                <h5><i class="icon fas ${iconClass}"></i> ${title}</h5>
-                ${message}
-            </div>
-        `;
-        
-        // Remove any existing alerts
-        $('.alert-dismissible').remove();
-        
-        // Prepend the new alert
-        $('.card').before(alertHtml);
-        
-        // Auto-remove alert after 5 seconds
-        setTimeout(function() {
-            $('.alert-dismissible').fadeOut(300, function() {
-                $(this).remove();
-            });
-        }, 5000);
-    }
-    </script>
 <style>
-    .form-control-plaintext {
-        min-height: 38px;
-        border: 1px solid #ced4da;
+    .section-title {
+        color: #495057;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
     }
-    .btn-lg {
-        padding: 0.75rem 1.5rem;
-        font-size: 1.1rem;
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
     }
-    .alert-info {
-        background-color: #e8f4fd;
-        border-color: #b6e0fe;
+    
+    .card {
+        border: 1px solid #dee2e6;
     }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
     .bg-light {
         background-color: #f8f9fa !important;
+    }
+    
+    .badge {
+        font-size: 0.85em;
+    }
+    
+    .btn {
+        margin: 0 2px;
+    }
+    
+    .table-bordered {
+        border: 1px solid #dee2e6;
+    }
+    
+    .table-bordered th,
+    .table-bordered td {
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+        vertical-align: top;
     }
 </style>
 @endsection

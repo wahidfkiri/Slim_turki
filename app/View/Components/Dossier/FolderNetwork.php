@@ -12,7 +12,8 @@ class FolderNetwork extends Component
      * @return void
      */
     public $dossier;
-    public function __construct()
+    
+    public function __construct($dossier)
     {
         $this->dossier = $dossier;
     }

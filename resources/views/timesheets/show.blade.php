@@ -30,7 +30,7 @@
                             <h3 class="card-title">Informations de la feuille de temps</h3>
                             <div class="card-tools">
                                 @if(auth()->user()->hasPermission('edit_timesheets'))
-                                    <a href="{{ route('time-sheets.edit', $time_sheet) }}" class="btn btn-warning btn-sm">
+                                    <a href="{{ route('time-sheets.edit', $time_sheet->id ?? '') }}" class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i> Modifier
                                     </a>
                                 @endif
@@ -47,13 +47,13 @@
                                     <table class="table table-bordered">
                                         <tr>
                                             <th style="width: 40%;">Date</th>
-                                            <td>{{ $time_sheet->date_timesheet->format('d/m/Y') }}</td>
+                                            <td>{{ $time_sheet->date_timesheet->format('d/m/Y') ?? 'N/A' }}</td>
                                         </tr>
                                         <tr>
                                             <th>Utilisateur</th>
                                             <td>
                                                 <strong>{{ $time_sheet->user->name ?? 'N/A' }}</strong>
-                                                @if($time_sheet->user->fonction ?? false)
+                                                @if(($time_sheet->user->fonction ?? null))
                                                     <br><small class="text-muted">{{ $time_sheet->user->fonction }}</small>
                                                 @endif
                                             </td>
@@ -61,9 +61,11 @@
                                         <tr>
                                             <th>Dossier</th>
                                             <td>
-                                                @if($time_sheet->dossier)
-                                                    {{ $time_sheet->dossier->numero_dossier }}
-                                                    @if($time_sheet->dossier->nom_dossier ?? false)
+                                                @if($time_sheet->dossier ?? null)
+                                                    <a href="{{ route('dossiers.show', $time_sheet->dossier->id ?? '') }}" class="text-primary"> <i class="fa fa-eye"></i> 
+                                                    {{ $time_sheet->dossier->numero_dossier ?? 'N/A' }}
+                                                </a>
+                                                    @if($time_sheet->dossier->nom_dossier ?? null)
                                                         <br><small class="text-muted">{{ $time_sheet->dossier->nom_dossier }}</small>
                                                     @endif
                                                 @else
@@ -80,16 +82,16 @@
                                     <table class="table table-bordered">
                                         <tr>
                                             <th style="width: 40%;">Quantité</th>
-                                            <td>{{ number_format($time_sheet->quantite, 2, ',', ' ') }}</td>
+                                            <td>{{ number_format($time_sheet->quantite ?? 0, 2, ',', ' ') }}</td>
                                         </tr>
                                         <tr>
                                             <th>Prix unitaire</th>
-                                            <td>{{ number_format($time_sheet->prix, 2, ',', ' ') }} DT</td>
+                                            <td>{{ number_format($time_sheet->prix ?? 0, 2, ',', ' ') }} DT</td>
                                         </tr>
                                         <tr>
                                             <th>Total</th>
                                             <td class="font-weight-bold text-success" style="font-size: 1.2em;">
-                                                {{ number_format($time_sheet->total, 2, ',', ' ') }} DT
+                                                {{ number_format($time_sheet->total ?? 0, 2, ',', ' ') }} DT
                                             </td>
                                         </tr>
                                     </table>
@@ -104,8 +106,8 @@
                                         <tr>
                                             <th style="width: 40%;">Catégorie</th>
                                             <td>
-                                                @if($time_sheet->categorieRelation)
-                                                    {{ $time_sheet->categorieRelation->nom }}
+                                                @if($time_sheet->categorieRelation ?? null)
+                                                    {{ $time_sheet->categorieRelation->nom ?? 'N/A' }}
                                                 @else
                                                     <span class="text-muted">Non spécifiée</span>
                                                 @endif
@@ -114,8 +116,8 @@
                                         <tr>
                                             <th>Type</th>
                                             <td>
-                                                @if($time_sheet->typeRelation)
-                                                    {{ $time_sheet->typeRelation->nom }}
+                                                @if($time_sheet->typeRelation ?? null)
+                                                    {{ $time_sheet->typeRelation->nom ?? 'N/A' }}
                                                 @else
                                                     <span class="text-muted">Non spécifié</span>
                                                 @endif
@@ -130,11 +132,11 @@
                                     <table class="table table-bordered">
                                         <tr>
                                             <th style="width: 40%;">Créé le</th>
-                                            <td>{{ $time_sheet->created_at->format('d/m/Y à H:i') }}</td>
+                                            <td>{{ ($time_sheet->created_at ?? now())->format('d/m/Y à H:i') }}</td>
                                         </tr>
                                         <tr>
                                             <th>Modifié le</th>
-                                            <td>{{ $time_sheet->updated_at->format('d/m/Y à H:i') }}</td>
+                                            <td>{{ ($time_sheet->updated_at ?? now())->format('d/m/Y à H:i') }}</td>
                                         </tr>
                                         <tr>
                                             <th>Statut</th>
@@ -152,7 +154,7 @@
                                     <h5 class="section-title">Description de l'activité</h5>
                                     <div class="card">
                                         <div class="card-body bg-light">
-                                            <p class="mb-0" style="white-space: pre-wrap;">{{ $time_sheet->description }}</p>
+                                            <p class="mb-0" style="white-space: pre-wrap;">{{ $time_sheet->description ?? 'Aucune description fournie' }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -169,12 +171,12 @@
                                 </div>
                                 <div class="col-md-6 text-right">
                                     @if(auth()->user()->hasPermission('edit_timesheets'))
-                                        <a href="{{ route('time-sheets.edit', $time_sheet) }}" class="btn btn-warning">
+                                        <a href="{{ route('time-sheets.edit', $time_sheet->id ?? '') }}" class="btn btn-warning">
                                             <i class="fas fa-edit"></i> Modifier
                                         </a>
                                     @endif
 
-                                    @if(auth()->user()->hasPermission('delete_timesheets'))
+                                    @if(auth()->user()->hasPermission('delete_timesheets') && ($time_sheet->id ?? null))
                                         <button type="button" class="btn btn-danger" onclick="confirmDelete({{ $time_sheet->id }})">
                                             <i class="fas fa-trash"></i> Supprimer
                                         </button>
@@ -192,9 +194,9 @@
 </div>
 
 <!-- Formulaire de suppression -->
-@if(auth()->user()->hasPermission('delete_timesheets'))
+@if(auth()->user()->hasPermission('delete_timesheets') && ($time_sheet->id ?? null))
     <form id="delete-form-{{ $time_sheet->id }}" 
-          action="{{ route('time-sheets.destroy', $time_sheet) }}" 
+          action="{{ route('time-sheets.destroy', $time_sheet->id) }}" 
           method="POST" class="d-none">
         @csrf
         @method('DELETE')

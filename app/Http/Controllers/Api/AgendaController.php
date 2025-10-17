@@ -18,83 +18,88 @@ class AgendaController extends Controller
      * Get agendas data for FullCalendar
      */
     public function getAgendasData(Request $request)
-    {
-        $this->authorize('view_agendas', Agenda::class);
+{
+    $this->authorize('view_agendas', Agenda::class);
 
-        $query = Agenda::with([
-            'dossier:id,numero_dossier',
-            'intervenant:id,identite_fr',
-            'user:id,name'
-        ]);
+    $query = Agenda::with([
+        'dossier:id,numero_dossier,nom_dossier',
+        'intervenant:id,identite_fr',
+        'user:id,name'
+    ]);
 
-        if(!auth()->user()->hasRole('admin')){
-            $query->where('utilisateur_id', auth()->user()->id);
-        }
-
-        // Filtre par catégories
-        if ($request->has('categories') && !empty($request->categories)) {
-            $categories = explode(',', $request->categories);
-            $query->whereIn('categorie', $categories);
-        }
-
-        // Filtre par utilisateur
-        if ($request->has('utilisateur_id') && !empty($request->utilisateur_id)) {
-            $query->where('utilisateur_id', $request->utilisateur_id);
-        }
-
-        // Filtre par dossier
-        if ($request->has('dossier_id') && !empty($request->dossier_id)) {
-            $query->where('dossier_id', $request->dossier_id);
-        }
-
-        // Filtre par période (pour FullCalendar)
-        if ($request->has('start') && !empty($request->start)) {
-            $start = Carbon::parse($request->start);
-            $query->where(function($q) use ($start) {
-                $q->where('date_fin', '>=', $start->format('Y-m-d'))
-                  ->orWhereNull('date_fin');
-            });
-        }
-
-        if ($request->has('end') && !empty($request->end)) {
-            $end = Carbon::parse($request->end);
-            $query->where('date_debut', '<=', $end->format('Y-m-d'));
-        }
-
-        $agendas = $query->get();
-
-        $events = [];
-
-        foreach ($agendas as $agenda) {
-            $event = [
-                'id' => $agenda->id,
-                'title' => $agenda->titre,
-                'start' => $this->formatEventDate($agenda, 'start'),
-                'end' => $this->formatEventDate($agenda, 'end'),
-                'allDay' => (bool)$agenda->all_day,
-                'color' => $agenda->couleur,
-                'textColor' => $this->getTextColor($agenda->couleur),
-                'extendedProps' => [
-                    'categorie' => $agenda->categorie,
-                    'description' => $agenda->description,
-                    'dossier' => $agenda->dossier ? $agenda->dossier->reference : null,
-                    'intervenant' => $agenda->intervenant ? $agenda->intervenant->name : null,
-                    'utilisateur' => $agenda->utilisateur ? $agenda->utilisateur->name : null,
-                    'heure_debut' => $agenda->heure_debut,
-                    'heure_fin' => $agenda->heure_fin,
-                ]
-            ];
-
-            // Si pas de couleur définie, utiliser les couleurs par défaut par catégorie
-            if (!$agenda->couleur || $agenda->couleur == '#3c8dbc') {
-                $event['color'] = $this->getCategoryColor($agenda->categorie);
-            }
-
-            $events[] = $event;
-        }
-
-        return response()->json($events);
+    if(!auth()->user()->hasRole('admin')){
+        $query->where('utilisateur_id', auth()->user()->id);
     }
+
+    // Filtre par catégories
+    if ($request->has('categories') && !empty($request->categories)) {
+        $categories = explode(',', $request->categories);
+        $query->whereIn('categorie', $categories);
+    }
+
+    // Filtre par utilisateur
+    if ($request->has('utilisateur_id') && !empty($request->utilisateur_id)) {
+        $query->where('utilisateur_id', $request->utilisateur_id);
+    }
+
+    // Filtre par dossier
+    if ($request->has('dossier_id') && !empty($request->dossier_id)) {
+        $query->where('dossier_id', $request->dossier_id);
+    }
+
+    // Filtre par période (pour FullCalendar)
+    if ($request->has('start') && !empty($request->start)) {
+        $start = Carbon::parse($request->start);
+        $query->where(function($q) use ($start) {
+            $q->where('date_fin', '>=', $start->format('Y-m-d'))
+              ->orWhereNull('date_fin');
+        });
+    }
+
+    if ($request->has('end') && !empty($request->end)) {
+        $end = Carbon::parse($request->end);
+        $query->where('date_debut', '<=', $end->format('Y-m-d'));
+    }
+
+    $agendas = $query->get();
+
+    $events = [];
+
+    foreach ($agendas as $agenda) {
+        $event = [
+            'id' => $agenda->id,
+            'title' => $agenda->titre,
+            'start' => $this->formatEventDate($agenda, 'start'),
+            'end' => $this->formatEventDate($agenda, 'end'),
+            'allDay' => (bool)$agenda->all_day,
+            'color' => $agenda->couleur,
+            'textColor' => $this->getTextColor($agenda->couleur),
+            'extendedProps' => [
+                'categorie' => $agenda->categorie,
+                'description' => $agenda->description,
+                'dossier' => $agenda->dossier ? $agenda->dossier->numero_dossier : null,
+                'dossier_nom' => $agenda->dossier ? $agenda->dossier->nom_dossier : null,
+                'intervenant' => $agenda->intervenant ? $agenda->intervenant->identite_fr : null,
+                'utilisateur' => $agenda->user ? $agenda->user->name : null,
+                'heure_debut' => $agenda->heure_debut,
+                'heure_fin' => $agenda->heure_fin,
+                'file_name' => $agenda->file_name,
+            ]
+        ];
+
+        // Si pas de couleur définie, utiliser les couleurs par défaut par catégorie
+        if (!$agenda->couleur) {
+            $event['color'] = $this->getCategoryColor($agenda->categorie);
+        }
+
+        $events[] = $event;
+    }
+
+    return response()->json($events);
+}
+
+
+
 
     public function getAgendasDataByDossierId(Request $request, $dossierId)
     {
@@ -223,7 +228,20 @@ class AgendaController extends Controller
             'autre' => '#605ca8',    // Purple
         ];
 
-        return $colors[$categorie] ?? '#3c8dbc';
+        // Normalize and prefer direct mapping first
+        $key = $categorie ? strtolower($categorie) : null;
+        if ($key && isset($colors[$key])) {
+            return $colors[$key];
+        }
+
+        // Fallback: try to read the category record and use its couleur field if present
+        $categoryRecord = \App\Models\AgendaCategory::where('nom', $categorie)->first();
+        if ($categoryRecord && !empty($categoryRecord->couleur)) {
+            return $categoryRecord->couleur;
+        }
+
+        // Default fallback color
+        return '#3c8dbc';
     }
 
     /**
@@ -260,8 +278,9 @@ class AgendaController extends Controller
             $q->where('user_id', auth()->id());
         })->get();
         }
+        $categories = \App\Models\AgendaCategory::all();
 
-            return view('agendas.index', compact('users', 'dossiers','intervenants'));
+            return view('agendas.index', compact('users', 'dossiers','intervenants','categories'));
     }
 
     /**
@@ -299,10 +318,11 @@ class AgendaController extends Controller
             'dossier_id' => 'nullable|exists:dossiers,id',
             'intervenant_id' => 'nullable|exists:intervenants,id',
             'utilisateur_id' => 'nullable|exists:users,id',
-            'categorie' => 'required|in:rdv,audience,delai,tache,autre',
+            'categorie' => 'required',
             'couleur' => 'nullable|string|max:20',
             'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:2048', // max 2MB
         ]);
+        
 
         // Si all_day est coché, vider les heures
         if ($request->has('all_day') && $request->all_day) {
@@ -311,9 +331,9 @@ class AgendaController extends Controller
         }
 
         // Si pas de couleur fournie, utiliser la couleur par défaut de la catégorie
-        if (empty($validated['couleur'])) {
+      
             $validated['couleur'] = $this->getCategoryColor($validated['categorie']);
-        }
+     
 
         if($request->hasFile('file')){
             $file = $request->file('file');
@@ -432,4 +452,30 @@ public function edit(Agenda $agenda)
         return redirect()->route('agendas.index')
             ->with('success', 'Événement supprimé avec succès.');
     }
+
+    public function storeCategorieAgenda(Request $request)
+    {
+    
+    $request->validate([
+        'nom' => 'required|string|max:255|unique:agenda_categories,nom',
+        'couleur' => 'required|string|max:7',
+        'description' => 'nullable|string',
+        'ordre' => 'nullable|integer',
+        'actif' => 'boolean'
+    ]);
+
+    $category = \App\Models\AgendaCategory::create($request->all());
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Catégorie créée avec succès',
+        'category' => $category
+    ]);
+    }
+
+    public function apiIndex()
+{
+    $categories = \App\Models\AgendaCategory::active()->ordered()->get();
+    return response()->json($categories);
+}
 }

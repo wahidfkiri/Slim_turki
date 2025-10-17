@@ -1,9 +1,9 @@
 <form id="openFolderForm" method="POST" action="{{ route('folder.open') }}">
     @csrf
     <input type="hidden" 
-           id="path" 
-           name="path" 
-           value="{{ str_replace('/', '\\', storage_path('app/public/dossiers/' . $dossier->numero_dossier . '-' . $dossier->id)) }}">
+           id="dossierId" 
+           name="dossierId" 
+           value="{{$dossier->id}}">
     <button type="submit" class="btn btn-secondary" id="openBtn">
         <i class="fa fa-folder"></i> Ouvrir dans l'explorateur
     </button>
@@ -15,8 +15,8 @@ document.getElementById('openFolderForm').addEventListener('submit', function(e)
     
     const openBtn = document.getElementById('openBtn');
     const originalText = openBtn.innerHTML;
-    const pathInput = document.getElementById('path');
-    const path = pathInput.value;
+    const pathInput = document.getElementById('dossierId');
+    const dossierId = pathInput.value;
     
     // Show loading state
     openBtn.innerHTML = '⏳ Opening...';
@@ -24,7 +24,7 @@ document.getElementById('openFolderForm').addEventListener('submit', function(e)
     
     // Create form data for proper CSRF handling
     const formData = new FormData();
-    formData.append('path', path);
+    formData.append('dossierId', dossierId);
     formData.append('_token', '{{ csrf_token() }}');
     
     fetch('{{ route("folder.open") }}', {
@@ -49,10 +49,11 @@ document.getElementById('openFolderForm').addEventListener('submit', function(e)
     .then(data => {
         const resultDiv = document.getElementById('result');
         if (data.success) {
+            console.log(data);
             resultDiv.innerHTML = `
                 <div class="alert alert-success alert-dismissible fade show">
                     ✅ ${data.message}<br>
-                    <small>Path: ${data.path}</small>
+                    <small>Path: ${data.network_path}</small>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;

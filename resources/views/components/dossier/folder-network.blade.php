@@ -14,7 +14,6 @@
     </button>
 </form>
 
-<div id="result" class="mt-3"></div>
 
 <script>
 document.getElementById('openFolderForm').addEventListener('submit', function(e) {
@@ -31,7 +30,7 @@ document.getElementById('openFolderForm').addEventListener('submit', function(e)
     formData.append('path', path);
     formData.append('_token', '{{ csrf_token() }}');
     
-    fetch('{{ route("folder.open") }}', {
+    fetch('{{ route("folder.open.network") }}', {
         method: 'POST',
         body: formData,
         headers: {
@@ -55,13 +54,13 @@ document.getElementById('openFolderForm').addEventListener('submit', function(e)
                                    class="form-control" 
                                    readonly
                                    style="font-family: monospace;">
-                            <button class="btn btn-outline-primary" onclick="copyNetworkPath()">
+                            <button class="btn btn-primary" onclick="copyNetworkPath()">
                                 📋 Copier
                             </button>
                         </div>
                     </div>
                     <div class="mt-2">
-                        <small class="text-muted">
+                        <small class="text-white">
                             <strong>Instructions :</strong><br>
                             1. Copiez le chemin ci-dessus<br>
                             2. Ouvrez l'Explorateur Windows<br>

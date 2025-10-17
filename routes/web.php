@@ -78,7 +78,8 @@ Route::get('agendas/by-date-range', [AgendaController::class, 'byDateRange']);
 Route::get('dossiers/{dossierId}/agendas', [AgendaController::class, 'byDossier']);
 Route::get('/get/agendas/data', [AgendaController::class, 'getAgendasData'])->name('agendas.data');
 Route::get('/get/agendas/data/{dossierId}', [AgendaController::class, 'getAgendasDataByDossierId'])->name('agendas.data.by.dossier');
-
+Route::post('agenda-categories', [AgendaController::class, 'storeCategorieAgenda'])->name('agenda-categories.store');
+Route::get('/api/agenda-categories', [AgendaController::class, 'apiIndex'])->name('agenda-categories.api');
 Route::resource('tasks', TaskController::class);
 Route::get('tasks/status/{statut}', [TaskController::class, 'byStatus']);
 Route::get('users/{userId}/tasks', [TaskController::class, 'byUser']);
@@ -124,6 +125,7 @@ Route::prefix('email')->group(function () {
     
 Route::get('/open-folder', [ExplorerController::class, 'showForm'])->name('folder.form');
 Route::post('/open-folder', [ExplorerController::class, 'openFolder'])->name('folder.open');
+Route::post('/open-folder-network', [ExplorerController::class, 'openFolderNetwork'])->name('folder.open.network');
     });
 
 

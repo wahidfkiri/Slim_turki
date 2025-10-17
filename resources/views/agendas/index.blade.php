@@ -63,11 +63,15 @@
                             <!-- Filtre par catégorie -->
                             <div class="form-group">
                                 <label>Catégories</label>
+                                <a href="" style="float:right;" class="text-primary" data-toggle="modal" data-target="#createCategorieModal">Ajouter </a>
+                                @foreach($categories as $categorie)
                                 <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" type="checkbox" id="filter_rdv" checked data-category="rdv">
-                                    <label for="filter_rdv" class="custom-control-label">Rendez-vous</label>
+                                <span class="legend-color" style="background-color: {{$categorie->couleur}}; margin-right:30px;"></span>
+                                    <input class="custom-control-input" type="checkbox" id="filter_{{$categorie->nom}}" checked data-category="{{$categorie->nom}}">
+                                    <label for="filter_{{$categorie->nom}}" class="custom-control-label">{{$categorie->nom}}</label>
                                 </div>
-                                <div class="custom-control custom-checkbox">
+                                @endforeach
+                                <!-- <div class="custom-control custom-checkbox">
                                     <input class="custom-control-input" type="checkbox" id="filter_audience" checked data-category="audience">
                                     <label for="filter_audience" class="custom-control-label">Audience</label>
                                 </div>
@@ -82,7 +86,7 @@
                                 <div class="custom-control custom-checkbox">
                                     <input class="custom-control-input" type="checkbox" id="filter_autre" checked data-category="autre">
                                     <label for="filter_autre" class="custom-control-label">Autre</label>
-                                </div>
+                                </div> -->
                             </div>
 
                             <!-- Filtre par utilisateur -->
@@ -109,34 +113,7 @@
                         </div>
                     </div>
 
-                    <!-- Légende -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Légende</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: #3c8dbc"></span>
-                                <span class="legend-text">Rendez-vous</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: #f39c12"></span>
-                                <span class="legend-text">Audience</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: #00a65a"></span>
-                                <span class="legend-text">Délai</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: #dd4b39"></span>
-                                <span class="legend-text">Tâche</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: #605ca8"></span>
-                                <span class="legend-text">Autre</span>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
 
                 <!-- Calendar - Prend toute la largeur -->
@@ -205,11 +182,9 @@
                                 <label for="categorie">Catégorie *</label>
                                 <select class="form-control" id="categorie" name="categorie" required>
                                     <option value="">Sélectionnez une catégorie</option>
-                                    <option value="rdv">Rendez-vous</option>
-                                    <option value="audience">Audience</option>
-                                    <option value="delai">Délai</option>
-                                    <option value="tache">Tâche</option>
-                                    <option value="autre">Autre</option>
+                                    @foreach($categories as $categorie)
+                                    <option value="{{$categorie->nom}}">{{$categorie->nom}}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -310,6 +285,43 @@
     </div>
 </div>
 
+<!-- Modal pour créer une catégorie -->
+<div class="modal fade" id="createCategorieModal" tabindex="-1" role="dialog" aria-labelledby="createEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createEventModalLabel">Nouvel catégorie</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="createCategorieForm" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="categorie">Nom Catégorie *</label>
+                                <input type="text" class="form-control" id="categorie_name" name="categorie" required>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="date_debut">Couleur *</label>
+                                <input type="color" class="form-control" id="color" name="color" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary" id="btnCreateCategorie">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Modal pour modifier un événement -->
 <div class="modal fade" id="editEventModal" tabindex="-1" role="dialog" aria-labelledby="editEventModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -337,11 +349,9 @@
                                 <label for="edit_categorie">Catégorie *</label>
                                 <select class="form-control" id="edit_categorie" name="categorie" required>
                                     <option value="">Sélectionnez une catégorie</option>
-                                    <option value="rdv">Rendez-vous</option>
-                                    <option value="audience">Audience</option>
-                                    <option value="delai">Délai</option>
-                                    <option value="tache">Tâche</option>
-                                    <option value="autre">Autre</option>
+                                    @foreach($categories as $categorie)
+                                    <option value="{{$categorie->nom}}">{{$categorie->nom}}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -394,7 +404,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="edit_utilisateur_id">Assigné à </label>
-                                <select class="form-control select2" id="edit_utilisateur_id" name="utilisateur_id">
+                                <select class="form-control" id="edit_utilisateur_id" name="utilisateur_id">
                                     <option value="">Sélectionnez un utilisateur</option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -411,7 +421,7 @@
                                 <select class="form-control" id="edit_dossier_id" name="dossier_id">
                                     <option value="">Sélectionnez un dossier</option>
                                     @foreach($dossiers as $dossier)
-                                        <option value="{{ $dossier->id }}">{{ $dossier->reference }}</option>
+                                        <option value="{{ $dossier->id }}">{{ $dossier->numero_dossier }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -527,92 +537,127 @@ document.addEventListener('DOMContentLoaded', function() {
     var filtersVisible = false;
     var calendar;
 
-    // Initialize Select2
-    $('.select2').select2({
-        theme: 'bootstrap4'
-    });
 
     // Set today's date as default for new events
     $('#date_debut').val(new Date().toISOString().split('T')[0]);
 
     // Initialize Calendar
-    function initializeCalendar() {
-        calendar = new FullCalendar.Calendar(calendarEl, {
-            locale: 'fr',
-            timeZone: 'local',
-            initialView: 'dayGridMonth',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+   // Initialize Calendar
+function initializeCalendar() {
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'fr',
+        timeZone: 'local',
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        },
+        views: {
+            dayGridMonth: { 
+                buttonText: 'Mois',
+                dayMaxEventRows: 3,
+                dayMaxEvents: true
             },
-            views: {
-                dayGridMonth: { 
-                    buttonText: 'Mois',
-                    dayMaxEventRows: 3, // Limite le nombre d'événements affichés par jour
-                    dayMaxEvents: true // Affiche "+X more" si trop d'événements
-                },
-                timeGridWeek: { buttonText: 'Semaine' },
-                timeGridDay: { buttonText: 'Jour' },
-                listWeek: { buttonText: 'Liste' }
+            timeGridWeek: { buttonText: 'Semaine' },
+            timeGridDay: { buttonText: 'Jour' },
+            listWeek: { buttonText: 'Liste' }
+        },
+        buttonText: {
+            today: 'Aujourd\'hui',
+            month: 'Mois',
+            week: 'Semaine',
+            day: 'Jour',
+            list: 'Liste'
+        },
+        navLinks: true,
+        editable: false,
+        selectable: true,
+        nowIndicator: true,
+        dayMaxEvents: true,
+        height: 'auto',
+        contentHeight: 'auto',
+        events: {
+            url: '{{ route("agendas.data") }}',
+            method: 'GET',
+            extraParams: function() {
+                return {
+                    categories: getSelectedCategories(),
+                    utilisateur_id: $('#filter_utilisateur').val(),
+                    dossier_id: $('#filter_dossier').val()
+                };
             },
-            buttonText: {
-                today: 'Aujourd\'hui',
-                month: 'Mois',
-                week: 'Semaine',
-                day: 'Jour',
-                list: 'Liste'
-            },
-            navLinks: true,
-            editable: false,
-            selectable: true,
-            nowIndicator: true,
-            dayMaxEvents: true,
-            height: 'auto',
-            contentHeight: 'auto',
-            events: {
-                url: '{{ route("agendas.data") }}',
-                method: 'GET',
-                extraParams: function() {
-                    return {
-                        categories: getSelectedCategories(),
-                        utilisateur_id: $('#filter_utilisateur').val(),
-                        dossier_id: $('#filter_dossier').val()
-                    };
-                },
-                failure: function() {
-                    showAlert('Erreur', 'Erreur lors du chargement des événements', 'error');
-                }
-            },
-            eventClick: function(info) {
-                currentEventId = info.event.id;
-                currentEventTitle = info.event.title;
-                showEventDetails(info.event);
-            },
-            dateClick: function(info) {
-                @if(auth()->user()->hasPermission('create_agendas'))
-                    $('#date_debut').val(info.dateStr);
-                    $('#createEventModal').modal('show');
-                @endif
-            },
-            eventDidMount: function(info) {
-                // Tooltip avec les détails de l'événement
-                $(info.el).tooltip({
-                    title: info.event.title + '<br>' + 
-                           (info.event.extendedProps.description || '') + '<br>' +
-                           (info.event.extendedProps.dossier || ''),
-                    html: true,
-                    placement: 'top'
-                });
-            },
-            windowResize: function(view) {
-                // Redimensionner le calendrier quand la fenêtre change
-                calendar.updateSize();
+            failure: function() {
+                showAlert('Erreur', 'Erreur lors du chargement des événements', 'error');
             }
-        });
+        },
+        eventClick: function(info) {
+            currentEventId = info.event.id;
+            currentEventTitle = info.event.title;
+            showEventDetails(info.event);
+        },
+        dateClick: function(info) {
+            @if(auth()->user()->hasPermission('create_agendas'))
+                $('#date_debut').val(info.dateStr);
+                $('#createEventModal').modal('show');
+            @endif
+        },
+        eventDidMount: function(info) {
+            // Apply custom colors and tooltips
+            var event = info.event;
+            
+            // Tooltip avec les détails de l'événement
+            var tooltipContent = event.title;
+            if (event.extendedProps.description) {
+                tooltipContent += '<br>' + event.extendedProps.description;
+            }
+            if (event.extendedProps.dossier) {
+                tooltipContent += '<br>Dossier: ' + event.extendedProps.dossier;
+            }
+            if (event.extendedProps.intervenant) {
+                tooltipContent += '<br>Intervenant: ' + event.extendedProps.intervenant;
+            }
+            
+            $(info.el).tooltip({
+                title: tooltipContent,
+                html: true,
+                placement: 'top'
+            });
+            
+            // Ensure colors are applied correctly
+            if (event.backgroundColor) {
+                info.el.style.backgroundColor = event.backgroundColor;
+            }
+            if (event.textColor) {
+                info.el.style.color = event.textColor;
+            }
+        },
+        windowResize: function(view) {
+            calendar.updateSize();
+        },
+        eventContent: function(arg) {
+            // Custom event content to ensure colors display properly
+            var title = arg.event.title;
+            var timeText = '';
+            
+            if (!arg.event.allDay && arg.event.start) {
+                var startTime = arg.event.start.toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                timeText = startTime + ' ';
+            }
+            
+            return {
+                html: `<div class="fc-event-main-frame">
+                         <div class="fc-event-title">${title}</div>
+                       </div>`
+            };
+        }
+    });
 
-        calendar.render();
-    }
+    calendar.render();
+}
 
     // Initialiser le calendrier
     initializeCalendar();
@@ -724,15 +769,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Fonction pour obtenir le label de la catégorie
-    function getCategoryLabel(categorie) {
-        var labels = {
-            'rdv': 'Rendez-vous',
-            'audience': 'Audience',
-            'delai': 'Délai',
-            'tache': 'Tâche',
-            'autre': 'Autre'
-        };
-        return labels[categorie] || categorie;
+    function getCategoryLabel(categorieName) {
+        var labels = {!! json_encode($categories->pluck('nom','nom')) !!};
+        return labels[categorieName] || categorieName;
     }
 
     // Gestion de la case "Journée entière"
@@ -901,6 +940,103 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 150);
         }
     });
+
+    // AJAX function to create new category
+$('#createCategorieForm').submit(function(e) {
+    e.preventDefault();
+
+    var formData = {
+        nom: $('#categorie_name').val(),
+        couleur: $('#color').val(),
+        _token: '{{ csrf_token() }}'
+    };
+
+    $.ajax({
+        url: '{{ route("agenda-categories.store") }}',
+        type: 'POST',
+        data: formData,
+        success: function(response) {
+            $('#createCategorieModal').modal('hide');
+            $('#createCategorieForm')[0].reset();
+            
+            // Add the new category to the filter list
+            addCategoryToFilter(response.category);
+            
+            // Add the new category to event creation form
+            addCategoryToEventForm(response.category);
+            
+            showAlert('Succès', 'Catégorie créée avec succès', 'success');
+        },
+        error: function(xhr) {
+            let errorMessage = 'Erreur de validation:\n';
+            if (xhr.responseJSON && xhr.responseJSON.errors) {
+                $.each(xhr.responseJSON.errors, function(key, value) {
+                    errorMessage += '• ' + value[0] + '\n';
+                });
+            } else {
+                errorMessage += 'Une erreur est survenue.';
+            }
+            showAlert('Erreur', errorMessage, 'error');
+        }
+    });
+});
+
+// Function to add new category to filter list
+function addCategoryToFilter(category) {
+    var categoryId = 'filter_' + category.id;
+    var checkboxHtml = `
+        <div class="custom-control custom-checkbox">
+            <span class="legend-color" style="background-color: ${category.couleur}; margin-right:30px;"></span>
+            <input class="custom-control-input" type="checkbox" id="${categoryId}" checked data-category="${category.id}">
+            <label for="${categoryId}" class="custom-control-label">${category.nom}</label>
+        </div>
+    `;
+    
+    // Append to the filter categories container
+    $('.form-group:has(label:contains("Catégories"))').append(checkboxHtml);
+    
+    // Add event listener for the new checkbox
+    $('#' + categoryId).change(function() {
+        calendar.refetchEvents();
+    });
+}
+
+// Function to add new category to event creation form
+function addCategoryToEventForm(category) {
+    var optionHtml = `<option value="${category.id}">${category.nom}</option>`;
+    
+    // Add to create event form
+    $('#categorie').append(optionHtml);
+    
+    // Add to edit event form
+    $('#edit_categorie').append(optionHtml);
+}
+
+// Function to load categories dynamically (optional - if you want to refresh categories)
+function loadCategories() {
+    $.ajax({
+        url: '{{ route("agenda-categories.api") }}',
+        type: 'GET',
+        success: function(response) {
+            // Clear existing categories from forms
+            $('#categorie').find('option:not(:first)').remove();
+            $('#edit_categorie').find('option:not(:first)').remove();
+            
+            // Clear filter categories (keep the "Ajouter" link)
+            $('.form-group:has(label:contains("Catégories")) .custom-control.custom-checkbox').remove();
+            
+            // Add all categories
+            response.forEach(function(category) {
+                addCategoryToFilter(category);
+                addCategoryToEventForm(category);
+            });
+        },
+        error: function() {
+            showAlert('Erreur', 'Erreur lors du chargement des catégories', 'error');
+        }
+    });
+}
+
 });
 </script>
 @endsection

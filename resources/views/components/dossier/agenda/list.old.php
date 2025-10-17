@@ -1,11 +1,7 @@
-<div class="tab-pane fade" id="agenda" role="tabpanel" aria-labelledby="agenda-tab">
+    <div class="tab-pane fade" id="agenda" role="tabpanel" aria-labelledby="agenda-tab">
      <div class="p-3">
         <h5 class="text-primary mb-3"><i class="fas fa-calendar-alt"></i> Agenda</h5>
-
-         <!-- Main content -->
-    <section class="content">
-        <div class="container-fluid">
-            <!-- Boutons d'action en haut à droite -->
+        
             <div class="row mb-3">
                 <div class="col-md-12">
                     <div class="d-flex justify-content-end">
@@ -84,7 +80,7 @@
                                 <label for="filter_dossier">Dossier</label>
                                 <select class="form-control" id="filter_dossier">
                                     <option value="">Tous les dossiers</option>
-                                        <option value="{{ $dossier->id }}" selected>{{ $dossier->numero_dossier }}</option>
+                                        <option value="{{ $dossier->id }}">{{ $dossier->numero_dossier }}</option>
                                 </select>
                             </div>
                         </div>
@@ -130,14 +126,9 @@
                     </div>
                 </div>
             </div>
-        </div><!-- /.container-fluid -->
-    </section>
-    <!-- /.content -->
-     </div>
 </div>
-
-
-<!-- Modal pour les détails de l'événement -->
+</div>
+       <!-- Modal pour les détails de l'événement -->
 <div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="eventModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -151,13 +142,13 @@
                 <!-- Les détails seront chargés ici -->
             </div>
             <div class="modal-footer">
-                @if(auth()->user()->hasPermission('edit_agendas'))
+                @can('edit_agendas')
                     <button type="button" class="btn btn-primary" id="btnEditEvent">Modifier</button>
-                @endif
-                @if(auth()->user()->hasPermission('delete_agendas'))
+                @endcan
+                @can('delete_agendas')
                     <button type="button" class="btn btn-danger" id="btnDeleteEvent">Supprimer</button>
-                @endif
-                <!-- <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button> -->
+                @endcan
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
             </div>
         </div>
     </div>
@@ -173,7 +164,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="createEventForm" method="POST" enctype="multipart/form-data">
+            <form id="createEventForm" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="row">
@@ -244,8 +235,8 @@
                         @if(auth()->user()->hasRole('admin'))
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="utilisateur_id">Assigné à</label>
-                                <select class="form-control" id="utilisateur_id" name="utilisateur_id">
+                                <label for="utilisateur_id">Assigné à *</label>
+                                <select class="form-control" id="utilisateur_id" name="utilisateur_id" required>
                                     <option value="">Sélectionnez un utilisateur</option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -258,8 +249,9 @@
                         @endif
                         <div class="@if(auth()->user()->hasRole('admin')) col-md-6 @else col-md-12 @endif">
                             <div class="form-group">
-                                <label for="dossier_id">Dossier 11</label>
+                                <label for="dossier_id">Dossier</label>
                                 <select class="form-control" id="dossier_id" name="dossier_id">
+                                    <option value="">Sélectionnez un dossier</option>
                                         <option value="{{ $dossier->id }}" selected>{{ $dossier->numero_dossier }}</option>
                                 </select>
                             </div>
@@ -277,8 +269,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="file">Pièce Jointe</label>
-                        <input type="file" class="form-control" id="file" name="file">
+                        <label for="couleur">Couleur</label>
+                        <input type="color" class="form-control" id="couleur" name="couleur" value="#3c8dbc">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -300,7 +292,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="editEventForm" method="POST" enctype="multipart/form-data">
+            <form id="editEventForm" method="POST">
                 @csrf
                 @method('PUT')
                 <input type="hidden" id="edit_event_id" name="id">
@@ -373,8 +365,8 @@
                         @if(auth()->user()->hasRole('admin'))
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="edit_utilisateur_id">Assigné à </label>
-                                <select class="form-control" id="edit_utilisateur_id" name="utilisateur_id">
+                                <label for="edit_utilisateur_id">Assigné à *</label>
+                                <select class="form-control select2" id="edit_utilisateur_id" name="utilisateur_id" required>
                                     <option value="">Sélectionnez un utilisateur</option>
                                     @foreach($users as $user)
                                         <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -389,7 +381,8 @@
                             <div class="form-group">
                                 <label for="edit_dossier_id">Dossier</label>
                                 <select class="form-control" id="edit_dossier_id" name="dossier_id">
-                                        <option value="{{ $dossier->id }}" selected>{{ $dossier->numero_dossier }}</option>
+                                    <option value="">Sélectionnez un dossier</option>
+                                        <option value="{{ $dossier->id }}" selected>{{ $dossier->reference }}</option>
                                 </select>
                             </div>
                         </div>
@@ -407,7 +400,7 @@
 
                     <div class="form-group">
                         <label for="edit_couleur">Couleur</label>
-                        <input type="file" class="form-control" id="file" name="file">
+                        <input type="color" class="form-control" id="edit_couleur" name="couleur" value="#3c8dbc">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -504,127 +497,92 @@ document.addEventListener('DOMContentLoaded', function() {
     var filtersVisible = false;
     var calendar;
 
+    // Initialize Select2
+    $('.select2').select2({
+        theme: 'bootstrap4'
+    });
 
     // Set today's date as default for new events
     $('#date_debut').val(new Date().toISOString().split('T')[0]);
 
     // Initialize Calendar
-   // Initialize Calendar
-function initializeCalendar() {
-    calendar = new FullCalendar.Calendar(calendarEl, {
-        locale: 'fr',
-        timeZone: 'local',
-        initialView: 'listWeek',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-        },
-        views: {
-            dayGridMonth: { 
-                buttonText: 'Mois',
-                dayMaxEventRows: 3,
-                dayMaxEvents: true
+    function initializeCalendar() {
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'fr',
+            timeZone: 'local',
+            initialView: 'listWeek',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
             },
-            timeGridWeek: { buttonText: 'Semaine' },
-            timeGridDay: { buttonText: 'Jour' },
-            listWeek: { buttonText: 'Liste' }
-        },
-        buttonText: {
-            today: 'Aujourd\'hui',
-            month: 'Mois',
-            week: 'Semaine',
-            day: 'Jour',
-            list: 'Liste'
-        },
-        navLinks: true,
-        editable: false,
-        selectable: true,
-        nowIndicator: true,
-        dayMaxEvents: true,
-        height: 'auto',
-        contentHeight: 'auto',
-        events: {
+            views: {
+                dayGridMonth: { 
+                    buttonText: 'Mois',
+                    dayMaxEventRows: 3, // Limite le nombre d'événements affichés par jour
+                    dayMaxEvents: true // Affiche "+X more" si trop d'événements
+                },
+                timeGridWeek: { buttonText: 'Semaine' },
+                timeGridDay: { buttonText: 'Jour' },
+                listWeek: { buttonText: 'Liste' }
+            },
+            buttonText: {
+                today: 'Aujourd\'hui',
+                month: 'Mois',
+                week: 'Semaine',
+                day: 'Jour',
+                list: 'Liste'
+            },
+            navLinks: true,
+            editable: false,
+            selectable: true,
+            nowIndicator: true,
+            dayMaxEvents: true,
+            height: 'auto',
+            contentHeight: 'auto',
+            events: {
             url: '{{ route("agendas.data.by.dossier", $dossier->id) }}',
-            method: 'GET',
-            extraParams: function() {
-                return {
-                    categories: getSelectedCategories(),
-                    utilisateur_id: $('#filter_utilisateur').val(),
-                    dossier_id: $('#filter_dossier').val()
-                };
+                method: 'GET',
+                extraParams: function() {
+                    return {
+                        categories: getSelectedCategories(),
+                        utilisateur_id: $('#filter_utilisateur').val(),
+                        dossier_id: $('#filter_dossier').val()
+                    };
+                },
+                failure: function() {
+                    showAlert('Erreur', 'Erreur lors du chargement des événements', 'error');
+                }
             },
-            failure: function() {
-                showAlert('Erreur', 'Erreur lors du chargement des événements', 'error');
-            }
-        },
-        eventClick: function(info) {
-            currentEventId = info.event.id;
-            currentEventTitle = info.event.title;
-            showEventDetails(info.event);
-        },
-        dateClick: function(info) {
-            @if(auth()->user()->hasPermission('create_agendas'))
-                $('#date_debut').val(info.dateStr);
-                $('#createEventModal').modal('show');
-            @endif
-        },
-        eventDidMount: function(info) {
-            // Apply custom colors and tooltips
-            var event = info.event;
-            
-            // Tooltip avec les détails de l'événement
-            var tooltipContent = event.title;
-            if (event.extendedProps.description) {
-                tooltipContent += '<br>' + event.extendedProps.description;
-            }
-            if (event.extendedProps.dossier) {
-                tooltipContent += '<br>Dossier: ' + event.extendedProps.dossier;
-            }
-            if (event.extendedProps.intervenant) {
-                tooltipContent += '<br>Intervenant: ' + event.extendedProps.intervenant;
-            }
-            
-            $(info.el).tooltip({
-                title: tooltipContent,
-                html: true,
-                placement: 'top'
-            });
-            
-            // Ensure colors are applied correctly
-            if (event.backgroundColor) {
-                info.el.style.backgroundColor = event.backgroundColor;
-            }
-            if (event.textColor) {
-                info.el.style.color = event.textColor;
-            }
-        },
-        windowResize: function(view) {
-            calendar.updateSize();
-        },
-        eventContent: function(arg) {
-            // Custom event content to ensure colors display properly
-            var title = arg.event.title;
-            var timeText = '';
-            
-            if (!arg.event.allDay && arg.event.start) {
-                var startTime = arg.event.start.toLocaleTimeString('fr-FR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+            eventClick: function(info) {
+                currentEventId = info.event.id;
+                currentEventTitle = info.event.title;
+                showEventDetails(info.event);
+            },
+            dateClick: function(info) {
+                @if(auth()->user()->hasPermission('create_agendas'))
+                    $('#date_debut').val(info.dateStr);
+                    $('#createEventModal').modal('show');
+                @endif
+            },
+            eventDidMount: function(info) {
+                // Tooltip avec les détails de l'événement
+                $(info.el).tooltip({
+                    title: info.event.title + '<br>' + 
+                           (info.event.extendedProps.description || '') + '<br>' +
+                           (info.event.extendedProps.dossier || ''),
+                    html: true,
+                    placement: 'top'
                 });
-                timeText = startTime + ' ';
+            },
+            windowResize: function(view) {
+                // Redimensionner le calendrier quand la fenêtre change
+                calendar.updateSize();
             }
-            
-            return {
-                html: `<div class="fc-event-main-frame">
-                         <div class="fc-event-title">${title}</div>
-                       </div>`
-            };
-        }
-    });
+        });
 
-    calendar.render();
-}
+        calendar.render();
+    }
 
     // Initialiser le calendrier
     initializeCalendar();

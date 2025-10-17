@@ -30,205 +30,169 @@
                             <h3 class="card-title">Informations de la facture</h3>
                             <div class="card-tools">
                                 @if(auth()->user()->hasPermission('edit_factures'))
-                                    <a href="{{ route('factures.edit', $facture) }}" class="btn btn-warning btn-sm">
+                                    <a href="{{ route('factures.edit', $facture->id ?? '') }}" class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i> Modifier
                                     </a>
                                 @endif
+                                <a href="{{ route('factures.index') }}" class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-arrow-left"></i> Retour
+                                </a>
                             </div>
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <!-- Type de pièce -->
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="type_piece">Type de pièce</label>
-                                        @php
-                                            $typeColors = [
-                                                'facture' => 'primary',
-                                                'note_frais' => 'info',
-                                                'note_provision' => 'warning',
-                                                'avoir' => 'success'
-                                            ];
-                                            $typeClass = $typeColors[$facture->type_piece] ?? 'secondary';
-                                        @endphp
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            <span class="badge badge-{{ $typeClass }} text-uppercase">
-                                                {{ str_replace('_', ' ', $facture->type_piece) }}
-                                            </span>
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Numéro -->
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="numero">Numéro</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded font-weight-bold">
-                                            {{ $facture->numero }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Date d'émission -->
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="date_emission">Date d'émission</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            {{ $facture->date_emission->format('d/m/Y') }}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <!-- Dossier -->
+                                <!-- Informations principales -->
                                 <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="dossier_id">Dossier</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            @if($facture->dossier)
-                                                <a href="{{ route('dossiers.show', $facture->dossier) }}" class="text-primary">
-                                                    {{ $facture->dossier->numero_dossier }}
-                                                </a>
-                                                @if($facture->dossier->nom_dossier)
-                                                    <br><small class="text-muted">{{ $facture->dossier->nom_dossier }}</small>
-                                                @endif
-                                            @else
-                                                <span class="text-muted">Non assigné</span>
-                                            @endif
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Client -->
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="client_id">Client</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            @if($facture->client)
-                                                {{ $facture->client->identite_fr ?? $facture->client->identite_ar }}
-                                                @if($facture->client->email)
-                                                    <br><small class="text-muted">{{ $facture->client->email }}</small>
-                                                @endif
-                                            @else
-                                                <span class="text-muted">Non assigné</span>
-                                            @endif
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Montants -->
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="montant_ht">Montant HT (DT)</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            {{ number_format($facture->montant_ht, 2, ',', ' ') }} DT
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="montant_tva">Montant TVA (DT)</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            {{ number_format($facture->montant_tva, 2, ',', ' ') }} DT
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <div class="form-group">
-                                        <label for="montant">Montant TTC (DT)</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded font-weight-bold text-success">
-                                            {{ number_format($facture->montant, 2, ',', ' ') }} DT
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Statut -->
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="statut">Statut</label>
-                                        <p class="form-control-plaintext bg-light p-2 rounded">
-                                            @if($facture->statut == 'payé')
-                                                <span class="badge badge-success text-uppercase">
-                                                    <i class="fas fa-check-circle"></i> Payé
+                                    <h5 class="section-title">Informations principales</h5>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th style="width: 40%;">Type de pièce</th>
+                                            <td>
+                                                @php
+                                                    $typeColors = [
+                                                        'facture' => 'primary',
+                                                        'note_frais' => 'info',
+                                                        'note_provision' => 'warning',
+                                                        'avoir' => 'success'
+                                                    ];
+                                                    $typeClass = $typeColors[$facture->type_piece ?? ''] ?? 'secondary';
+                                                @endphp
+                                                <span class="badge badge-{{ $typeClass }} text-uppercase">
+                                                    {{ isset($facture->type_piece) ? str_replace('_', ' ', $facture->type_piece) : 'Non spécifié' }}
                                                 </span>
-                                            @else
-                                                <span class="badge badge-danger text-uppercase">
-                                                    <i class="fas fa-clock"></i> Non payé
-                                                </span>
-                                            @endif
-                                        </p>
-                                    </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Numéro</th>
+                                            <td class="font-weight-bold">{{ $facture->numero ?? 'N/A' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date d'émission</th>
+                                            <td>{{ ($facture->date_emission ?? now())->format('d/m/Y') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Statut</th>
+                                            <td>
+                                                @if(($facture->statut ?? '') == 'payé')
+                                                    <span class="badge badge-success text-uppercase">
+                                                        <i class="fas fa-check-circle"></i> Payé
+                                                    </span>
+                                                @else
+                                                    <span class="badge badge-danger text-uppercase">
+                                                        <i class="fas fa-clock"></i> Non payé
+                                                    </span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <!-- Détails financiers -->
+                                <div class="col-md-6">
+                                    <h5 class="section-title">Détails financiers</h5>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th style="width: 40%;">Montant HT</th>
+                                            <td>{{ number_format($facture->montant_ht ?? 0, 2, ',', ' ') }} DT</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Montant TVA</th>
+                                            <td>{{ number_format($facture->montant_tva ?? 0, 2, ',', ' ') }} DT</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Montant TTC</th>
+                                            <td class="font-weight-bold text-success" style="font-size: 1.2em;">
+                                                {{ number_format($facture->montant ?? 0, 2, ',', ' ') }} DT
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
                             </div>
 
-                            <!-- Pièce jointe -->
-                            <div class="form-group">
-                                <label for="piece_jointe">Pièce jointe</label>
-                                @if($facture->piece_jointe)
-                                    <div class="alert alert-success">
-                                        <i class="fas 
-                                            @if($facture->piece_jointe_extension == 'pdf') fa-file-pdf
-                                            @elseif(in_array($facture->piece_jointe_extension, ['doc', 'docx'])) fa-file-word
-                                            @elseif(in_array($facture->piece_jointe_extension, ['xls', 'xlsx'])) fa-file-excel
-                                            @elseif(in_array($facture->piece_jointe_extension, ['jpg', 'jpeg', 'png', 'gif'])) fa-file-image
-                                            @else fa-file
-                                            @endif
-                                        "></i>
-                                        <a href="{{ $facture->piece_jointe_url }}" target="_blank" class="ml-2 font-weight-bold">
-                                            {{ $facture->piece_jointe }}
-                                        </a>
-                                        <span class="badge badge-info ml-2">
-                                            {{ strtoupper($facture->piece_jointe_extension) }}
-                                        </span>
-                                        <small class="d-block mt-1 text-muted">
-                                            Téléchargé le {{ $facture->updated_at->format('d/m/Y à H:i') }}
-                                        </small>
-                                    </div>
-                                @else
-                                    <p class="form-control-plaintext bg-light p-2 rounded text-muted">
-                                        <i class="fas fa-file"></i> Aucune pièce jointe
-                                    </p>
-                                @endif
+                            <div class="row mt-4">
+                                <!-- Relations -->
+                                <div class="col-md-6">
+                                    <h5 class="section-title">Relations</h5>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th style="width: 40%;">Dossier</th>
+                                            <td>
+                                                @if($facture->dossier ?? null)
+                                                    <a href="{{ route('dossiers.show', $facture->dossier->id ?? '') }}" class="text-primary">
+                                                        <i class="fa fa-eye"></i> {{ $facture->dossier->numero_dossier ?? 'N/A' }}
+                                                    </a>
+                                                    @if($facture->dossier->nom_dossier ?? null)
+                                                        <br><small class="text-muted">{{ $facture->dossier->nom_dossier }}</small>
+                                                    @endif
+                                                @else
+                                                    <span class="text-muted">Non assigné</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Client</th>
+                                            <td>
+                                                @if($facture->client ?? null)
+                                                    {{ $facture->client->identite_fr ?? $facture->client->identite_ar ?? 'N/A' }}
+                                                    @if($facture->client->email ?? null)
+                                                        <br><small class="text-muted">{{ $facture->client->email }}</small>
+                                                    @endif
+                                                @else
+                                                    <span class="text-muted">Non assigné</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
+                                <!-- Métadonnées -->
+                                <div class="col-md-6">
+                                    <h5 class="section-title">Métadonnées</h5>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th style="width: 40%;">Créé le</th>
+                                            <td>{{ ($facture->created_at ?? now())->format('d/m/Y à H:i') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Modifié le</th>
+                                            <td>{{ ($facture->updated_at ?? now())->format('d/m/Y à H:i') }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Pièce jointe</th>
+                                            <td>
+                                                @if($facture->piece_jointe ?? null)
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas 
+                                                            @if(($facture->piece_jointe_extension ?? '') == 'pdf') fa-file-pdf text-danger
+                                                            @elseif(in_array($facture->piece_jointe_extension ?? '', ['doc', 'docx'])) fa-file-word text-primary
+                                                            @elseif(in_array($facture->piece_jointe_extension ?? '', ['xls', 'xlsx'])) fa-file-excel text-success
+                                                            @elseif(in_array($facture->piece_jointe_extension ?? '', ['jpg', 'jpeg', 'png', 'gif'])) fa-file-image text-info
+                                                            @else fa-file text-secondary
+                                                            @endif
+                                                        "></i>
+                                                        <a href="{{ $facture->piece_jointe_url ?? '#' }}" target="_blank" class="ml-2">
+                                                            {{ $facture->piece_jointe }}
+                                                        </a>
+                                                        <span class="badge badge-info ml-2">
+                                                            {{ strtoupper($facture->piece_jointe_extension ?? 'N/A') }}
+                                                        </span>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">Aucune pièce jointe</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
 
                             <!-- Commentaires -->
-                            <div class="form-group">
-                                <label for="commentaires">Commentaires</label>
-                                <div class="bg-light p-3 rounded" style="min-height: 100px;">
-                                    @if($facture->commentaires)
-                                        {!! nl2br(e($facture->commentaires)) !!}
-                                    @else
-                                        <span class="text-muted">Aucun commentaire</span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- Informations de suivi -->
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label>Informations de suivi</label>
-                                        <div class="alert alert-info" style="color:black;">
-                                            <small>
-                                                <strong>Créé le:</strong> {{ $facture->created_at->format('d/m/Y à H:i') }}<br>
-                                                <strong>Modifié le:</strong> {{ $facture->updated_at->format('d/m/Y à H:i') }}
-                                                @if($facture->dossier)
-                                                    <br><strong>Dossier:</strong> {{ $facture->dossier->numero_dossier }}
-                                                    @if($facture->dossier->nom_dossier)
-                                                        - {{ $facture->dossier->nom_dossier }}
-                                                    @endif
-                                                @endif
-                                                @if($facture->client)
-                                                    <br><strong>Client:</strong> {{ $facture->client->identite_fr ?? $facture->client->identite_ar }}
-                                                @endif
-                                            </small>
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <h5 class="section-title">Commentaires</h5>
+                                    <div class="card">
+                                        <div class="card-body bg-light">
+                                            <p class="mb-0" style="white-space: pre-wrap;">{{ $facture->commentaires ?? 'Aucun commentaire' }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -237,22 +201,26 @@
                         <!-- /.card-body -->
 
                         <div class="card-footer">
-                            <a href="{{ route('factures.index') }}" class="btn btn-default btn-lg">
-                                <i class="fas fa-arrow-left"></i> Retour à la liste
-                            </a>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <a href="{{ route('factures.index') }}" class="btn btn-default">
+                                        <i class="fas fa-arrow-left"></i> Retour à la liste
+                                    </a>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    @if(auth()->user()->hasPermission('edit_factures'))
+                                        <a href="{{ route('factures.edit', $facture->id ?? '') }}" class="btn btn-warning">
+                                            <i class="fas fa-edit"></i> Modifier
+                                        </a>
+                                    @endif
 
-                            @if(auth()->user()->hasPermission('edit_factures'))
-                                <a href="{{ route('factures.edit', $facture) }}" class="btn btn-warning btn-lg">
-                                    <i class="fas fa-edit"></i> Modifier
-                                </a>
-                            @endif
-
-                            @if(auth()->user()->hasPermission('delete_factures'))
-                                <button type="button" class="btn btn-danger btn-lg float-right" 
-                                        onclick="confirmDelete({{ $facture->id }}, '{{ addslashes($facture->numero) }}')">
-                                    <i class="fas fa-trash"></i> Supprimer
-                                </button>
-                            @endif
+                                    @if(auth()->user()->hasPermission('delete_factures') && ($facture->id ?? null))
+                                        <button type="button" class="btn btn-danger" onclick="confirmDelete({{ $facture->id }}, '{{ addslashes($facture->numero ?? 'cette facture') }}')">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <!-- /.card -->
@@ -264,9 +232,9 @@
 </div>
 
 <!-- Formulaire de suppression -->
-@if(auth()->user()->hasPermission('delete_factures'))
+@if(auth()->user()->hasPermission('delete_factures') && ($facture->id ?? null))
     <form id="delete-form-{{ $facture->id }}" 
-          action="{{ route('factures.destroy', $facture) }}" 
+          action="{{ route('factures.destroy', $facture->id) }}" 
           method="POST" class="d-none">
         @csrf
         @method('DELETE')
@@ -281,9 +249,11 @@
         if (confirm('Êtes-vous sûr de vouloir supprimer la facture "' + factureNumero + '" ? Cette action est irréversible.')) {
             // Afficher un indicateur de chargement
             const deleteButton = document.querySelector('.btn-danger');
-            const originalText = deleteButton.innerHTML;
-            deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression...';
-            deleteButton.disabled = true;
+            if (deleteButton) {
+                const originalText = deleteButton.innerHTML;
+                deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression...';
+                deleteButton.disabled = true;
+            }
 
             // Soumettre le formulaire de suppression
             document.getElementById('delete-form-' + factureId).submit();
@@ -291,33 +261,62 @@
     }
 
     $(document).ready(function() {
-        // Ajouter un style pour les badges
-        $('.badge').css({
-            'font-size': '0.9em',
-            'padding': '0.4em 0.8em'
-        });
+        // Ajouter un effet de surbrillance sur les cartes au survol
+        $('.card').hover(
+            function() {
+                $(this).addClass('shadow-sm');
+            },
+            function() {
+                $(this).removeClass('shadow-sm');
+            }
+        );
     });
 </script>
 
 <style>
-    .form-control-plaintext {
-        min-height: 38px;
-        border: 1px solid #ced4da;
+    .section-title {
+        color: #495057;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
     }
-    .btn-lg {
-        padding: 0.75rem 1.5rem;
-        font-size: 1.1rem;
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 600;
     }
-    .alert-info {
-        background-color: #e8f4fd;
-        border-color: #b6e0fe;
+    
+    .card {
+        border: 1px solid #dee2e6;
     }
+    
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
     .bg-light {
         background-color: #f8f9fa !important;
     }
+    
     .badge {
-        font-size: 0.9em;
-        padding: 0.4em 0.8em;
+        font-size: 0.85em;
+    }
+    
+    .btn {
+        margin: 0 2px;
+    }
+    
+    .table-bordered {
+        border: 1px solid #dee2e6;
+    }
+    
+    .table-bordered th,
+    .table-bordered td {
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+        vertical-align: top;
     }
 </style>
 @endsection
