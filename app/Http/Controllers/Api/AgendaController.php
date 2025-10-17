@@ -220,28 +220,13 @@ class AgendaController extends Controller
      */
     private function getCategoryColor($categorie)
     {
-        $colors = [
-            'rdv' => '#3c8dbc',      // Blue
-            'audience' => '#f39c12', // Orange
-            'delai' => '#00a65a',    // Green
-            'tache' => '#dd4b39',    // Red
-            'autre' => '#605ca8',    // Purple
-        ];
-
-        // Normalize and prefer direct mapping first
-        $key = $categorie ? strtolower($categorie) : null;
-        if ($key && isset($colors[$key])) {
-            return $colors[$key];
+        if (!$categorie) {
+            return null;
         }
 
-        // Fallback: try to read the category record and use its couleur field if present
-        $categoryRecord = \App\Models\AgendaCategory::where('nom', $categorie)->first();
-        if ($categoryRecord && !empty($categoryRecord->couleur)) {
-            return $categoryRecord->couleur;
-        }
+        $category = \App\Models\AgendaCategory::whereRaw('LOWER(nom) = ?', [strtolower($categorie)])->first();
 
-        // Default fallback color
-        return '#3c8dbc';
+        return $category && !empty($category->couleur) ? $category->couleur : null;
     }
 
     /**
@@ -403,8 +388,7 @@ public function edit(Agenda $agenda)
             'dossier_id' => 'nullable|exists:dossiers,id',
             'intervenant_id' => 'nullable|exists:intervenants,id',
             'utilisateur_id' => 'nullable|exists:users,id',
-            'categorie' => 'required|in:rdv,audience,delai,tache,autre',
-            'couleur' => 'nullable|string|max:20',
+            'categorie' => 'required',
             'file' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:2048', // max 2MB
         ]);
 
@@ -421,6 +405,9 @@ public function edit(Agenda $agenda)
             $validated['file_path'] = $path;
             $validated['file_name'] = $file->getClientOriginalName();
         }
+
+        
+            $validated['couleur'] = $this->getCategoryColor($validated['categorie']);
 
         $agenda->update($validated);
 

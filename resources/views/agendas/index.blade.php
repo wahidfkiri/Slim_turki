@@ -167,7 +167,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="createEventForm" method="POST" enctype="multipart/form-data">
+            <form id="createEventForm"  method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
                     <div class="row">
