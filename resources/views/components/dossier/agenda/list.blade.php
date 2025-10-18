@@ -84,7 +84,7 @@
                     <!-- Calendar -->
                     <div class="card card-primary">
                         <div class="card-body p-0">
-                            <div id="calendar"></div>
+                           <div id="calendar" style="height: auto; min-height: 700px; max-height: 80vh; overflow-y: auto;"></div>
                         </div>
                     </div>
                 </div>
