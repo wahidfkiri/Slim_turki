@@ -263,7 +263,7 @@
                                       </div>
                                       @if(isset($email['preview']) && !empty(trim($email['preview'])))
                                         <div class="text-muted text-sm mt-1">
-                                          {{ Str::limit($email['preview'], 80) }}
+                                          {!! Str::limit($email['preview'], 80) !!}
                                         </div>
                                       @endif
                                     </a>
@@ -399,11 +399,11 @@
   }
 </style>
 <!-- jQuery -->
-<script src="{{ asset('adminlte/plugins/jquery/jquery.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
 <!-- Bootstrap 4 -->
-<script src="{{ asset('adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <!-- AdminLTE App -->
-<script src="{{ asset('adminlte/dist/js/adminlte.min.js') }}"></script>
+<script src="{{ asset('assets/dist/js/adminlte.min.js') }}"></script>
 
 <script>
   $(function () {

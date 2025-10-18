@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Services\EmailManagerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class EmailWebController extends Controller
 {
@@ -16,105 +17,185 @@ class EmailWebController extends Controller
         $this->emailService = $emailService;
     }
 
-public function index()
-{
-    try {
-        // Essayer d'abord les dossiers principaux
-      return $folders = $this->emailService->getFoldersSimple();
-       // $inboxEmails = $this->emailService->getEmailsRobust('Test', 20);
-        
-        return view('emails.folders', [
-            'folders' => $folders,
-           // 'emails' => $inboxEmails['success'] ? $inboxEmails['emails'] : [],
-            'currentFolder' => 'Test',
-            'account' => 'wahid.fkiri@peakmind-solutions.com',
-          //  'warning' => $inboxEmails['warning'] ?? null,
-            'totalFolders' => count($folders)
-        ]);
-        
-    } catch (\Exception $e) {
-        // Fallback : utiliser la méthode simple
+    public function index()
+    {
         try {
-            $folders = $this->emailService->getFoldersSimple();
+            // Essayer d'abord les dossiers principaux
+            $folders = $this->emailService->getFoldersSimples();
+            $inboxEmails = $this->emailService->getEmailsRobust('Inbox', 20);
+            
+            // Clean email previews
+            if ($inboxEmails['success'] && isset($inboxEmails['emails'])) {
+                $inboxEmails['emails'] = $this->cleanEmailPreviews($inboxEmails['emails']);
+            }
             
             return view('emails.folders', [
                 'folders' => $folders,
-                'emails' => [],
-                'error' => $e->getMessage(),
+                'emails' => $inboxEmails['success'] ? $inboxEmails['emails'] : [],
+                'currentFolder' => 'Inbox',
                 'account' => 'wahid.fkiri@peakmind-solutions.com',
-                'currentFolder' => 'Test',
+                'warning' => $inboxEmails['warning'] ?? null,
                 'totalFolders' => count($folders)
             ]);
             
-        } catch (\Exception $e2) {
+        } catch (\Exception $e) {
+            // Fallback : utiliser la méthode simple
+            try {
+                $folders = $this->emailService->getFoldersSimples();
+                
+                return view('emails.folders', [
+                    'folders' => $folders,
+                    'emails' => [],
+                    'error' => $e->getMessage(),
+                    'account' => 'wahid.fkiri@peakmind-solutions.com',
+                    'currentFolder' => 'Test',
+                    'totalFolders' => count($folders)
+                ]);
+                
+            } catch (\Exception $e2) {
+                return view('emails.index', [
+                    'folders' => [],
+                    'emails' => [],
+                    'error' => $e2->getMessage(),
+                    'account' => 'wahid.fkiri@peakmind-solutions.com',
+                    'currentFolder' => 'Test',
+                    'totalFolders' => 0
+                ]);
+            }
+        }
+    }
+
+    public function showFolder($folder)
+    {
+        try {
+            $folders = $this->emailService->getFoldersSimples();
+            $emailsResult = $this->emailService->getEmailsRobust($folder, 30);
+            
+            if (!$emailsResult['success']) {
+                return redirect()->route('email.index')
+                    ->with('error', $emailsResult['error']);
+            }
+            
+            // Clean email previews
+            if (isset($emailsResult['emails'])) {
+                $emailsResult['emails'] = $this->cleanEmailPreviews($emailsResult['emails']);
+            }
+            
             return view('emails.index', [
-                'folders' => [],
-                'emails' => [],
-                'error' => $e2->getMessage(),
+                'folders' => $folders,
+                'emails' => $emailsResult['emails'],
+                'currentFolder' => $folder,
                 'account' => 'wahid.fkiri@peakmind-solutions.com',
-                'currentFolder' => 'Test',
-                'totalFolders' => 0
+                'warning' => $emailsResult['warning'] ?? null,
+                'totalFolders' => count($folders)
             ]);
-        }
-    }
-}
-
-// Mettez à jour showFolder :
-
-public function showFolder($folder)
-{
-    try {
-        $folders = $this->emailService->getFoldersSimple();
-        $emailsResult = $this->emailService->getEmailsRobust($folder, 30);
-        
-        if (!$emailsResult['success']) {
+            
+        } catch (\Exception $e) {
             return redirect()->route('email.index')
-                ->with('error', $emailsResult['error']);
+                ->with('error', 'Erreur lors du chargement du dossier: ' . $e->getMessage());
         }
-        
-        return view('emails.index', [
-            'folders' => $folders,
-            'emails' => $emailsResult['emails'],
-            'currentFolder' => $folder,
-            'account' => 'wahid.fkiri@peakmind-solutions.com',
-            'warning' => $emailsResult['warning'] ?? null,
-            'totalFolders' => count($folders)
-        ]);
-        
-    } catch (\Exception $e) {
-        return redirect()->route('email.index')
-            ->with('error', 'Erreur lors du chargement du dossier: ' . $e->getMessage());
     }
-}
 
-public function showEmail($folder, $uid)
-{
-    try {
-        $folders = $this->emailService->getFoldersSimple();
-        
-        $emailResult = $this->emailService->getEmailSimple($folder, $uid);
-        
-        if (!$emailResult['success']) {
-            $emailResult = $this->emailService->findEmailByUidSequential($folder, $uid, 30);
-        }
-        
-        if (!$emailResult['success']) {
+    public function showEmail($folder, $uid)
+    {
+        try {
+            $folders = $this->emailService->getFoldersSimple();
+            
+            $emailResult = $this->emailService->getEmailSimple($folder, $uid);
+            
+            if (!$emailResult['success']) {
+                $emailResult = $this->emailService->findEmailByUidSequential($folder, $uid, 30);
+            }
+            
+            if (!$emailResult['success']) {
+                return redirect()->route('email.folder', $folder)
+                    ->with('error', $emailResult['error']);
+            }
+            
+            // Clean email preview for single email view if needed
+            if (isset($emailResult['email']['preview'])) {
+                $emailResult['email']['clean_preview'] = $this->cleanSinglePreview($emailResult['email']['preview']);
+            }
+            
+            return view('emails.show', [
+                'folders' => $folders,
+                'email' => $emailResult['email'],
+                'currentFolder' => $folder,
+                'account' => 'wahid.fkiri@peakmind-solutions.com'
+            ]);
+            
+        } catch (\Exception $e) {
             return redirect()->route('email.folder', $folder)
-                ->with('error', $emailResult['error']);
+                ->with('error', 'Erreur lors du chargement de l\'email: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Clean email previews for multiple emails
+     */
+    private function cleanEmailPreviews($emails)
+    {
+        return collect($emails)->map(function ($email) {
+            if (isset($email['preview'])) {
+                $email['clean_preview'] = $this->cleanSinglePreview($email['preview']);
+            }
+            return $email;
+        })->toArray();
+    }
+    
+    /**
+     * Clean a single email preview text
+     */
+    private function cleanSinglePreview($preview)
+    {
+        if (empty($preview) || trim($preview) === '...') {
+            return '';
         }
         
-        return view('emails.show', [
-            'folders' => $folders,
-            'email' => $emailResult['email'],
-            'currentFolder' => $folder,
-            'account' => 'wahid.fkiri@peakmind-solutions.com'
-        ]);
+        // Step 1: Decode Unicode escape sequences (\u00e9 -> é)
+        $cleaned = $this->decodeUnicodeEscapes($preview);
         
-    } catch (\Exception $e) {
-        return redirect()->route('email.folder', $folder)
-            ->with('error', 'Erreur lors du chargement de l\'email: ' . $e->getMessage());
+        // Step 2: Decode HTML entities (&nbsp; -> space)
+        $cleaned = html_entity_decode($cleaned, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        
+        // Step 3: Remove HTML tags
+        $cleaned = strip_tags($cleaned);
+        
+        // Step 4: Normalize and clean whitespace
+        $cleaned = $this->normalizeWhitespace($cleaned);
+        
+        // Step 5: Trim and limit
+        $cleaned = trim($cleaned);
+        
+        return Str::limit($cleaned, 80);
     }
-}
+    
+    /**
+     * Decode Unicode escape sequences like \u00e9, \u00e0, etc.
+     */
+    private function decodeUnicodeEscapes($text)
+    {
+        return preg_replace_callback('/\\\\u([0-9a-fA-F]{4})/', function ($match) {
+            return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8', 'UCS-2BE');
+        }, $text);
+    }
+    
+    /**
+     * Normalize various whitespace characters
+     */
+    private function normalizeWhitespace($text)
+    {
+        // Replace various line breaks and tabs with single space
+        $text = preg_replace('/[\r\n\t]+/', ' ', $text);
+        
+        // Replace multiple spaces with single space
+        $text = preg_replace('/\s+/', ' ', $text);
+        
+        // Remove non-breaking spaces and other special spaces
+        $text = str_replace(['&nbsp;', '\u00a0', ' '], ' ', $text);
+        
+        return $text;
+    }
     
     public function sendEmail(Request $request)
     {

@@ -545,6 +545,12 @@ document.addEventListener('DOMContentLoaded', function() {
    // Initialize Calendar
 function initializeCalendar() {
     calendar = new FullCalendar.Calendar(calendarEl, {
+        
+  initialView: 'timeGridDay',
+  scrollTime: '08:00:00', // scrolls to 8 AM by default
+  slotMinTime: '08:00:00', // earliest time visible
+  defaultTimedEventDuration: '01:00:00', // default event length (optional)
+
         locale: 'fr',
         timeZone: 'local',
         initialView: 'dayGridMonth',

@@ -202,141 +202,151 @@ public function destroy(Timesheet $time_sheet)
         return TimeSheetResource::collection($timeSheets);
     }
 
-    public function getTimesheetsData(Request $request)
-    {
-        $this->authorize('view_timesheets', Timesheet::class);
+   public function getTimesheetsData(Request $request)
+{
+    $this->authorize('view_timesheets', Timesheet::class);
 
-        $query = Timesheet::with([
-            'user:id,name',
-            'dossier:id,numero_dossier',
-            'dossier.intervenants:id,identite_fr',
-            'categorieRelation:id,nom',
-            'typeRelation:id,nom'
-        ])->select('time_sheets.*');
+    $query = Timesheet::with([
+        'user:id,name',
+        'dossier:id,numero_dossier',
+        'dossier.intervenants:id,identite_fr',
+        'categorieRelation:id,nom',
+        'typeRelation:id,nom'
+    ])->select('time_sheets.*');
 
-        // Filtre par date
-        if ($request->has('date') && !empty($request->date)) {
-            $query->whereDate('date_timesheet', $request->date);
-        }
-
-        // Filtre par utilisateur
-        if ($request->has('utilisateur_id') && !empty($request->utilisateur_id)) {
-            $query->where('utilisateur_id', $request->utilisateur_id);
-        }
-
-        // Filtre par dossier
-        if ($request->has('dossier_id') && !empty($request->dossier_id)) {
-            $query->where('dossier_id', $request->dossier_id);
-        }
-
-        // Filtre par catégorie
-        if ($request->has('categorie_id') && !empty($request->categorie_id)) {
-            $query->where('categorie', $request->categorie_id);
-        }
-
-        // Filtre par type
-        if ($request->has('type_id') && !empty($request->type_id)) {
-            $query->where('type', $request->type_id);
-        }
-
-        // Filtre par description
-        if ($request->has('description') && !empty($request->description)) {
-            $query->where('description', 'LIKE', '%' . $request->description . '%');
-        }
-
-        // Filtre par total minimum
-        if ($request->has('min_total') && !empty($request->min_total)) {
-            $query->where('total', '>=', $request->min_total);
-        }
-
-        // Filtre par total maximum
-        if ($request->has('max_total') && !empty($request->max_total)) {
-            $query->where('total', '<=', $request->max_total);
-        }
-
-        // Recherche globale DataTables
-        if ($request->has('search') && !empty($request->search['value'])) {
-            $search = $request->search['value'];
-            $query->where(function ($q) use ($search) {
-                $q->where('description', 'LIKE', "%{$search}%")
-                  ->orWhereHas('user', function ($q) use ($search) {
-                      $q->where('name', 'LIKE', "%{$search}%");
-                  })
-                  ->orWhereHas('dossier', function ($q) use ($search) {
-                      $q->where('numero_dossier', 'LIKE', "%{$search}%")
-                        ->orWhereHas('intervenants', function ($q) use ($search) {
-                            $q->where('identite_fr', 'LIKE', "%{$search}%");
-                        });
-                  });
-                //   ->orWhereHas('categorieRelation', function ($q) use ($search) {
-                //       $q->where('nom', 'LIKE', "%{$search}%");
-                //   })
-                //   ->orWhereHas('typeRelation', function ($q) use ($search) {
-                //       $q->where('nom', 'LIKE', "%{$search}%");
-                //   });
-            });
-        }
-
-        return DataTables::eloquent($query)
-            ->addColumn('action', function (Timesheet $timesheet) {
-                $actions = '<div class="btn-group">';
-                
-                // Bouton Voir
-                if (auth()->user()->hasPermission('view_timesheets')) {
-                    $actions .= '<a href="' . route('time-sheets.show', $timesheet) . '" class="btn btn-info btn-sm" title="Voir">
-                        <i class="fas fa-eye"></i>
-                    </a>';
-                }
-                
-                // Bouton Modifier
-                if (auth()->user()->hasPermission('edit_timesheets')) {
-                    $actions .= '<a href="' . route('time-sheets.edit', $timesheet) . '" class="btn btn-primary btn-sm" title="Modifier">
-                        <i class="fas fa-edit"></i>
-                    </a>';
-                }
-                
-                // Bouton Supprimer
-                if (auth()->user()->hasPermission('delete_timesheets')) {
-                    $actions .= '<button type="button" class="btn btn-danger btn-sm delete-btn" data-id="' . $timesheet->id . '" title="Supprimer">
-                        <i class="fas fa-trash"></i>
-                    </button>';
-                }
-                
-                $actions .= '</div>';
-                return $actions;
-            })
-            ->editColumn('date_timesheet', function (Timesheet $timesheet) {
-    if (!$timesheet->date_timesheet) {
-        return '-';
+    // Filtre par date
+    if ($request->has('date') && !empty($request->date)) {
+        $query->whereDate('date_timesheet', $request->date);
     }
-    
-    // Assurer que c'est un objet Carbon
-    $date = $timesheet->date_timesheet;
-    if (is_string($date)) {
-        $date = \Carbon\Carbon::parse($date);
+
+    // Filtre par mois
+    if ($request->has('month') && !empty($request->month)) {
+        $query->whereMonth('date_timesheet', $request->month);
     }
-    
-    return $date->format('d/m/Y');
-})
-            ->editColumn('quantite', function (Timesheet $timesheet) {
-                return number_format($timesheet->quantite, 2, ',', ' ');
-            })
-           ->editColumn('prix', function (Timesheet $timesheet) {
-    // Formater avec espace comme séparateur de milliers
-    return number_format($timesheet->prix, 2, ',', ' ') . ' DT';
-})
-->editColumn('total', function (Timesheet $timesheet) {
-    // Formater avec espace comme séparateur de milliers
-    return number_format($timesheet->total, 2, ',', ' ') . ' DT';
-})
-            ->editColumn('description', function (Timesheet $timesheet) {
-                return $timesheet->description ? 
-                    (strlen($timesheet->description) > 50 ? 
-                     substr($timesheet->description, 0, 50) . '...' : 
-                     $timesheet->description) : '-';
-            })
-            ->rawColumns(['action', 'description'])
-            ->toJson();
+
+    // Filtre par année
+    if ($request->has('year') && !empty($request->year)) {
+        $query->whereYear('date_timesheet', $request->year);
     }
+
+    // Filtre par mois et année combinés
+    if ($request->has('month') && !empty($request->month) && $request->has('year') && !empty($request->year)) {
+        $query->whereYear('date_timesheet', $request->year)
+              ->whereMonth('date_timesheet', $request->month);
+    }
+
+    // Filtre par utilisateur
+    if ($request->has('utilisateur_id') && !empty($request->utilisateur_id)) {
+        $query->where('utilisateur_id', $request->utilisateur_id);
+    }
+
+    // Filtre par dossier
+    if ($request->has('dossier_id') && !empty($request->dossier_id)) {
+        $query->where('dossier_id', $request->dossier_id);
+    }
+
+    // Filtre par catégorie
+    if ($request->has('categorie_id') && !empty($request->categorie_id)) {
+        $query->where('categorie', $request->categorie_id);
+    }
+
+    // Filtre par type
+    if ($request->has('type_id') && !empty($request->type_id)) {
+        $query->where('type', $request->type_id);
+    }
+
+    // Filtre par description
+    if ($request->has('description') && !empty($request->description)) {
+        $query->where('description', 'LIKE', '%' . $request->description . '%');
+    }
+
+    // Filtre par total minimum
+    if ($request->has('min_total') && !empty($request->min_total)) {
+        $query->where('total', '>=', $request->min_total);
+    }
+
+    // Filtre par total maximum
+    if ($request->has('max_total') && !empty($request->max_total)) {
+        $query->where('total', '<=', $request->max_total);
+    }
+
+    // Recherche globale DataTables
+    if ($request->has('search') && !empty($request->search['value'])) {
+        $search = $request->search['value'];
+        $query->where(function ($q) use ($search) {
+            $q->where('description', 'LIKE', "%{$search}%")
+              ->orWhereHas('user', function ($q) use ($search) {
+                  $q->where('name', 'LIKE', "%{$search}%");
+              })
+              ->orWhereHas('dossier', function ($q) use ($search) {
+                  $q->where('numero_dossier', 'LIKE', "%{$search}%")
+                    ->orWhereHas('intervenants', function ($q) use ($search) {
+                        $q->where('identite_fr', 'LIKE', "%{$search}%");
+                    });
+              });
+        });
+    }
+
+    return DataTables::eloquent($query)
+        ->addColumn('action', function (Timesheet $timesheet) {
+            $actions = '<div class="btn-group">';
+            
+            // Bouton Voir
+            if (auth()->user()->hasPermission('view_timesheets')) {
+                $actions .= '<a href="' . route('time-sheets.show', $timesheet) . '" class="btn btn-info btn-sm" title="Voir">
+                    <i class="fas fa-eye"></i>
+                </a>';
+            }
+            
+            // Bouton Modifier
+            if (auth()->user()->hasPermission('edit_timesheets')) {
+                $actions .= '<a href="' . route('time-sheets.edit', $timesheet) . '" class="btn btn-primary btn-sm" title="Modifier">
+                    <i class="fas fa-edit"></i>
+                </a>';
+            }
+            
+            // Bouton Supprimer
+            if (auth()->user()->hasPermission('delete_timesheets')) {
+                $actions .= '<button type="button" class="btn btn-danger btn-sm delete-btn" data-id="' . $timesheet->id . '" title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                </button>';
+            }
+            
+            $actions .= '</div>';
+            return $actions;
+        })
+        ->editColumn('date_timesheet', function (Timesheet $timesheet) {
+            if (!$timesheet->date_timesheet) {
+                return '-';
+            }
+            
+            // Assurer que c'est un objet Carbon
+            $date = $timesheet->date_timesheet;
+            if (is_string($date)) {
+                $date = \Carbon\Carbon::parse($date);
+            }
+            
+            return $date->format('d/m/Y');
+        })
+        ->editColumn('quantite', function (Timesheet $timesheet) {
+            return number_format($timesheet->quantite, 2, ',', ' ');
+        })
+        ->editColumn('prix', function (Timesheet $timesheet) {
+            // Formater avec espace comme séparateur de milliers
+            return number_format($timesheet->prix, 2, ',', ' ') . ' DT';
+        })
+        ->editColumn('total', function (Timesheet $timesheet) {
+            // Formater avec espace comme séparateur de milliers
+            return number_format($timesheet->total, 2, ',', ' ') . ' DT';
+        })
+        ->editColumn('description', function (Timesheet $timesheet) {
+            return $timesheet->description ? 
+                (strlen($timesheet->description) > 50 ? 
+                 substr($timesheet->description, 0, 50) . '...' : 
+                 $timesheet->description) : '-';
+        })
+        ->rawColumns(['action', 'description'])
+        ->toJson();
+}
 
 }

@@ -55,11 +55,43 @@
                         <div class="card-body">
                             <!-- Filtres -->
                             <div class="row mb-3">
-                                <div class="col-md-3">
+                                <!-- <div class="col-md-2">
                                     <label for="filter_date">Date</label>
                                     <input type="date" class="form-control" id="filter_date">
+                                </div> -->
+                                <div class="col-md-2">
+                                    <label for="filter_month">Mois</label>
+                                    <select class="form-control" id="filter_month">
+                                        <option value="">Tous les mois</option>
+                                        <option value="01">Janvier</option>
+                                        <option value="02">Février</option>
+                                        <option value="03">Mars</option>
+                                        <option value="04">Avril</option>
+                                        <option value="05">Mai</option>
+                                        <option value="06">Juin</option>
+                                        <option value="07">Juillet</option>
+                                        <option value="08">Août</option>
+                                        <option value="09">Septembre</option>
+                                        <option value="10">Octobre</option>
+                                        <option value="11">Novembre</option>
+                                        <option value="12">Décembre</option>
+                                    </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
+                                    <label for="filter_year">Année</label>
+                                    <select class="form-control" id="filter_year">
+                                        <option value="">Toutes les années</option>
+                                        @php
+                                            $currentYear = date('Y');
+                                            $startYear = $currentYear - 5; // Show last 5 years
+                                        @endphp
+                                        @for($year = $currentYear; $year >= $startYear; $year--)
+                                            <option value="{{ $year }}">{{ $year }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                @if(auth()->user()->hasRole('admin'))
+                                <div class="col-md-2">
                                     <label for="filter_utilisateur">Utilisateur</label>
                                     <select class="form-control" id="filter_utilisateur">
                                         <option value="">Tous les utilisateurs</option>
@@ -68,6 +100,7 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                @endif
                                 <div class="col-md-2">
                                     <label for="filter_dossier">Dossier</label>
                                     <select class="form-control" id="filter_dossier">
@@ -97,7 +130,19 @@
                                 </div>
                             </div>
                             <div class="row mb-3">
-                                <div class="col-md-12 text-right">
+                                <!-- <div class="col-md-2">
+                                    <label for="filter_description">Description</label>
+                                    <input type="text" class="form-control" id="filter_description" placeholder="Rechercher par description">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="filter_min_total">Total min</label>
+                                    <input type="number" class="form-control" id="filter_min_total" placeholder="0.00" step="0.01">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="filter_max_total">Total max</label>
+                                    <input type="number" class="form-control" id="filter_max_total" placeholder="0.00" step="0.01">
+                                </div> -->
+                                <div class="col-md-12" style="margin-top: 25px;text-align:right">
                                     <button type="button" id="btn_reset_filters" class="btn btn-secondary">
                                         <i class="fas fa-redo"></i> Réinitialiser
                                     </button>
@@ -194,6 +239,8 @@ $(document).ready(function() {
             url: '{{ route("timesheets.data") }}',
             data: function (d) {
                 d.date = $('#filter_date').val();
+                d.month = $('#filter_month').val();
+                d.year = $('#filter_year').val();
                 d.utilisateur_id = $('#filter_utilisateur').val();
                 d.dossier_id = $('#filter_dossier').val();
                 d.categorie_id = $('#filter_categorie').val();
@@ -300,9 +347,6 @@ $(document).ready(function() {
         language: {
             url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json'
         },
-        // createdRow: function(row, data, dataIndex) {
-        //     $(row).attr('id', 'timesheet-row-' + data.id);
-        // },
         drawCallback: function(settings) {
             // Calculate total
             var api = this.api();
@@ -326,7 +370,7 @@ $(document).ready(function() {
 
     // Delete button click handler
     $(document).on('click', '.delete-timesheet-btn', function() {
-        // const timesheetId = $(this).data('id');
+        const timesheetId = $(this).data('id');
         const timesheetDate = $(this).data('date');
         const timesheetUser = $(this).data('user');
         const timesheetDossier = $(this).data('dossier');
@@ -433,6 +477,8 @@ $(document).ready(function() {
     // Reset filters
     $('#btn_reset_filters').click(function() {
         $('#filter_date').val('');
+        $('#filter_month').val('').trigger('change');
+        $('#filter_year').val('').trigger('change');
         $('#filter_utilisateur').val('').trigger('change');
         $('#filter_dossier').val('').trigger('change');
         $('#filter_categorie').val('').trigger('change');

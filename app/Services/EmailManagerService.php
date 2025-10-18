@@ -754,8 +754,7 @@ public function getFoldersSimples()
         usort($folderList, function($a, $b) {
             return strcmp($a['name'], $b['name']);
         });
-       // return $folderList;
-        dd($folderList);die;
+        return $folderList;
         
     } catch (\Exception $e) {
         Log::error('Erreur récupération dossiers simple: ' . $e->getMessage());

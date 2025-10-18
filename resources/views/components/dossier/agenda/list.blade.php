@@ -46,26 +46,14 @@
                             <!-- Filtre par catégorie -->
                             <div class="form-group">
                                 <label>Catégories</label>
+                                <a href="" style="float:right;" class="text-primary" data-toggle="modal" data-target="#createCategorieModal">Ajouter </a>
+                                @foreach(\App\Models\AgendaCategory::all() as $categorie)
                                 <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" type="checkbox" id="filter_rdv" checked data-category="rdv">
-                                    <label for="filter_rdv" class="custom-control-label">Rendez-vous</label>
+                                <span class="legend-color" style="background-color: {{$categorie->couleur}}; margin-right:30px;"></span>
+                                    <input class="custom-control-input" type="checkbox" id="filter_{{$categorie->nom}}" checked data-category="{{$categorie->nom}}">
+                                    <label for="filter_{{$categorie->nom}}" class="custom-control-label">{{$categorie->nom}}</label>
                                 </div>
-                                <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" type="checkbox" id="filter_audience" checked data-category="audience">
-                                    <label for="filter_audience" class="custom-control-label">Audience</label>
-                                </div>
-                                <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" type="checkbox" id="filter_delai" checked data-category="delai">
-                                    <label for="filter_delai" class="custom-control-label">Délai</label>
-                                </div>
-                                <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" type="checkbox" id="filter_tache" checked data-category="tache">
-                                    <label for="filter_tache" class="custom-control-label">Tâche</label>
-                                </div>
-                                <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" type="checkbox" id="filter_autre" checked data-category="autre">
-                                    <label for="filter_autre" class="custom-control-label">Autre</label>
-                                </div>
+                                @endforeach
                             </div>
 
                             <!-- Filtre par utilisateur -->
@@ -86,35 +74,6 @@
                                     <option value="">Tous les dossiers</option>
                                         <option value="{{ $dossier->id }}" selected>{{ $dossier->numero_dossier }}</option>
                                 </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Légende -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Légende</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: #3c8dbc"></span>
-                                <span class="legend-text">Rendez-vous</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: #f39c12"></span>
-                                <span class="legend-text">Audience</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: #00a65a"></span>
-                                <span class="legend-text">Délai</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: #dd4b39"></span>
-                                <span class="legend-text">Tâche</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color" style="background-color: #605ca8"></span>
-                                <span class="legend-text">Autre</span>
                             </div>
                         </div>
                     </div>
@@ -163,6 +122,42 @@
     </div>
 </div>
 
+<!-- Modal pour créer une catégorie -->
+<div class="modal fade" id="createCategorieModal" tabindex="-1" role="dialog" aria-labelledby="createEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createEventModalLabel">Nouvel catégorie</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="createCategorieForm" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="categorie">Nom Catégorie *</label>
+                                <input type="text" class="form-control" id="categorie_name" name="categorie" required>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="date_debut">Couleur *</label>
+                                <input type="color" class="form-control" id="color" name="color" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary" id="btnCreateCategorie">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <!-- Modal pour créer un événement -->
 <div class="modal fade" id="createEventModal" tabindex="-1" role="dialog" aria-labelledby="createEventModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
@@ -188,11 +183,9 @@
                                 <label for="categorie">Catégorie *</label>
                                 <select class="form-control" id="categorie" name="categorie" required>
                                     <option value="">Sélectionnez une catégorie</option>
-                                    <option value="rdv">Rendez-vous</option>
-                                    <option value="audience">Audience</option>
-                                    <option value="delai">Délai</option>
-                                    <option value="tache">Tâche</option>
-                                    <option value="autre">Autre</option>
+                                     @foreach(\App\Models\AgendaCategory::all() as $categorie)
+                                    <option value="{{$categorie->nom}}">{{$categorie->nom}}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -317,11 +310,9 @@
                                 <label for="edit_categorie">Catégorie *</label>
                                 <select class="form-control" id="edit_categorie" name="categorie" required>
                                     <option value="">Sélectionnez une catégorie</option>
-                                    <option value="rdv">Rendez-vous</option>
-                                    <option value="audience">Audience</option>
-                                    <option value="delai">Délai</option>
-                                    <option value="tache">Tâche</option>
-                                    <option value="autre">Autre</option>
+                                     @foreach(\App\Models\AgendaCategory::all() as $categorie)
+                                    <option value="{{$categorie->nom}}">{{$categorie->nom}}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -512,6 +503,12 @@ document.addEventListener('DOMContentLoaded', function() {
    // Initialize Calendar
 function initializeCalendar() {
     calendar = new FullCalendar.Calendar(calendarEl, {
+        
+  initialView: 'timeGridDay',
+  scrollTime: '08:00:00', // scrolls to 8 AM by default
+  slotMinTime: '08:00:00', // earliest time visible
+  defaultTimedEventDuration: '01:00:00', // default event length (optional)
+
         locale: 'fr',
         timeZone: 'local',
         initialView: 'listWeek',
@@ -913,5 +910,102 @@ function initializeCalendar() {
             }, 150);
         }
     });
+
+    
+    // AJAX function to create new category
+$('#createCategorieForm').submit(function(e) {
+    e.preventDefault();
+
+    var formData = {
+        nom: $('#categorie_name').val(),
+        couleur: $('#color').val(),
+        _token: '{{ csrf_token() }}'
+    };
+
+    $.ajax({
+        url: '{{ route("agenda-categories.store") }}',
+        type: 'POST',
+        data: formData,
+        success: function(response) {
+            $('#createCategorieModal').modal('hide');
+            $('#createCategorieForm')[0].reset();
+            
+            // Add the new category to the filter list
+            addCategoryToFilter(response.category);
+            
+            // Add the new category to event creation form
+            addCategoryToEventForm(response.category);
+            
+            showAlert('Succès', 'Catégorie créée avec succès', 'success');
+        },
+        error: function(xhr) {
+            let errorMessage = 'Erreur de validation:\n';
+            if (xhr.responseJSON && xhr.responseJSON.errors) {
+                $.each(xhr.responseJSON.errors, function(key, value) {
+                    errorMessage += '• ' + value[0] + '\n';
+                });
+            } else {
+                errorMessage += 'Une erreur est survenue.';
+            }
+            showAlert('Erreur', errorMessage, 'error');
+        }
+    });
+});
+
+// Function to add new category to filter list
+function addCategoryToFilter(category) {
+    var categoryId = 'filter_' + category.id;
+    var checkboxHtml = `
+        <div class="custom-control custom-checkbox">
+            <span class="legend-color" style="background-color: ${category.couleur}; margin-right:30px;"></span>
+            <input class="custom-control-input" type="checkbox" id="${categoryId}" checked data-category="${category.id}">
+            <label for="${categoryId}" class="custom-control-label">${category.nom}</label>
+        </div>
+    `;
+    
+    // Append to the filter categories container
+    $('.form-group:has(label:contains("Catégories"))').append(checkboxHtml);
+    
+    // Add event listener for the new checkbox
+    $('#' + categoryId).change(function() {
+        calendar.refetchEvents();
+    });
+}
+
+// Function to add new category to event creation form
+function addCategoryToEventForm(category) {
+    var optionHtml = `<option value="${category.id}">${category.nom}</option>`;
+    
+    // Add to create event form
+    $('#categorie').append(optionHtml);
+    
+    // Add to edit event form
+    $('#edit_categorie').append(optionHtml);
+}
+
+// Function to load categories dynamically (optional - if you want to refresh categories)
+function loadCategories() {
+    $.ajax({
+        url: '{{ route("agenda-categories.api") }}',
+        type: 'GET',
+        success: function(response) {
+            // Clear existing categories from forms
+            $('#categorie').find('option:not(:first)').remove();
+            $('#edit_categorie').find('option:not(:first)').remove();
+            
+            // Clear filter categories (keep the "Ajouter" link)
+            $('.form-group:has(label:contains("Catégories")) .custom-control.custom-checkbox').remove();
+            
+            // Add all categories
+            response.forEach(function(category) {
+                addCategoryToFilter(category);
+                addCategoryToEventForm(category);
+            });
+        },
+        error: function() {
+            showAlert('Erreur', 'Erreur lors du chargement des catégories', 'error');
+        }
+    });
+}
 });
 </script>

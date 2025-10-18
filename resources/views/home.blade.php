@@ -24,7 +24,7 @@
         <div class="container-fluid">
             <!-- Small boxes (Stat box) -->
             <div class="row">
-                <div class="col-lg-3 col-6">
+                <div class="@if(auth()->user()->hasRole('admin')) col-lg-3 @else col-lg-4 @endif col-6">
                     <!-- small box -->
                     <div class="small-box bg-info">
                         <div class="inner">
@@ -40,7 +40,7 @@
                     </div>
                 </div>
                 <!-- ./col -->
-                <div class="col-lg-3 col-6">
+                <div class="@if(auth()->user()->hasRole('admin')) col-lg-3 @else col-lg-4 @endif col-6">
                     <!-- small box -->
                     <div class="small-box bg-warning">
                         <div class="inner">
@@ -56,6 +56,7 @@
                     </div>
                 </div>
                 <!-- ./col -->
+                 @if(auth()->user()->hasRole('admin'))
                 <div class="col-lg-3 col-6">
                     <!-- small box -->
                     <div class="small-box bg-success">
@@ -71,8 +72,9 @@
                         </a>
                     </div>
                 </div>
+                @endif
                 <!-- ./col -->
-                <div class="col-lg-3 col-6">
+                <div class="@if(auth()->user()->hasRole('admin')) col-lg-3 @else col-lg-4 @endif col-6">
                     <!-- small box -->
                     <div class="small-box bg-danger">
                         <div class="inner">
@@ -93,7 +95,7 @@
 
             <!-- Deuxième ligne de petites boîtes -->
             <div class="row">
-                <div class="col-lg-3 col-6">
+                <div class="@if(auth()->user()->hasRole('admin')) col-lg-3 @else col-lg-4 @endif col-6">
                     <!-- small box -->
                     <div class="small-box bg-info">
                         <div class="inner">
@@ -109,7 +111,7 @@
                     </div>
                 </div>
                 <!-- ./col -->
-                <div class="col-lg-3 col-6">
+                <div class="@if(auth()->user()->hasRole('admin')) col-lg-3 @else col-lg-4 @endif col-6">
                     <!-- small box -->
                     <div class="small-box bg-secondary">
                         <div class="inner">
@@ -125,6 +127,7 @@
                     </div>
                 </div>
                 <!-- ./col -->
+                 @if(auth()->user()->hasRole('admin'))
                 <div class="col-lg-3 col-6">
                     <!-- small box -->
                     <div class="small-box bg-dark">
@@ -140,8 +143,9 @@
                         </a>
                     </div>
                 </div>
+                @endif
                 <!-- ./col -->
-                <div class="col-lg-3 col-6">
+                <div class="@if(auth()->user()->hasRole('admin')) col-lg-3 @else col-lg-4 @endif col-6">
                     <!-- small box -->
                     <div class="small-box bg-warning">
                         <div class="inner">

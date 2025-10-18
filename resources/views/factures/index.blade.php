@@ -96,12 +96,48 @@
                                     </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <label for="filter_date_debut">Date émission </label>
+                                    <label for="filter_date_debut">Date émission</label>
                                     <input type="date" class="form-control" id="filter_date_debut">
                                 </div>
                             </div>
+                            <!-- New Row for Month and Year Filters -->
                             <div class="row mb-3">
-                                <div class="col-md-12 text-right" style="margin-top: 25px;">
+                                <div class="col-md-2">
+                                    <label for="filter_month">Mois</label>
+                                    <select class="form-control" id="filter_month">
+                                        <option value="">Tous les mois</option>
+                                        <option value="01">Janvier</option>
+                                        <option value="02">Février</option>
+                                        <option value="03">Mars</option>
+                                        <option value="04">Avril</option>
+                                        <option value="05">Mai</option>
+                                        <option value="06">Juin</option>
+                                        <option value="07">Juillet</option>
+                                        <option value="08">Août</option>
+                                        <option value="09">Septembre</option>
+                                        <option value="10">Octobre</option>
+                                        <option value="11">Novembre</option>
+                                        <option value="12">Décembre</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="filter_year">Année</label>
+                                    <select class="form-control" id="filter_year">
+                                        <option value="">Toutes les années</option>
+                                        @php
+                                            $currentYear = date('Y');
+                                            $startYear = $currentYear - 5; // Show last 5 years
+                                        @endphp
+                                        @for($year = $currentYear; $year >= $startYear; $year--)
+                                            <option value="{{ $year }}">{{ $year }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="filter_date_fin">Date fin</label>
+                                    <input type="date" class="form-control" id="filter_date_fin">
+                                </div>
+                                <div class="col-md-6" style="margin-top: 25px;">
                                     <button type="button" id="btn_reset_filters" class="btn btn-secondary">
                                         <i class="fas fa-redo"></i> Réinitialiser
                                     </button>
@@ -204,6 +240,8 @@ $(document).ready(function() {
                 d.client_id = $('#filter_client').val();
                 d.date_debut = $('#filter_date_debut').val();
                 d.date_fin = $('#filter_date_fin').val();
+                d.month = $('#filter_month').val();
+                d.year = $('#filter_year').val();
                 d.min_montant = $('#filter_min_montant').val();
                 d.max_montant = $('#filter_max_montant').val();
             }
@@ -213,7 +251,7 @@ $(document).ready(function() {
                 data: null,
                 orderable: false,
                 searchable: false,
-                visible: false,  // This hides the column
+                visible: false,
                 render: function(data, type, row, meta) {
                     return meta.settings._iDisplayStart + meta.row + 1;
                 }
@@ -500,6 +538,8 @@ $(document).ready(function() {
         $('#filter_client').val('').trigger('change');
         $('#filter_date_debut').val('');
         $('#filter_date_fin').val('');
+        $('#filter_month').val('').trigger('change');
+        $('#filter_year').val('').trigger('change');
         $('#filter_min_montant').val('');
         $('#filter_max_montant').val('');
         table.ajax.reload();
