@@ -506,7 +506,7 @@ function initializeCalendar() {
         
   initialView: 'timeGridDay',
   scrollTime: '08:00:00', // scrolls to 8 AM by default
-  slotMinTime: '08:00:00', // earliest time visible
+  slotMinTime: '06:00:00', // earliest time visible
   defaultTimedEventDuration: '01:00:00', // default event length (optional)
 
         locale: 'fr',
