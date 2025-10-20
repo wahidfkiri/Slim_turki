@@ -275,7 +275,7 @@
                                   </td>
                                   <td class="mailbox-date text-sm">
                                     @if(isset($email['date']))
-                                      <small>{{ \Carbon\Carbon::parse($email['date'])->diffForHumans() }}</small>
+                                      <small>{{ $email['date'] }}</small>
                                     @endif
                                   </td>
                                   <td>

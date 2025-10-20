@@ -44,7 +44,6 @@ document.getElementById('openFolderForm').addEventListener('submit', function(e)
         if (data.success) {
             resultDiv.innerHTML = `
                 <div class="alert alert-success">
-                    <h6>✅ ${data.message}</h6>
                     <div class="mt-2">
                         <label class="form-label"><strong>Chemin réseau :</strong></label>
                         <div class="input-group">
@@ -58,15 +57,6 @@ document.getElementById('openFolderForm').addEventListener('submit', function(e)
                                 📋 Copier
                             </button>
                         </div>
-                    </div>
-                    <div class="mt-2">
-                        <small class="text-white">
-                            <strong>Instructions :</strong><br>
-                            1. Copiez le chemin ci-dessus<br>
-                            2. Ouvrez l'Explorateur Windows<br>
-                            3. Collez dans la barre d'adresse<br>
-                            4. Appuyez sur Entrée
-                        </small>
                     </div>
                 </div>
             `;

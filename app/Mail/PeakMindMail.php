@@ -25,7 +25,7 @@ class PeakMindMail extends Mailable
     public function build()
     {
         $email = $this->subject("[PeakMind] " . $this->subject)
-                     ->view('emails.peakmind-template')
+                     ->view('emails.templates.welcome')
                      ->with(['content' => $this->content]);
         
         // Pièces jointes

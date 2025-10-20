@@ -112,8 +112,13 @@ Route::prefix('email')->group(function () {
         Route::post('/send', [EmailWebController::class, 'sendEmail'])->name('email.send');
         Route::post('/email/mark-read', [EmailWebController::class, 'markAsRead'])->name('email.mark-read');
         Route::post('/email/move', [EmailWebController::class, 'moveEmail'])->name('email.move');
-        Route::delete('/email/delete', [EmailWebController::class, 'deleteEmail'])->name('email.delete');
+        Route::post('/email/delete', [EmailWebController::class, 'deleteEmail'])->name('email.delete');
+        Route::post('/emails/delete-multiple', [EmailWebController::class, 'deleteMultipleEmails'])->name('email.delete.multiple');
+        Route::get('/emails/trash', [EmailWebController::class, 'showTrashFolder'])->name('email.trash');
+        Route::post('/emails/empty-trash', [EmailWebController::class, 'emptyTrash'])->name('email.empty.trash');
         Route::post('/reconnect', [EmailWebController::class, 'reconnect'])->name('email.reconnect');
+        Route::get('/emails/sent', [EmailWebController::class, 'showSentFolder'])->name('email.sent');
+        Route::get('/download-attachment', [EmailWebController::class, 'downloadAttachment'])->name('email.download.attachment');
     });
 
     // Backup Routes
@@ -218,4 +223,9 @@ Route::prefix('api/desktop')->group(function () {
             ]
         ]);
     });
+});
+Route::get('/debug-uids', function() {
+    $emailService = app()->make(App\Services\EmailManagerService::class);
+    $result = $emailService->debugUids('INBOX', 20);
+    return response()->json($result);
 });

@@ -89,9 +89,9 @@
                       <button type="button" class="btn btn-info btn-block">
                         <i class="fas fa-share mr-1"></i> Transférer
                       </button>
-                      <button type="button" class="btn btn-danger btn-block">
-                        <i class="fas fa-trash mr-1"></i> Supprimer
-                      </button>
+                      <button type="button" class="btn btn-danger btn-block" onclick="deleteEmail('{{ $currentFolder }}', '{{ $email['uid'] }}')">
+    <i class="fas fa-trash mr-1"></i> Supprimer
+</button>
                     </div>
                   </div>
                 </div>
@@ -205,27 +205,56 @@
                             <div class="card-body">
                               <div class="row">
                                 @foreach($email['attachments'] as $attachment)
-                                  <div class="col-md-4 mb-3">
-                                    <div class="attachment-item border rounded p-2">
-                                      <div class="d-flex align-items-center">
-                                        <div class="mr-3">
-                                          <i class="fas fa-file fa-2x text-muted"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                          <p class="mb-1 text-sm font-weight-bold">{{ $attachment['name'] }}</p>
-                                          <p class="mb-0 text-xs text-muted">
-                                            {{ number_format($attachment['size'] / 1024, 2) }} KB
-                                          </p>
-                                        </div>
-                                        <div class="ml-2">
-                                          <button type="button" class="btn btn-sm btn-primary" title="Télécharger">
-                                            <i class="fas fa-download"></i>
-                                          </button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                @endforeach
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="attachment-item border rounded p-3">
+                    <div class="d-flex align-items-center">
+                        <div class="mr-3">
+                            @php
+                                $icon = 'fa-file';
+                                $extension = strtolower(pathinfo($attachment['name'], PATHINFO_EXTENSION));
+                                $iconMap = [
+                                    'pdf' => 'fa-file-pdf',
+                                    'doc' => 'fa-file-word',
+                                    'docx' => 'fa-file-word',
+                                    'xls' => 'fa-file-excel',
+                                    'xlsx' => 'fa-file-excel',
+                                    'ppt' => 'fa-file-powerpoint',
+                                    'pptx' => 'fa-file-powerpoint',
+                                    'zip' => 'fa-file-archive',
+                                    'rar' => 'fa-file-archive',
+                                    'jpg' => 'fa-file-image',
+                                    'jpeg' => 'fa-file-image',
+                                    'png' => 'fa-file-image',
+                                    'gif' => 'fa-file-image',
+                                ];
+                                $icon = $iconMap[$extension] ?? 'fa-file';
+                            @endphp
+                            <i class="fas {{ $icon }} fa-2x text-muted"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="font-weight-bold text-truncate" title="{{ $attachment['name'] }}">
+                                {{ $attachment['name'] }}
+                            </div>
+                           <div class="text-muted small">
+                            {{ $formatFileSize($attachment['size'] ?? 0) }}
+                          </div>
+                        </div>
+                        <div class="ml-2">
+                            <button class="btn btn-sm btn-outline-primary download-attachment"
+                                    data-attachment="{{ json_encode([
+                                        'id' => $attachment['id'],
+                                        'name' => $attachment['name'],
+                                        'folder' => $currentFolder,
+                                        'uid' => $email['uid']
+                                    ]) }}"
+                                    title="Télécharger {{ $attachment['name'] }}">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
                               </div>
                             </div>
                           </div>
@@ -250,9 +279,9 @@
                           <button type="button" class="btn btn-info">
                             <i class="fas fa-share mr-1"></i> Transférer
                           </button>
-                          <button type="button" class="btn btn-danger">
-                            <i class="fas fa-trash mr-1"></i> Supprimer
-                          </button>
+                          <button type="button" class="btn btn-danger btn-block" onclick="deleteEmail('{{ $currentFolder }}', '{{ $email['uid'] }}')">
+    <i class="fas fa-trash mr-1"></i> Supprimer
+</button>
                         </div>
                       </div>
                     </div>
@@ -268,6 +297,7 @@
       </div>
       <!-- /.container-fluid -->
     </section>
+    
     <!-- /.content -->
   </div>
 <style>
@@ -298,20 +328,176 @@
 <script src="{{ asset('assets/dist/js/adminlte.min.js') }}"></script>
 
 <script>
-  $(function () {
+$(function () {
     // Enable tooltips
     $('[data-toggle="tooltip"]').tooltip();
 
     // Print functionality
     $('.fa-print').closest('button').click(function() {
-      window.print();
+        window.print();
     });
 
-    // Download attachment
-    $('.fa-download').closest('button').click(function() {
-      // Implement download logic here
-      alert('Fonctionnalité de téléchargement à implémenter');
+    // Download attachment - VERSION AVEC DEBUG
+    $('.download-attachment').click(function(e) {
+        e.preventDefault();
+        
+        console.log('Download button clicked');
+        
+        const button = $(this);
+        const attachmentData = button.data('attachment');
+        
+        console.log('Attachment data:', attachmentData);
+        
+        if (!attachmentData) {
+            console.error('No attachment data found');
+            alert('Données de pièce jointe manquantes');
+            return;
+        }
+
+        // Vérifier que toutes les données nécessaires sont présentes
+        if (!attachmentData.folder || !attachmentData.uid || !attachmentData.id || !attachmentData.name) {
+            console.error('Missing required attachment data:', attachmentData);
+            alert('Données de pièce jointe incomplètes');
+            return;
+        }
+
+        console.log('Starting download for:', attachmentData.name);
+        
+        // Méthode de téléchargement directe
+        downloadAttachmentDirect(attachmentData);
     });
-  });
+
+    function downloadAttachmentDirect(attachmentData) {
+        // Construire l'URL
+        const params = new URLSearchParams({
+            folder: attachmentData.folder,
+            uid: attachmentData.uid,
+            attachment_id: attachmentData.id,
+            filename: attachmentData.name
+        });
+        
+        const url = '{{ route("email.download.attachment") }}?' + params.toString();
+        console.log('Download URL:', url);
+        
+        // Méthode 1: Ouvrir dans un nouvel onglet
+        window.open(url, '_blank');
+        
+        // Méthode 2: Créer un lien et le cliquer
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('Download initiated');
+    }
+});
+</script>
+<script>
+function deleteEmail(folder, uid, permanent = false) {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet email ?')) {
+        return;
+    }
+
+    // Afficher un indicateur de chargement
+    const button = event.target;
+    const originalHtml = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression...';
+    button.disabled = true;
+
+    fetch('{{ route("email.delete") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            folder: folder,
+            uid: uid,
+            permanent: permanent
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Afficher notification de succès
+            showNotification(data.message, 'success');
+            
+            // Supprimer la ligne du tableau ou recharger
+            setTimeout(() => {
+                // Option 1: Recharger la page
+                location.reload();
+                
+                // Option 2: Supprimer la ligne dynamiquement
+                // const row = button.closest('tr');
+                // row.style.opacity = '0';
+                // setTimeout(() => row.remove(), 500);
+            }, 1000);
+        } else {
+            showNotification(data.error, 'error');
+            button.innerHTML = originalHtml;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        showNotification('Erreur réseau: ' + error, 'error');
+        button.innerHTML = originalHtml;
+        button.disabled = false;
+    });
+}
+
+// Fonction pour afficher les notifications (si vous n'en avez pas)
+function showNotification(message, type = 'info') {
+    // Utiliser Toastr si disponible
+    if (typeof toastr !== 'undefined') {
+        toastr[type](message);
+    } 
+    // Sinon utiliser alert simple
+    else if (type === 'error') {
+        alert('Erreur: ' + message);
+    } else {
+        alert(message);
+    }
+}
+
+// Suppression multiple avec cases à cocher
+function deleteSelectedEmails() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+    const uids = Array.from(checkboxes).map(cb => cb.value).filter(uid => uid !== 'on');
+    
+    if (uids.length === 0) {
+        alert('Veuillez sélectionner au moins un email à supprimer.');
+        return;
+    }
+
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer ${uids.length} email(s) ?`)) {
+        return;
+    }
+
+    fetch('{{ url("email.delete.multiple") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            folder: '{{ $currentFolder }}',
+            uids: uids,
+            permanent: false
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showNotification(data.error, 'error');
+        }
+    });
+}
 </script>
 @endsection

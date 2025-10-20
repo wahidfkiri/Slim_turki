@@ -39,7 +39,7 @@
                                                                     <td>{{ $time_sheet->typeRelation->nom ?? ''}}</td>
                                                                     <td>{{ $time_sheet->quantite ?? ''}}</td>
                                                                     <td>{{ $time_sheet->prix ?? '0.00'}} DT</td>
-                                                                    <td>{{ $time_sheet->total ?? '0.00'}} DT</td>
+                                                                    <td>{{ $time_sheet->total ?? '0.00'}} DT</td> 
                                                                     <td>
                                                                         @if(auth()->user()->hasPermission('view_timesheets'))
                                                                         <a href="{{route('time-sheets.show', $time_sheet)}}" class="btn btn-sm btn-info" title="Voir">

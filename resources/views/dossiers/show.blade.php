@@ -29,7 +29,7 @@
                         <div class="card-header">
                             <h3 class="card-title">Informations du dossier</h3>
                             <div class="card-tools" style="display:ruby;">
-                            <x-dossier.folder :dossier="$dossier"/>
+                            <x-dossier.folder-network :dossier="$dossier"/>
                                 @if(auth()->user()->hasPermission('edit_dossiers'))
                                     <a href="{{ route('dossiers.edit', $dossier) }}" class="btn btn-warning btn-sm">
                                         <i class="fas fa-edit"></i> Modifier
