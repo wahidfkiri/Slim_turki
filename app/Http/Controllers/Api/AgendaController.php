@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Agenda;
+use App\Models\AgendaCategory;
 use App\Models\User;
 use App\Models\Dossier;
 use App\Models\Intervenant;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 
 class AgendaController extends Controller
@@ -459,6 +463,104 @@ public function edit(Agenda $agenda)
         'category' => $category
     ]);
     }
+
+    /**
+     * Mettre à jour une catégorie
+     */
+    public function updateCategorieAgenda(Request $request, $id): JsonResponse
+    {
+        try {
+            $categorie = AgendaCategory::findOrFail($id);
+
+            $validated = $request->validate([
+                'nom' => 'required|string|max:255|unique:categories,nom,' . $categorie->id,
+                'couleur' => 'required|string|max:7',
+                'description' => 'nullable|string'
+            ]);
+
+            DB::beginTransaction();
+
+            $categorie->update($validated);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Catégorie mise à jour avec succès',
+                'categorie' => $categorie
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Catégorie non trouvée'
+            ], 404);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur modification catégorie ID ' . $id . ': ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour de la catégorie'
+            ], 500);
+        }
+    }
+
+    
+    /**
+     * Supprimer une catégorie
+     */
+    public function deleteCategorieAgenda($id): JsonResponse
+{
+    try {
+        $categorie = AgendaCategory::findOrFail($id);
+
+        DB::beginTransaction();
+
+        // CORRECTION : Utiliser exists() ou count() au lieu de l'appel direct
+        // if ($categorie->agendas()->exists()) {
+        //     DB::rollBack(); // Important : rollback si condition non remplie
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Impossible de supprimer cette catégorie car elle est utilisée dans des évènements déjà créés'
+        //     ], 422);
+        // }
+
+        $categorie->delete();
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Catégorie supprimée avec succès'
+        ]);
+
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Catégorie non trouvée'
+        ], 404);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Erreur suppression catégorie agenda ID ' . $id . ': ' . $e->getMessage());
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Erreur lors de la suppression de la catégorie' . $categorie->agendas()->first()->id
+        ], 500);
+    }
+}
+
 
     public function apiIndex()
 {

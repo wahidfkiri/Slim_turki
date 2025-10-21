@@ -27,7 +27,7 @@ class ExplorerController extends Controller
             // Prefer the path supplied by the request; otherwise fall back to a default UNC path.
             // Build a proper folder name with a separator between numero_dossier and id
             $folderName = $dossier->numero_dossier . '-' . $dossier->id;
-            $localPath = '\\\\192.168.1.31\\dossiers\\' . $folderName;
+            $localPath = '\\\\192.168.1.15\\dossiers\\' . $folderName;
 
             // if (empty($localPath)) {
             //     // Properly escaped UNC literal: \\server\share\path
@@ -137,12 +137,12 @@ public function openFolderNetwork(Request $request)
  */
 private function convertToNetworkPath(string $localPath): string
 {
-    $serverIP = '192.168.1.31'; // Votre IP serveur
+    $serverIP = '192.168.1.15'; // Votre IP serveur
     $localPath = str_replace('/', '\\', $localPath);
     
     // Mapping des chemins locaux vers les partages réseau
     $networkMappings = [
-        'D:\\My Project\\Slim Turki\\Project\\storage\\app\\public\\dossiers' => 'dossiers',
+        'C:\\xampp\\sta\\storage\\app\\public\\dossiers' => 'dossiers',
         // Ajoutez d'autres mappings si nécessaire
     ];
     

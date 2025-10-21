@@ -102,288 +102,157 @@
                                     
                                     <div class="tab-content" id="dossierTabsContent">
                                         <!-- Onglet Générale -->
-                                        <div class="tab-pane fade show active" id="generale" role="tabpanel" aria-labelledby="generale-tab">
-                                            <div class="p-3">
-                                                <!-- Informations de base -->
-                                                <h5 class="text-primary mb-3"><i class="fas fa-folder"></i> Informations de base</h5>
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label for="numero_dossier">Numéro du dossier</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">{{ $dossier->numero_dossier }}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label for="date_entree">Date d'entrée</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">{{ $dossier->date_entree->format('d/m/Y') }}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                       <div class="tab-pane fade show active" id="generale" role="tabpanel" aria-labelledby="generale-tab">
+    <div class="p-3">
+        <!-- Informations de base -->
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="section-title">Informations de base</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 40%;">Numéro du dossier</th>
+                        <td>{{ $dossier->numero_dossier }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date d'entrée</th>
+                        <td>{{ $dossier->date_entree->format('d/m/Y') }}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="col-md-6">
+                <h5 class="section-title">Nom du dossier</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th>Nom complet</th>
+                        <td>{{ $dossier->nom_dossier }}</td>
+                    </tr>
+                    <tr>
+                        <th>Objet du dossier</th>
+                        <td>{{ $dossier->objet ?? 'Non défini' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
 
-                                                <div class="row">
-                                                    <div class="col-md-12">
-                                                        <div class="form-group">
-                                                            <label for="nom_dossier">Nom du dossier</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">{{ $dossier->nom_dossier }}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
+        <!-- Domaines -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h5 class="section-title">Classification</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 40%;">Domaine</th>
+                        <td>{{ $dossier->domaine->nom ?? 'Non défini' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Sous-domaine</th>
+                        <td>{{ $dossier->sousDomaine->nom ?? 'Non défini' }}</td>
+                    </tr>
+                </table>
+            </div>
 
-                                                <div class="row">
-                                                    <div class="col-md-12">
-                                                        <div class="form-group">
-                                                            <label for="objet">Objet du dossier</label>
-                                                            <div class="bg-light p-3 rounded" style="min-height: 100px;">
-                                                                @if($dossier->objet)
-                                                                    {!! nl2br(e($dossier->objet)) !!}
-                                                                @else
-                                                                    <span class="text-muted">Aucun objet défini</span>
-                                                                @endif
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+            <!-- Type de dossier -->
+            <div class="col-md-6">
+                <h5 class="section-title">Type de dossier</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 40%;">Dossier de conseil</th>
+                        <td>
+                            @if($dossier->conseil)
+                                <span class="badge badge-success">Oui</span>
+                            @else
+                                <span class="badge badge-secondary">Non</span>
+                            @endif
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Dossier contentieux</th>
+                        <td>
+                            @if($dossier->contentieux)
+                                <span class="badge badge-success">Oui</span>
+                            @else
+                                <span class="badge badge-secondary">Non</span>
+                            @endif
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
 
-                                                <!-- Domaines -->
-                                                <h5 class="text-primary mb-3 mt-4"><i class="fas fa-tags"></i> Classification</h5>
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label for="domaine_id">Domaine</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">
-                                                                {{ $dossier->domaine->nom ?? 'Non défini' }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label for="sous_domaine_id">Sous-domaine</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">
-                                                                {{ $dossier->sousDomaine->nom ?? 'Non défini' }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
+        <!-- Statut -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h5 class="section-title">Statut</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 40%;">Archivé</th>
+                        <td>
+                            @if($dossier->archive)
+                                <span class="badge badge-warning">Archivé</span>
+                            @else
+                                <span class="badge badge-info">Actif</span>
+                            @endif
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
-                                                <!-- Type de dossier -->
-                                                <h5 class="text-primary mb-3 mt-4"><i class="fas fa-balance-scale"></i> Type de dossier</h5>
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label>Dossier de conseil</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">
-                                                                @if($dossier->conseil)
-                                                                    <span class="badge badge-success">Oui</span>
-                                                                @else
-                                                                    <span class="badge badge-secondary">Non</span>
-                                                                @endif
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label>Dossier contentieux</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">
-                                                                @if($dossier->contentieux)
-                                                                    <span class="badge badge-success">Oui</span>
-                                                                @else
-                                                                    <span class="badge badge-secondary">Non</span>
-                                                                @endif
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
+<!-- Onglet Information Juridique -->
+<div class="tab-pane fade" id="juridique" role="tabpanel" aria-labelledby="juridique-tab">
+    <div class="p-3">
+        <!-- Informations sur la procédure -->
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="section-title">Informations sur la procédure</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 40%;">Numéro de rôle</th>
+                        <td>{{ $dossier->numero_role ?? 'Non défini' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Chambre</th>
+                        <td>{{ $dossier->chambre ? ucfirst($dossier->chambre) : 'Non définie' }}</td>
+                    </tr>
+                </table>
+            </div>
 
-                                                <!-- Statut -->
-                                                <h5 class="text-primary mb-3 mt-4"><i class="fas fa-info-circle"></i> Statut</h5>
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label>Archivé</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">
-                                                                @if($dossier->archive)
-                                                                    <span class="badge badge-warning">Archivé</span>
-                                                                @else
-                                                                    <span class="badge badge-info">Actif</span>
-                                                                @endif
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+            <div class="col-md-6">
+                <h5 class="section-title">Détails de la procédure</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 40%;">Numéro de chambre</th>
+                        <td>{{ $dossier->numero_chambre ?? 'Non défini' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Numéro de parquet</th>
+                        <td>{{ $dossier->numero_parquet ?? 'Non défini' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
 
-                                        <!-- Onglet Information Juridique -->
-                                        <div class="tab-pane fade" id="juridique" role="tabpanel" aria-labelledby="juridique-tab">
-                                            <div class="p-3">
-                                                <!-- Informations juridiques -->
-                                                <h5 class="text-primary mb-3"><i class="fas fa-scale-balanced"></i> Informations sur la procédure</h5>
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label for="numero_role">Numéro de rôle</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">
-                                                                {{ $dossier->numero_role ?? 'Non défini' }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label for="chambre">Chambre</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">
-                                                                {{ $dossier->chambre ? ucfirst($dossier->chambre) : 'Non définie' }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h5 class="section-title">Informations complémentaires</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width: 40%;">Numéro d'instruction</th>
+                        <td>{{ $dossier->numero_instruction ?? 'Non défini' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Numéro de plainte</th>
+                        <td>{{ $dossier->numero_plainte ?? 'Non défini' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
-                                                <div class="row">
-                                                    <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label for="numero_chambre">Numéro de chambre</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">
-                                                                {{ $dossier->numero_chambre ?? 'Non défini' }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label for="numero_parquet">Numéro de parquet</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">
-                                                                {{ $dossier->numero_parquet ?? 'Non défini' }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="form-group">
-                                                            <label for="numero_instruction">Numéro d'instruction</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">
-                                                                {{ $dossier->numero_instruction ?? 'Non défini' }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row">
-                                                    <div class="col-md-6">
-                                                        <div class="form-group">
-                                                            <label for="numero_plainte">Numéro de plainte</label>
-                                                            <p class="form-control-plaintext bg-light p-2 rounded">
-                                                                {{ $dossier->numero_plainte ?? 'Non défini' }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Onglet Intervenants -->
-                                        <div class="tab-pane fade" id="intervenants" role="tabpanel" aria-labelledby="intervenants-tab">
-                                            <div class="p-3">
-                                                <h5 class="text-primary mb-3"><i class="fas fa-handshake"></i> Intervenants du dossier</h5>
-                                                
-                                                <!-- Client principal -->
-                                                <div class="row">
-                                                    <div class="col-md-12">
-                                                        <div class="form-group">
-                                                            <label>Client principal</label>
-                                                            @php
-                                                                $clientPrincipal = $dossier->intervenants()->wherePivot('role', 'client')->first();
-                                                            @endphp
-                                                            @if($clientPrincipal)
-                                                                <div class="bg-light p-3 rounded">
-                                                                    <h6 class="mb-1">{{ $clientPrincipal->identite_fr }}</h6>
-                                                                    <small class="text-muted">
-                                                                        {{ $clientPrincipal->categorie }} • 
-                                                                        {{ $clientPrincipal->email ?? 'Email non disponible' }} • 
-                                                                        {{ $clientPrincipal->telephone ?? 'Téléphone non disponible' }}
-                                                                    </small>
-                                                                </div>
-                                                            @else
-                                                                <p class="form-control-plaintext bg-light p-2 rounded text-muted">
-                                                                    Aucun client principal défini
-                                                                </p>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Autres intervenants -->
-                                                <div class="row mt-4">
-                                                    <div class="col-md-12">
-                                                        <div class="form-group">
-                                                            <label>Autres intervenants</label>
-                                                            <div class="p-3">
-                                                @if($dossier->intervenants && count($dossier->intervenants) > 0)
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered table-striped">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Intervenant</th>
-                                                                    <th>Role</th>
-                                                                    <th>Type</th>
-                                                                    <th>Actions</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach($dossier->intervenants as $intervenantLie)
-                                                               @if($intervenantLie?->id !== $clientPrincipal?->id)
-                                                                <tr>
-                                                                    <td>
-                                                                        <div class="d-flex align-items-center">
-                                                                            <div class="mr-3">
-                                                                                <i class="fas fa-user-circle fa-2x text-primary"></i>
-                                                                            </div>
-                                                                            <div>
-                                                                                <strong>{{ $intervenantLie->identite_fr }}</strong>
-                                                                                @if($intervenantLie->identite_ar)
-                                                                                    <br>
-                                                                                    <small class="text-muted">{{ $intervenantLie->identite_ar }}</small>
-                                                                                @endif
-                                                                            </div>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td> {{ $intervenantLie->pivot->role ?? 'N/A' }} </td>
-                                                                    <td>
-                                                                        {{ $intervenantLie->type ?? 'N/A' }}
-                                                                    </td>
-                                                                    <td>
-                                                                        <div class="btn-group btn-group-sm">
-                                                                            <a href="{{ route('intervenants.show', $intervenantLie->id) }}" 
-                                                                               class="btn btn-info" title="Voir">
-                                                                                <i class="fas fa-eye"></i>
-                                                                            </a>
-                                                                            <a href="{{ route('intervenants.edit', $intervenantLie->id) }}" 
-                                                                               class="btn btn-warning" title="Modifier">
-                                                                                <i class="fas fa-edit"></i>
-                                                                            </a>
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                                @endif
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-
-                                                @else
-                                                    <div class="text-center py-5">
-                                                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                                                        <h4 class="text-muted">Aucun intervenant lié</h4>
-                                                        <p class="text-muted">Cet dossier n'est pas encore lié à d'autres intervenants.</p>
-                                                        <a href="{{ route('dossiers.edit', $dossier->id) }}#intervenants-lies" 
-                                                           class="btn btn-primary mt-2">
-                                                            <i class="fas fa-link mr-1"></i> Ajouter des liens
-                                                        </a>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <x-dossier.intervenant.tab-list :dossier="$dossier" />
 
                                         <!-- Onglet Équipe -->
                                         <div class="tab-pane fade" id="equipe" role="tabpanel" aria-labelledby="equipe-tab">
@@ -448,49 +317,7 @@
                                             </div>
                                         </div>
                                         <!-- Onglet Dossiers -->
-                                        <div class="tab-pane fade" id="dossiers" role="tabpanel" aria-labelledby="dossiers-tab">
-                                            <div class="p-3">
-                                                <h5 class="text-primary mb-3"><i class="fas fa-money-bill-wave"></i> Informations de dossiers liés</h5>
-
-                                                 @if($dossier->dossiersLies && $dossier->dossiersLies->count() > 0)
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered table-hover">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Numéro Dossier</th>
-                                                                    <th>Nom Dossier</th>
-                                                                    <th>Date Entrée</th>
-                                                                    <th>Actions</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach($dossier->dossiersLies as $dossierLie)
-                                                                <tr>
-                                                                    <td>
-                                                                        {{ $dossierLie->numero_dossier }}
-                                                                    </td>
-                                                                    <td>{{ $dossierLie->nom_dossier }}</td>
-                                                                    <td>{{ $dossierLie->date_entree->format('d/m/Y') }}</td>
-                                                                    <td>
-                                                                        <a href="{{route('dossiers.show', $dossierLie)}}" class="btn btn-sm btn-info" title="Voir">
-                                                                            <i class="fas fa-eye"></i>
-                                                                        </a>
-                                                                    </td>
-                                                                </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                @else
-                                                    <div class="alert alert-info" style="color:black;">
-                                                        <h6><i class="icon fas fa-info"></i> Information</h6>
-                                                        <p class="mb-0">
-                                                            Aucune facture n'a été ajoutée à ce dossier.
-                                                        </p>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
+                                        <x-dossier.tab-list :dossier="$dossier" />
                                         <!-- Onglet Notes -->
                                         <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
                                             <div class="p-3">

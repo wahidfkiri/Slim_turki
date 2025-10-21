@@ -118,7 +118,7 @@
                                                     </div>
 
                                                     <div class="row">
-                                                        <div class="col-md-12">
+                                                        <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label for="nom_dossier">Nom du dossier *</label>
                                                                 <input type="text" class="form-control @error('nom_dossier') is-invalid @enderror" 
@@ -132,10 +132,7 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-md-12">
+                                                        <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label for="objet">Objet du dossier</label>
                                                                 <input type="text" class="form-control @error('objet') is-invalid @enderror" 

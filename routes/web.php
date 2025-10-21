@@ -79,6 +79,8 @@ Route::get('dossiers/{dossierId}/agendas', [AgendaController::class, 'byDossier'
 Route::get('/get/agendas/data', [AgendaController::class, 'getAgendasData'])->name('agendas.data');
 Route::get('/get/agendas/data/{dossierId}', [AgendaController::class, 'getAgendasDataByDossierId'])->name('agendas.data.by.dossier');
 Route::post('agenda-categories', [AgendaController::class, 'storeCategorieAgenda'])->name('agenda-categories.store');
+Route::put('agendas/categories/{id}', [AgendaController::class, 'updateCategorieAgenda'])->name('agenda-categories.update');
+Route::delete('agendas/categories/{id}', [AgendaController::class, 'deleteCategorieAgenda'])->name('agenda-categories.delete');
 Route::get('/api/agenda-categories', [AgendaController::class, 'apiIndex'])->name('agenda-categories.api');
 Route::resource('tasks', TaskController::class);
 Route::get('tasks/status/{statut}', [TaskController::class, 'byStatus']);

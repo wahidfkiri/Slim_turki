@@ -119,7 +119,7 @@
                                                     </div>
 
                                                     <div class="row">
-                                                        <div class="col-md-12">
+                                                        <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label for="nom_dossier">Nom du dossier *</label>
                                                                 <input type="text" class="form-control @error('nom_dossier') is-invalid @enderror" 
@@ -133,15 +133,11 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-md-12">
+                                                        <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label for="objet">Objet du dossier</label>
-                                                                <textarea class="form-control @error('objet') is-invalid @enderror" 
-                                                                          id="objet" name="objet" 
-                                                                          rows="4" placeholder="Description détaillée de l'objet du dossier">{{ old('objet', $dossier->objet) }}</textarea>
+                                                                <input type="text" class="form-control @error('objet') is-invalid @enderror" 
+                                                                          id="objet" name="objet" placeholder="Description détaillée de l'objet du dossier" value="{{ old('objet', $dossier->objet) }}">
                                                                 @error('objet')
                                                                     <span class="invalid-feedback" role="alert">
                                                                         <strong>{{ $message }}</strong>

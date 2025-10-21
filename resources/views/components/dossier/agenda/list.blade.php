@@ -48,10 +48,19 @@
                                 <label>Catégories</label>
                                 <a href="" style="float:right;" class="text-primary" data-toggle="modal" data-target="#createCategorieModal">Ajouter </a>
                                 @foreach(\App\Models\AgendaCategory::all() as $categorie)
-                                <div class="custom-control custom-checkbox">
+                                 <div class="custom-control custom-checkbox category-item">
                                 <span class="legend-color" style="background-color: {{$categorie->couleur}}; margin-right:30px;"></span>
                                     <input class="custom-control-input" type="checkbox" id="filter_{{$categorie->nom}}" checked data-category="{{$categorie->nom}}">
                                     <label for="filter_{{$categorie->nom}}" class="custom-control-label">{{$categorie->nom}}</label>
+                                    <!-- Bouton Supprimer -->
+    <a href="#" class="delete-category" data-id="{{$categorie->id}}" data-name="{{$categorie->nom}}">
+        <i class="fa fa-trash text-danger" style="float:right;" tooltip="Supprimer"></i>
+    </a>
+    
+    <!-- Bouton Modifier -->
+    <a href="#" class="edit-category" data-id="{{$categorie->id}}" data-name="{{$categorie->nom}}" data-color="{{$categorie->couleur}}">
+        <i class="fa fa-edit text-info" style="float:right; margin-right: 10px;" tooltip="Modifier"></i>
+    </a>
                                 </div>
                                 @endforeach
                             </div>
@@ -155,6 +164,61 @@
                     <button type="submit" class="btn btn-primary" id="btnCreateCategorie">Créer</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de modification -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier la catégorie</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editCategoryForm">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="edit_category_id" name="id">
+                    <div class="form-group">
+                        <label for="edit_category_name">Nom de la catégorie</label>
+                        <input type="text" class="form-control" id="edit_category_name" name="nom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_category_color">Couleur</label>
+                        <input type="color" class="form-control" id="edit_category_color" name="couleur" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveCategoryChanges">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation suppression -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la suppression</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer la catégorie "<span id="category_name_to_delete"></span>" ?</p>
+                <p class="text-danger"><small>Cette action est irréversible.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteCategory">Supprimer</button>
+            </div>
         </div>
     </div>
 </div>
@@ -1007,5 +1071,128 @@ function loadCategories() {
         }
     });
 }
+});
+</script>
+
+
+<script>
+$(document).ready(function() {
+    let categoryToDelete = null;
+
+    // Gestion de la modification
+    $('.edit-category').on('click', function(e) {
+        e.preventDefault();
+        
+        const categoryId = $(this).data('id');
+        const categoryName = $(this).data('name');
+        const categoryColor = $(this).data('color');
+        
+        $('#edit_category_id').val(categoryId);
+        $('#edit_category_name').val(categoryName);
+        $('#edit_category_color').val(categoryColor);
+        
+        $('#editCategoryModal').modal('show');
+    });
+
+    // Sauvegarde des modifications
+    $('#saveCategoryChanges').on('click', function() {
+        const categoryId = $('#edit_category_id').val();
+        const formData = {
+            nom: $('#edit_category_name').val(),
+            couleur: $('#edit_category_color').val(),
+            _token: '{{ csrf_token() }}',
+            _method: 'PUT'
+        };
+
+        $.ajax({
+            url: '/agendas/categories/' + categoryId,
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    // Mettre à jour l'affichage
+                    const categoryElement = $('#category-' + categoryId);
+                    categoryElement.find('.custom-control-label').text(response.categorie.nom);
+                    categoryElement.find('.legend-color').css('background-color', response.categorie.couleur);
+                    categoryElement.find('.edit-category').data('name', response.categorie.nom);
+                    categoryElement.find('.edit-category').data('color', response.categorie.couleur);
+                    
+                    $('#editCategoryModal').modal('hide');
+                    showAlert('success', response.message);
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON;
+                showAlert('error', response?.message || 'Erreur lors de la modification');
+            }
+        });
+    });
+
+    // Gestion de la suppression
+    $('.delete-category').on('click', function(e) {
+        e.preventDefault();
+        
+        categoryToDelete = $(this).data('id');
+        const categoryName = $(this).data('name');
+        
+        $('#category_name_to_delete').text(categoryName);
+        $('#deleteCategoryModal').modal('show');
+    });
+
+    // Confirmation de suppression
+    $('#confirmDeleteCategory').on('click', function() {
+        if (!categoryToDelete) return;
+
+        $.ajax({
+            url: '/agendas/categories/' + categoryToDelete,
+            type: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                _method: 'DELETE'
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Supprimer l'élément du DOM
+                    $('#category-' + categoryToDelete).remove();
+                    $('#deleteCategoryModal').modal('hide');
+                    showAlert('success', response.message);
+                    
+                    // Recharger la page si plus de catégories
+                    if ($('.category-item').length === 0) {
+                        location.reload();
+                    }
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON;
+                $('#deleteCategoryModal').modal('hide');
+                showAlert('error', response?.message || 'Erreur lors de la suppression');
+            }
+        });
+    });
+
+    // Fonction pour afficher les alertes
+    function showAlert(type, message) {
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const alertHtml = `
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        `;
+        
+        // Afficher l'alerte en haut de la page
+        $('.content-wrapper').prepend(alertHtml);
+        
+        // Supprimer automatiquement après 5 secondes
+        setTimeout(() => {
+            $('.alert').alert('close');
+        }, 3000);
+        setTimeout(function() {
+    window.location.reload();
+}, 1500);
+    }
 });
 </script>
