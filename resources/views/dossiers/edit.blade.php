@@ -8,6 +8,7 @@
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h1>Modifier le Dossier</h1>
+                             <br><p>{{$dossier->numero_dossier}}</p>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -564,6 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <div class="tab-pane fade d-none" id="facturation" role="tabpanel" aria-labelledby="facturation-tab">
                                                 <div class="p-3">
                                                     <h5 class="text-primary mb-3"><i class="fas fa-money-bill-wave"></i> Informations de facturation</h5>
+                                                 
                                                     
                                                     <!-- Mode de facturation -->
                                                     <div class="row">
@@ -710,7 +712,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- Liste des intervenants disponibles -->
                 <div class="form-group w-100" style="display:grid;">
                     <label for="intervenantList">Choisir un intervenant</label>
-                    <select class="form-control search_test1" id="intervenantList">
+                    <select class="form-control search_test2" id="intervenantList">
                         <option value="">-- Sélectionnez un intervenant --</option>
                         @foreach($intervenants as $intervenantItem)
                             @if($intervenantItem->id != $intervenant->id) {{-- Exclure l'intervenant actuel --}}
@@ -811,7 +813,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- jQuery -->
 <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.sumoselect/3.0.2/jquery.sumoselect.min.js"></script>
+
 <script>
+        $('.search_test2').SumoSelect({search: true, searchText: 'Sélectionner un intervenant...'});
+
 $(document).ready(function() {
     // Initialisation de
     $('.select2').select2({

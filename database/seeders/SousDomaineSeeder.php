@@ -2,11 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Domaine;
-use App\Models\SousDomaine;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class SousDomaineSeeder extends Seeder
 {
@@ -15,95 +13,165 @@ class SousDomaineSeeder extends Seeder
      */
     public function run(): void
     {
-        // Désactiver les contraintes de clé étrangère temporairement
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        SousDomaine::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
-        // Récupérer les domaines
-        $droitCivil = Domaine::where('nom', 'Droit Civil')->first();
-        $droitCommercial = Domaine::where('nom', 'Droit Commercial')->first();
-        $droitPenal = Domaine::where('nom', 'Droit Pénal')->first();
-        $droitSocial = Domaine::where('nom', 'Droit Social')->first();
-        $droitAdministratif = Domaine::where('nom', 'Droit Administratif')->first();
-        $droitFiscal = Domaine::where('nom', 'Droit Fiscal')->first();
-        $droitImmobilier = Domaine::where('nom', 'Droit Immobilier')->first();
-        $droitFamille = Domaine::where('nom', 'Droit de la Famille')->first();
-        $droitSuccessions = Domaine::where('nom', 'Droit des Successions')->first();
-        $droitContrats = Domaine::where('nom', 'Droit des Contrats')->first();
-        $droitSocietes = Domaine::where('nom', 'Droit des Sociétés')->first();
-
+        $now = Carbon::now();
+        
+        // Récupérer les domaines pour avoir leurs IDs
+        $domaines = DB::table('domaines')->get()->pluck('id', 'nom')->toArray();
+        
         $sousDomaines = [
-            // Droit Civil
-            ['domaine_id' => $droitCivil->id, 'nom' => 'Responsabilité civile', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitCivil->id, 'nom' => 'Droit des obligations', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitCivil->id, 'nom' => 'Droit des biens', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitCivil->id, 'nom' => 'Droit des personnes', 'created_at' => now(), 'updated_at' => now()],
+            // Droit de la famille, des personnes et de leur patrimoine
+            'Droit de la famille, des personnes et de leur patrimoine' => [
+                'Mariage, divorce, séparation',
+                'Régimes matrimoniaux',
+                'Filiation, adoption',
+                'Successions et libéralités',
+                'Tutelle',
+                'Changement, correction d\'état civil'
+            ],
             
-            // Droit Commercial
-            ['domaine_id' => $droitCommercial->id, 'nom' => 'Droit commercial général', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitCommercial->id, 'nom' => 'Procédures collectives', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitCommercial->id, 'nom' => 'Concurrence et distribution', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitCommercial->id, 'nom' => 'Transport et logistique', 'created_at' => now(), 'updated_at' => now()],
+            // Droit du travail
+            'Droit du travail' => [
+                'Contrat de travail',
+                'Licenciement',
+                'Harcèlement',
+                'Relations collectives de travail',
+                'Prud\'hommes'
+            ],
             
-            // Droit Pénal
-            ['domaine_id' => $droitPenal->id, 'nom' => 'Droit pénal général', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitPenal->id, 'nom' => 'Droit pénal des affaires', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitPenal->id, 'nom' => 'Procédure pénale', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitPenal->id, 'nom' => 'Droit pénal international', 'created_at' => now(), 'updated_at' => now()],
+            // Droit social
+            'Droit social' => [
+                'Droit de la sécurité sociale',
+                'Protection sociale',
+                'Retraite, prévoyance',
+                'Accident du travail, maladie professionnelle'
+            ],
             
-            // Droit Social
-            ['domaine_id' => $droitSocial->id, 'nom' => 'Droit du travail', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitSocial->id, 'nom' => 'Droit de la sécurité sociale', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitSocial->id, 'nom' => 'Droit de la protection sociale', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitSocial->id, 'nom' => 'Relations collectives du travail', 'created_at' => now(), 'updated_at' => now()],
+            // Droit commercial, des affaires et de la concurrence
+            'Droit commercial, des affaires et de la concurrence' => [
+                'Contrats commerciaux',
+                'Fonds de commerce',
+                'Concurrence déloyale',
+                'Baux commerciaux',
+                'Droit de la distribution',
+                'Franchise'
+            ],
             
-            // Droit Administratif
-            ['domaine_id' => $droitAdministratif->id, 'nom' => 'Contentieux administratif', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitAdministratif->id, 'nom' => 'Droit des marchés publics', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitAdministratif->id, 'nom' => 'Droit de l\'urbanisme', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitAdministratif->id, 'nom' => 'Droit de la fonction publique', 'created_at' => now(), 'updated_at' => now()],
+            // Droit des sociétés
+            'Droit des sociétés' => [
+                'Constitution et gestion de sociétés',
+                'Cessions de parts, fusions, acquisitions',
+                'Gouvernance d\'entreprise',
+                'Liquidation'
+            ],
             
-            // Droit Fiscal
-            ['domaine_id' => $droitFiscal->id, 'nom' => 'Fiscalité des entreprises', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitFiscal->id, 'nom' => 'Fiscalité des particuliers', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitFiscal->id, 'nom' => 'Fiscalité internationale', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitFiscal->id, 'nom' => 'Contentieux fiscal', 'created_at' => now(), 'updated_at' => now()],
+            // Droit bancaire et boursier
+            'Droit bancaire et boursier' => [
+                'Crédits, prêts',
+                'Contentieux bancaires',
+                'Instruments financiers',
+                'Réglementation boursière'
+            ],
             
-            // Droit Immobilier
-            ['domaine_id' => $droitImmobilier->id, 'nom' => 'Transaction immobilière', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitImmobilier->id, 'nom' => 'Promotion immobilière', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitImmobilier->id, 'nom' => 'Construction et urbanisme', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitImmobilier->id, 'nom' => 'Copropriété', 'created_at' => now(), 'updated_at' => now()],
+            // Droit fiscal et droit douanier
+            'Droit fiscal et droit douanier' => [
+                'Fiscalité des particuliers',
+                'Fiscalité des entreprises',
+                'Contrôle et contentieux fiscal',
+                'Contrôle et contentieux douanier',
+                'TVA, droits d\'accise'
+            ],
             
-            // Droit de la Famille
-            ['domaine_id' => $droitFamille->id, 'nom' => 'Mariage et divorce', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitFamille->id, 'nom' => 'Filiation et adoption', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitFamille->id, 'nom' => 'Autorité parentale', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitFamille->id, 'nom' => 'Obligation alimentaire', 'created_at' => now(), 'updated_at' => now()],
+            // Droit immobilier
+            'Droit immobilier' => [
+                'Vente immobilière',
+                'Construction',
+                'Copropriété',
+                'Urbanisme',
+                'Baux d\'habitation'
+            ],
             
-            // Droit des Successions
-            ['domaine_id' => $droitSuccessions->id, 'nom' => 'Successions légales', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitSuccessions->id, 'nom' => 'Testaments et donations', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitSuccessions->id, 'nom' => 'Liquidation de succession', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitSuccessions->id, 'nom' => 'Règlement des indivisions', 'created_at' => now(), 'updated_at' => now()],
+            // Droit de l'environnement
+            'Droit de l\'environnement' => [
+                'Pollutions, nuisances',
+                'Protection de la nature',
+                'Droit de l\'énergie'
+            ],
             
-            // Droit des Contrats
-            ['domaine_id' => $droitContrats->id, 'nom' => 'Contrats civils', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitContrats->id, 'nom' => 'Contrats commerciaux', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitContrats->id, 'nom' => 'Contrats internationaux', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitContrats->id, 'nom' => 'Résolution des litiges contractuels', 'created_at' => now(), 'updated_at' => now()],
+            // Droit public
+            'Droit public' => [
+                'Fonction publique',
+                'Responsabilité administrative',
+                'Marchés publics',
+                'Urbanisme'
+            ],
             
-            // Droit des Sociétés
-            ['domaine_id' => $droitSocietes->id, 'nom' => 'Création de sociétés', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitSocietes->id, 'nom' => 'Fusion et acquisition', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitSocietes->id, 'nom' => 'Droit des groupes de sociétés', 'created_at' => now(), 'updated_at' => now()],
-            ['domaine_id' => $droitSocietes->id, 'nom' => 'Conseil aux dirigeants', 'created_at' => now(), 'updated_at' => now()],
+            // Droit pénal
+            'Droit pénal' => [
+                'Droit pénal général',
+                'Droit pénal des affaires',
+                'Droit pénal du travail'
+            ],
+            
+            // Droit des étrangers et de la nationalité
+            'Droit des étrangers et de la nationalité' => [
+                'Titres de séjour',
+                'Naturalisation',
+                'Asile'
+            ],
+            
+            // Droit international
+            'Droit international' => [
+                'Contrats internationaux',
+                'Droit International des affaires',
+                'Reconnaissance des jugements étrangers'
+            ],
+            
+            // Droit de la propriété intellectuelle
+            'Droit de la propriété intellectuelle' => [
+                'Marques, brevets, dessins et modèles',
+                'Droit d\'auteur',
+                'Noms de domaine',
+                'Contentieux de la contrefaçon'
+            ],
+            
+            // Droit des nouvelles technologies, de l'informatique et de la communication
+            'Droit des nouvelles technologies, de l\'informatique et de la communication' => [
+                'Protection des données personnelles (RGPD)',
+                'Cybercriminalité',
+                'Contrats IT',
+                'Commerce électronique'
+            ],
+            
+            // Droit des assurances
+            'Droit des assurances' => [
+                'Contrats d\'assurance',
+                'Assurance vie',
+                'Sinistres, indemnisations'
+            ],
+            
+            // Droit rural
+            'Droit rural' => [
+                'Baux ruraux',
+                'Statut de l\'agriculteur',
+                'Droit des exploitations agricoles'
+            ],
         ];
-
-        // Insérer les données
-        SousDomaine::insert($sousDomaines);
-
-        $this->command->info('Table SousDomaine peuplée avec ' . count($sousDomaines) . ' enregistrements.');
+        
+        $sousDomainesData = [];
+        
+        foreach ($sousDomaines as $domaineNom => $sousDomainesList) {
+            $domaineId = $domaines[$domaineNom];
+            
+            foreach ($sousDomainesList as $sousDomaineNom) {
+                $sousDomainesData[] = [
+                    'nom' => $sousDomaineNom,
+                    'domaine_id' => $domaineId,
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ];
+            }
+        }
+        
+        DB::table('sous_domaines')->insert($sousDomainesData);
     }
 }

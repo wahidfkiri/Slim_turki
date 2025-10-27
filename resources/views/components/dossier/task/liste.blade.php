@@ -31,10 +31,10 @@
                                                                         {{ $task->titre }}
                                                                     </td>
                                                                     <!-- <td>{{ $task->description }}</td> -->
-                                                                    <td>{{ $task->date_debut->format('d/m/Y') }}</td>
-                                                                    <td>{{ $task->date_fin->format('d/m/Y') }}</td>
-                                                                    <td>{{ $task->priorite }}</td>
-                                                                    <td>{{ $task->user->name }}</td>
+                                                                    <td>{{ $task->date_debut?->format('d/m/Y') ?? ''}}</td>
+                                                                    <td>{{ $task->date_fin?->format('d/m/Y') ?? '' }}</td>
+                                                                    <td>{{ $task->priorite ?? ''}}</td>
+                                                                    <td>{{ $task->user->name ?? ''}}</td>
                                                                     <td>
                                                                         @if($task->statut == 'en_cours')
                                                                             <span class="badge badge-warning">En cours</span>

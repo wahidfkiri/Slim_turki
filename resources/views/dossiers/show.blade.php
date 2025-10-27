@@ -36,6 +36,7 @@
                                     </a>
                                 @endif
                             </div>
+                             <br><p>{{$dossier->numero_dossier}}</p>
                         </div>
                         <div class="card-body">
                             <!-- Navigation par onglets -->
@@ -440,6 +441,21 @@ $(document).ready(function() {
 }
 .bg-light {
     background-color: #f8f9fa !important;
+}
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.table-bordered {
+    border: 1px solid #dee2e6;
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid #dee2e6;
+    padding: 0.75rem;
+    vertical-align: top;
 }
 </style>
 @endsection

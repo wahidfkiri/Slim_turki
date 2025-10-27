@@ -34,7 +34,7 @@
                                         <i class="fas fa-edit"></i> Modifier
                                     </a>
                                 @endif
-                                <a href="{{ route('factures.index') }}" class="btn btn-secondary btn-sm">
+                                <a href="{{ url()->previous() }}" class="btn btn-secondary btn-sm">
                                     <i class="fas fa-arrow-left"></i> Retour
                                 </a>
                             </div>
@@ -203,7 +203,7 @@
                         <div class="card-footer">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <a href="{{ route('factures.index') }}" class="btn btn-default">
+                                    <a href="{{ url()->previous() }}" class="btn btn-default">
                                         <i class="fas fa-arrow-left"></i> Retour à la liste
                                     </a>
                                 </div>

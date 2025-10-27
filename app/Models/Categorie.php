@@ -15,4 +15,8 @@ class Categorie extends Model
     {
         return $this->hasMany(TimeSheet::class, 'categorie');
     }
+     public function types()
+    {
+        return $this->hasMany(Type::class);
+    }
 }

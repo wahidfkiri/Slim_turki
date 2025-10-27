@@ -4,7 +4,7 @@
                                                     
                                                     <!-- Avocat responsable -->
                                                     <div class="row">
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-12">
                                                             <div class="form-group">
                                                                 <label for="avocat_id">Avocat responsable</label>
                                                                 <select class="form-control @error('avocat_id') is-invalid @enderror" 
@@ -31,7 +31,7 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-6 d-none">
                                                             <div class="form-group">
                                                                 <label for="ordre">Ordre de priorité</label>
                                                                 <select class="form-control @error('ordre') is-invalid @enderror" 

@@ -87,11 +87,6 @@
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">
-                                                <i class="fas fa-sticky-note"></i> Notes
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
                                             <a class="nav-link" id="activites-tab" data-toggle="tab" href="#activites" role="tab" aria-controls="activites" aria-selected="false">
                                                 <i class="fas fa-calendar-alt"></i> Activités
                                                 @if((($intervenant->agendas ?? null) && count($intervenant->agendas) > 0) || (($intervenant->tasks ?? null) && count($intervenant->tasks) > 0))
@@ -99,6 +94,11 @@
                                                         {{ (($intervenant->agendas ? count($intervenant->agendas) : 0)) + (($intervenant->tasks ? count($intervenant->tasks) : 0)) }}
                                                     </span>
                                                 @endif
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="notes-tab" data-toggle="tab" href="#notes" role="tab" aria-controls="notes" aria-selected="false">
+                                                <i class="fas fa-sticky-note"></i> Notes
                                             </a>
                                         </li>
                                     </ul>
@@ -399,81 +399,7 @@
                                         </div>
 
                                         <!-- Onglet Intervenants Liés (unchanged) -->
-                                        <div class="tab-pane fade" id="intervenants-lies" role="tabpanel" aria-labelledby="intervenants-lies-tab">
-                                            <div class="p-3">
-                                                @if(($intervenant->intervenantsLies ?? null) && count($intervenant->intervenantsLies) > 0)
-                                                    <div class="alert alert-info">
-                                                        <h5><i class="icon fas fa-info"></i> Relations établies</h5>
-                                                        <p class="mb-0">
-                                                            Cet intervenant est lié à {{ count($intervenant->intervenantsLies) }} autre(s) intervenant(s) avec les relations suivantes.
-                                                        </p>
-                                                    </div>
-
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered table-striped">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>ID</th>
-                                                                    <th>Intervenant</th>
-                                                                    <th>Relation</th>
-                                                                    <th>Type</th>
-                                                                    <th>Actions</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach($intervenant->intervenantsLies as $intervenantLie)
-                                                                <tr>
-                                                                    <td>{{ $intervenantLie->id ?? 'N/A' }}</td>
-                                                                    <td>
-                                                                        <div class="d-flex align-items-center">
-                                                                            <div class="mr-3">
-                                                                                <i class="fas fa-user-circle fa-2x text-primary"></i>
-                                                                            </div>
-                                                                            <div>
-                                                                                <strong>{{ $intervenantLie->identite_fr ?? 'N/A' }}</strong>
-                                                                                @if($intervenantLie->identite_ar ?? null)
-                                                                                    <br>
-                                                                                    <small class="text-muted">{{ $intervenantLie->identite_ar }}</small>
-                                                                                @endif
-                                                                            </div>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td>{{ $intervenantLie->pivot->relation ?? 'N/A' }}</td>
-                                                                    <td>{{ $intervenantLie->type ?? 'N/A' }}</td>
-                                                                    <td>
-                                                                        <div class="btn-group btn-group-sm">
-                                                                            @if(auth()->user()->hasPermission('view_intervenants'))
-                                                                            <a href="{{ route('intervenants.show', $intervenantLie->id ?? '') }}" 
-                                                                               class="btn btn-info" title="Voir">
-                                                                                <i class="fas fa-eye"></i>
-                                                                            </a>
-                                                                            @endif
-                                                                            @if(auth()->user()->hasPermission('edit_intervenants'))
-                                                                            <a href="{{ route('intervenants.edit', $intervenantLie->id ?? '') }}" 
-                                                                               class="btn btn-warning" title="Modifier">
-                                                                                <i class="fas fa-edit"></i>
-                                                                            </a>
-                                                                            @endif
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                @else
-                                                    <div class="text-center py-5">
-                                                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                                                        <h4 class="text-muted">Aucun intervenant lié</h4>
-                                                        <p class="text-muted">Cet intervenant n'est pas encore lié à d'autres intervenants.</p>
-                                                        <a href="{{ route('intervenants.edit', $intervenant->id ?? '') }}#intervenants-lies" 
-                                                           class="btn btn-primary mt-2">
-                                                            <i class="fas fa-link mr-1"></i> Ajouter des liens
-                                                        </a>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
+                                        <x-intervenants.intervenant-liste :intervenant="$intervenant" />
 
                                         <!-- Onglet Notes (unchanged) -->
                                         <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
@@ -493,161 +419,10 @@
                                         </div>
 
                                         <!-- Onglet Activités (unchanged) -->
-                                        <div class="tab-pane fade" id="activites" role="tabpanel" aria-labelledby="activites-tab">
-                                            <div class="p-3">
-                                                <!-- Agenda -->
-                                                <h5 class="text-primary mb-3">
-                                                    <i class="fas fa-calendar-check"></i> Événements Agenda
-                                                </h5>
-                                                @if(($intervenant->agendas ?? null) && count($intervenant->agendas) > 0)
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered table-striped">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Titre</th>
-                                                                    <th>Description</th>
-                                                                    <th>Date Début</th>
-                                                                    <th>Date Fin</th>
-                                                                    <th>Catégorie</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach($intervenant->agendas as $agenda)
-                                                                <tr>
-                                                                    <td>{{ $agenda->titre ?? 'N/A' }}</td>
-                                                                    <td>{{ Str::limit($agenda->description ?? '', 50) }}</td>
-                                                                    <td>{{ isset($agenda->date_debut) ? \Carbon\Carbon::parse($agenda->date_debut)->format('d/m/Y') : 'N/A' }}</td>
-                                                                    <td>{{ isset($agenda->date_fin) ? \Carbon\Carbon::parse($agenda->date_fin)->format('d/m/Y') : 'N/A' }}</td>
-                                                                    <td>
-                                                                        <span class="badge badge-info">{{ ucfirst($agenda->categorie ?? 'N/A') }}</span>
-                                                                    </td>
-                                                                </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                @else
-                                                    <div class="alert alert-info">
-                                                        <i class="fas fa-info-circle mr-2"></i>
-                                                        Aucun événement agenda associé à cet intervenant.
-                                                    </div>
-                                                @endif
-
-                                                <!-- Tâches -->
-                                                <h5 class="text-primary mb-3 mt-4">
-                                                    <i class="fas fa-tasks"></i> Tâches
-                                                </h5>
-                                                @if(($intervenant->tasks ?? null) && count($intervenant->tasks) > 0)
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered table-striped">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Titre</th>
-                                                                    <th>Description</th>
-                                                                    <th>Date Début</th>
-                                                                    <th>Date Fin</th>
-                                                                    <th>Priorité</th>
-                                                                    <th>Statut</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach($intervenant->tasks as $task)
-                                                                <tr>
-                                                                    <td>{{ $task->titre ?? 'N/A' }}</td>
-                                                                    <td>{{ Str::limit($task->description ?? '', 50) }}</td>
-                                                                    <td>{{ isset($task->date_debut) ? \Carbon\Carbon::parse($task->date_debut)->format('d/m/Y') : 'N/A' }}</td>
-                                                                    <td>{{ isset($task->date_fin) ? \Carbon\Carbon::parse($task->date_fin)->format('d/m/Y') : 'N/A' }}</td>
-                                                                    <td>
-                                                                        @php
-                                                                            $priorityBadge = [
-                                                                                'basse' => 'badge-secondary',
-                                                                                'moyenne' => 'badge-info',
-                                                                                'haute' => 'badge-warning',
-                                                                                'urgente' => 'badge-danger'
-                                                                            ][$task->priorite ?? ''] ?? 'badge-secondary';
-                                                                        @endphp
-                                                                        <span class="badge {{ $priorityBadge }}">{{ ucfirst($task->priorite ?? 'N/A') }}</span>
-                                                                    </td>
-                                                                    <td>
-                                                                        @php
-                                                                            $statusBadge = [
-                                                                                'en_attente' => 'badge-secondary',
-                                                                                'en_cours' => 'badge-primary',
-                                                                                'termine' => 'badge-success',
-                                                                                'annule' => 'badge-danger'
-                                                                            ][$task->statut ?? ''] ?? 'badge-secondary';
-                                                                        @endphp
-                                                                        <span class="badge {{ $statusBadge }}">{{ isset($task->statut) ? ucfirst(str_replace('_', ' ', $task->statut)) : 'N/A' }}</span>
-                                                                    </td>
-                                                                </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                @else
-                                                    <div class="alert alert-info">
-                                                        <i class="fas fa-info-circle mr-2"></i>
-                                                        Aucune tâche associée à cet intervenant.
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
+                                        <x-intervenants.activity-liste :intervenant="$intervenant" />
 
                                         <!-- Onglet Dossiers (unchanged) -->
-                                        <div class="tab-pane fade" id="dossiers-lies" role="tabpanel" aria-labelledby="dossiers-tab">
-                                            <div class="p-3">
-                                                <!-- Dossiers -->
-                                                <h5 class="text-primary mb-3">
-                                                    <i class="fas fa-folder-open"></i> Dossiers Liés
-                                                </h5>
-                                                @if(($intervenant->dossiers ?? null) && count($intervenant->dossiers) > 0)
-                                                    <div class="table-responsive">
-                                                        <table class="table table-bordered table-striped">
-                                                            <thead>
-                                                                <tr>
-                                                                    <th>Numéro Dossier</th>
-                                                                    <th>Nom Dossier</th>
-                                                                    <th>Objet</th>
-                                                                    <th>Archivé</th>
-                                                                    <th>Actions</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                @foreach($intervenant->dossiers as $dossier)
-                                                                <tr>
-                                                                    <td>{{ $dossier->numero_dossier ?? 'N/A' }}</td>
-                                                                    <td>{{ $dossier->nom_dossier ?? 'N/A' }}</td>
-                                                                    <td>{{ $dossier->objet ?? 'N/A' }}</td>
-                                                                    <td>{{ ($dossier->archive ?? false) ? 'Oui' : 'Non' }}</td>
-                                                                    <td>
-                                                                        <div class="btn-group btn-group-sm">
-                                                                            @if(auth()->user()->hasPermission('view_dossiers'))
-                                                                                <a href="{{ route('dossiers.show', $dossier->id ?? '') }}" 
-                                                                                   class="btn btn-info" title="Voir">
-                                                                                    <i class="fas fa-eye"></i>
-                                                                                </a>
-                                                                            @endif
-                                                                            @if(auth()->user()->hasPermission('edit_dossiers'))
-                                                                                <a href="{{ route('dossiers.edit', $dossier->id ?? '') }}" 
-                                                                                   class="btn btn-warning" title="Modifier">
-                                                                                    <i class="fas fa-edit"></i>
-                                                                                </a>
-                                                                            @endif
-                                                                        </div>
-                                                                    </td>
-                                                                </tr>
-                                                                @endforeach
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                @else
-                                                    <div class="alert alert-info">
-                                                        <i class="fas fa-info-circle mr-2"></i>
-                                                        Aucun dossier lié à cet intervenant.
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
+                                        <x-intervenants.dossier-liste :intervenant="$intervenant" />
                                     </div>
                                 </div>
                             </div>
@@ -672,7 +447,7 @@
                                         <i class="fas fa-edit"></i> Modifier
                                     </a>
                                     @endif
-                                    <a href="{{ route('intervenants.index') }}" class="btn btn-secondary ml-1">
+                                    <a href="{{ url()->previous() }}" class="btn btn-secondary ml-1">
                                         <i class="fas fa-arrow-left"></i> Retour à la liste
                                     </a>
                                 </div>

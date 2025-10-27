@@ -107,29 +107,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Catégorie -->
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="categorie">Catégorie</label>
-                                            <select class="form-control @error('categorie') is-invalid @enderror" 
-                                                    id="categorie" name="categorie">
-                                                <option value="">Sélectionnez une catégorie</option>
-                                                @foreach($categories as $categorie)
-                                                    <option value="{{ $categorie->id }}" {{ old('categorie') == $categorie->id ? 'selected' : '' }}>
-                                                        {{ $categorie->nom }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('categorie')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
                                     <!-- Type -->
                                     <div class="col-md-6">
                                         <div class="form-group">
@@ -150,7 +127,30 @@
                                             @enderror
                                         </div>
                                     </div>
+                                </div>
 
+                                <div class="row">
+
+                                    <!-- Catégorie -->
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="categorie">Catégorie</label>
+                                            <select class="form-control @error('categorie') is-invalid @enderror" 
+                                                    id="categorie" name="categorie">
+                                                <option value="">Sélectionnez une catégorie</option>
+                                                @foreach($categories as $categorie)
+                                                    <option value="{{ $categorie->id }}" {{ old('categorie') == $categorie->id ? 'selected' : '' }}>
+                                                        {{ $categorie->nom }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                            @error('categorie')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                        </div>
+                                    </div>
                                     <!-- Quantité -->
                                     <div class="col-md-3">
                                         <div class="form-group">

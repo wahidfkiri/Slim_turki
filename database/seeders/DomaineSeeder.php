@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Domaine;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DomaineSeeder extends Seeder
 {
@@ -14,37 +13,33 @@ class DomaineSeeder extends Seeder
      */
     public function run(): void
     {
-        // Désactiver les contraintes de clé étrangère temporairement
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Domaine::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
+        $now = Carbon::now();
+        
         $domaines = [
-            ['nom' => 'Droit Civil', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit Commercial', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit Pénal', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit Social', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit Administratif', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit Fiscal', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit Immobilier', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit de la Famille', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit des Successions', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit des Contrats', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit des Sociétés', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit de la Consommation', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit Bancaire et Financier', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit de la Propriété Intellectuelle', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit International', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit Maritime', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit de l\'Environnement', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit des Assurances', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit des Technologies de l\'Information', 'created_at' => now(), 'updated_at' => now()],
-            ['nom' => 'Droit Médical', 'created_at' => now(), 'updated_at' => now()],
+            ['nom' => 'Droit de la famille, des personnes et de leur patrimoine'],
+            ['nom' => 'Droit du travail'],
+            ['nom' => 'Droit social'],
+            ['nom' => 'Droit commercial, des affaires et de la concurrence'],
+            ['nom' => 'Droit des sociétés'],
+            ['nom' => 'Droit bancaire et boursier'],
+            ['nom' => 'Droit fiscal et droit douanier'],
+            ['nom' => 'Droit immobilier'],
+            ['nom' => 'Droit de l\'environnement'],
+            ['nom' => 'Droit public'],
+            ['nom' => 'Droit pénal'],
+            ['nom' => 'Droit des étrangers et de la nationalité'],
+            ['nom' => 'Droit international'],
+            ['nom' => 'Droit de la propriété intellectuelle'],
+            ['nom' => 'Droit des nouvelles technologies, de l\'informatique et de la communication'],
+            ['nom' => 'Droit des assurances'],
+            ['nom' => 'Droit rural'],
         ];
 
-        // Insérer les données
-        Domaine::insert($domaines);
+        foreach ($domaines as &$domaine) {
+            $domaine['created_at'] = $now;
+            $domaine['updated_at'] = $now;
+        }
 
-        $this->command->info('Table Domaine peuplée avec ' . count($domaines) . ' enregistrements.');
+        DB::table('domaines')->insert($domaines);
     }
 }

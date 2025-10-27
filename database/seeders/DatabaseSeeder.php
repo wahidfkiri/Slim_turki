@@ -16,7 +16,9 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-    AgendaCategoriesSeeder::class
+    // AgendaCategoriesSeeder::class
+            DomaineSeeder::class,
+            SousDomaineSeeder::class,
 ]);
         // \App\Models\User::factory(10)->create();
 

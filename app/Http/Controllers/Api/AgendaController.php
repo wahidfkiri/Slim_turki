@@ -31,9 +31,9 @@ class AgendaController extends Controller
         'user:id,name'
     ]);
 
-    if(!auth()->user()->hasRole('admin')){
-        $query->where('utilisateur_id', auth()->user()->id);
-    }
+    // if(!auth()->user()->hasRole('admin')){
+    //     $query->where('utilisateur_id', auth()->user()->id);
+    // }
 
     // Filtre par catégories
     if ($request->has('categories') && !empty($request->categories)) {
@@ -115,9 +115,9 @@ class AgendaController extends Controller
             'user:id,name'
         ])->where('dossier_id', $dossierId);
 
-        if(!auth()->user()->hasRole('admin')){
-            $query->where('utilisateur_id', auth()->user()->id);
-        }
+        // if(!auth()->user()->hasRole('admin')){
+        //     $query->where('utilisateur_id', auth()->user()->id);
+        // }
 
         // Filtre par catégories
         if ($request->has('categories') && !empty($request->categories)) {
@@ -260,14 +260,8 @@ class AgendaController extends Controller
 
         $users = User::where('is_active', true)->get();
             $intervenants = Intervenant::all();
-        if(auth()->user()->hasRole('admin')) {
             $dossiers = Dossier::all();
-        }else{
-            $dossiers = Dossier::whereHas('users', function($q){
-            $q->where('user_id', auth()->id());
-        })->get();
-        }
-        $categories = \App\Models\AgendaCategory::all();
+            $categories = \App\Models\AgendaCategory::all();
 
             return view('agendas.index', compact('users', 'dossiers','intervenants','categories'));
     }
