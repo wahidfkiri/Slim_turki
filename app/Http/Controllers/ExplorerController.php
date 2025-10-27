@@ -142,7 +142,7 @@ private function convertToNetworkPath(string $localPath): string
     
     // Mapping des chemins locaux vers les partages réseau
     $networkMappings = [
-        'C:\\xampp\\sta\\storage\\app\\public\\dossiers' => 'dossiers',
+        '\\var\\www\\sta\\storage\\app\\public\\dossiers' => 'dossiers',
         // Ajoutez d'autres mappings si nécessaire
     ];
     
