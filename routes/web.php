@@ -72,7 +72,8 @@ Route::get('dossiers/{dossierId}/time-sheets', [TimeSheetController::class, 'byD
 Route::get('users/{userId}/time-sheets', [TimeSheetController::class, 'byUser']);
 Route::get('time-sheets/report', [TimeSheetController::class, 'report']);
 Route::get('/timesheets/data', [TimesheetController::class, 'getTimesheetsData'])->name('timesheets.data');
-
+Route::get('/get/categories', [TimesheetController::class, 'getCategories']);
+Route::get('/get/types', [TimesheetController::class, 'getTypes']);
 Route::resource('agendas', AgendaController::class);
 Route::get('agendas/by-date-range', [AgendaController::class, 'byDateRange']);
 Route::get('dossiers/{dossierId}/agendas', [AgendaController::class, 'byDossier']);
@@ -100,6 +101,9 @@ Route::get('dossiers/{dossierId}/factures', [FactureController::class, 'byDossie
 Route::get('factures/status/{statut}', [FactureController::class, 'byStatus']);
 Route::patch('factures/{facture}/status', [FactureController::class, 'updateStatus']);
 Route::get('factures/generate-number', [FactureController::class, 'generateNumber']);
+
+
+
 
 // Routes profil
 Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

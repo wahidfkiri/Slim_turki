@@ -258,7 +258,7 @@
                                 <button type="submit" class="btn btn-primary btn-lg">
                                     <i class="fas fa-save"></i> Mettre à jour
                                 </button>
-                                <a href="{{ route('tasks.index') }}" class="btn btn-default btn-lg">
+                                <a href="{{ url()->previous() }}" class="btn btn-default btn-lg">
                                     <i class="fas fa-arrow-left"></i> Retour à la liste
                                 </a>
 

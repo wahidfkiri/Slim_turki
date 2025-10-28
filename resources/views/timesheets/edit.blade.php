@@ -100,12 +100,7 @@
                                             <label for="categorie">Catégorie</label>
                                             <select class="form-control @error('categorie') is-invalid @enderror" 
                                                     id="categorie" name="categorie">
-                                                <option value="">Sélectionnez une catégorie</option>
-                                                @foreach($categories as $categorie)
-                                                    <option value="{{ $categorie->id }}" {{ old('categorie', $timesheet->categorie) == $categorie->id ? 'selected' : '' }}>
-                                                        {{ $categorie->nom }}
-                                                    </option>
-                                                @endforeach
+                                                <option value="">Chargement des catégories...</option>
                                             </select>
                                             @error('categorie')
                                                 <span class="invalid-feedback" role="alert">
@@ -122,13 +117,8 @@
                                         <div class="form-group">
                                             <label for="type">Type</label>
                                             <select class="form-control @error('type') is-invalid @enderror" 
-                                                    id="type" name="type">
-                                                <option value="">Sélectionnez un type</option>
-                                                @foreach($types as $type)
-                                                    <option value="{{ $type->id }}" {{ old('type', $timesheet->type) == $type->id ? 'selected' : '' }}>
-                                                        {{ $type->nom }}
-                                                    </option>
-                                                @endforeach
+                                                    id="type" name="type" disabled>
+                                                <option value="">Sélectionnez d'abord une catégorie</option>
                                             </select>
                                             @error('type')
                                                 <span class="invalid-feedback" role="alert">
@@ -219,7 +209,7 @@
                                 <button type="submit" class="btn btn-primary btn-lg">
                                     <i class="fas fa-save"></i> Mettre à jour
                                 </button>
-                                <a href="{{ route('time-sheets.index') }}" class="btn btn-default btn-lg">
+                                <a href="{{ url()->previous() }}" class="btn btn-default btn-lg">
                                     <i class="fas fa-arrow-left"></i> Retour à la liste
                                 </a>
 
@@ -257,6 +247,102 @@
         $('.select2').select2({
             theme: 'bootstrap4'
         });
+
+        // Dynamic category-type functionality
+        const categorieSelect = document.getElementById('categorie');
+        const typeSelect = document.getElementById('type');
+        
+        // Store the current timesheet values
+        const currentCategorieId = '{{ old("categorie", $timesheet->categorie) }}';
+        const currentTypeId = '{{ old("type", $timesheet->type) }}';
+
+        // Load categories from the server
+        function loadCategories() {
+            fetch('/get/categories')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors du chargement des catégories');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    categorieSelect.innerHTML = '<option value="">Sélectionnez une catégorie</option>';
+                    data.forEach(categorie => {
+                        const option = document.createElement('option');
+                        option.value = categorie.id;
+                        option.textContent = categorie.nom;
+                        categorieSelect.appendChild(option);
+                    });
+                    
+                    // Set current category if exists
+                    if (currentCategorieId) {
+                        categorieSelect.value = currentCategorieId;
+                        if (categorieSelect.value) {
+                            // Load types for the current category
+                            loadTypes(categorieSelect.value, true);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    categorieSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                });
+        }
+
+        // Load types based on selected category
+        function loadTypes(categorieId, setCurrentType = false) {
+            if (!categorieId) {
+                typeSelect.innerHTML = '<option value="">Sélectionnez d\'abord une catégorie</option>';
+                typeSelect.disabled = true;
+                return;
+            }
+
+            typeSelect.disabled = true;
+            typeSelect.innerHTML = '<option value="">Chargement des types...</option>';
+
+            fetch(`/get/types?categorie_id=${categorieId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur lors du chargement des types');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    typeSelect.innerHTML = '<option value="">Sélectionnez un type</option>';
+                    data.forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type.id;
+                        option.textContent = type.nom;
+                        typeSelect.appendChild(option);
+                    });
+                    typeSelect.disabled = false;
+                    
+                    // Set current type if exists and we're loading for the current category
+                    if (setCurrentType && currentTypeId) {
+                        typeSelect.value = currentTypeId;
+                    }
+                    
+                    // Also set old value if form validation failed
+                    @if(old('type'))
+                        if (!setCurrentType) {
+                            typeSelect.value = '{{ old('type') }}';
+                        }
+                    @endif
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    typeSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                    typeSelect.disabled = false;
+                });
+        }
+
+        // Event listener for category change
+        categorieSelect.addEventListener('change', function() {
+            loadTypes(this.value);
+        });
+
+        // Initialize by loading categories
+        loadCategories();
 
         // Calcul automatique du total
         function calculateTotal() {

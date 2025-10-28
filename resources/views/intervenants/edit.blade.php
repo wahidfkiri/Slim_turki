@@ -748,7 +748,7 @@
                                     </div>
                                 </div>
                                 <div class="text-center mt-2">
-                                    <a href="{{ route('intervenants.show', $intervenant->id) }}" class="btn btn-outline-secondary">
+                                    <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
                                         <i class="fas fa-arrow-left"></i> Retour aux détails
                                     </a>
                                 </div>

@@ -126,11 +126,11 @@
                 </div>
 
                 <!-- Calendar - Prend toute la largeur -->
-                <div class="col-12" id="calendarContainer">
+                <div class="col-12 w-100" id="calendarContainer">
                     <!-- Calendar -->
-                    <div class="card card-primary">
-                        <div class="card-body p-0">
-                           <div id="calendar" style="height: auto; min-height: 700px; max-height: 80vh; overflow-y: auto;"></div>
+                    <div class="card card-primary w-100">
+                        <div class="card-body p-0 w-100">
+                           <div id="calendar" style="height: auto; min-height: 700px; max-height: 80vh; overflow-y: auto;width:100%;"></div>
                         </div>
                     </div>
                 </div>
@@ -544,51 +544,76 @@
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/fr.js'></script>
 
-<style>
-/* Style pour améliorer l'affichage du calendrier en plein écran */
-#calendar {
-    min-height: 700px;
+<<style>
+/* Styles pour le conteneur principal */
+.content-wrapper {
+    overflow-x: hidden;
 }
 
-.legend-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.legend-color {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
-    border-radius: 3px;
-}
-
-.legend-text {
-    font-size: 14px;
-}
-
-/* Animation pour l'ouverture/fermeture des filtres */
+/* Styles pour les filtres et le calendrier */
 #filtersSidebar {
-    transition: all 0.3s ease;
+    transition: all 0.3s ease-in-out;
 }
 
-/* Style pour les boutons en mode responsive */
+#calendarContainer {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Assurer que le calendrier prend toute la largeur */
+#calendar {
+    width: 100% !important;
+}
+
+.card-body.p-0.w-100 {
+    width: 100% !important;
+}
+
+/* Correction pour le responsive */
 @media (max-width: 768px) {
-    .btn-group {
-        flex-direction: column;
-        width: 100%;
+    #filtersSidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 80%;
+        height: 100vh;
+        z-index: 1050;
+        background: white;
+        overflow-y: auto;
+        transition: left 0.3s ease-in-out;
     }
     
-    .btn-group .btn {
-        margin-bottom: 5px;
-        width: 100%;
+    #filtersSidebar.d-none {
+        left: -100%;
+    }
+    
+    #filtersSidebar:not(.d-none) {
+        left: 0;
+    }
+    
+    /* Sur mobile, le calendrier prend toujours 100% */
+    #calendarContainer {
+        width: 100% !important;
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
     }
 }
 
-/* Assurer que le calendrier s'adapte correctement */
-.fc .fc-view-harness {
-    min-height: 600px;
+/* Overlay pour mobile */
+.filters-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1049;
+}
+
+@media (max-width: 768px) {
+    .filters-overlay.active {
+        display: block;
+    }
 }
 </style>
 

@@ -33,6 +33,7 @@ class TimeSheetController extends Controller
     return view('timesheets.index', compact('users', 'dossiers', 'categories', 'types'));
 }
 
+
 public function create()
 {
     $this->authorize('create_timesheets', Timesheet::class);
@@ -44,6 +45,26 @@ public function create()
     
     return view('timesheets.create', compact('users', 'dossiers', 'categories', 'types'));
 }
+
+ public function getCategories()
+    {
+        $categories = Categorie::select('id', 'nom')->get();
+        return response()->json($categories);
+    }
+    public function getTypes(Request $request)
+    {
+        $categorieId = $request->query('categorie_id');
+        
+        if (!$categorieId) {
+            return response()->json([]);
+        }
+        
+        $types = Type::where('categorie_id', $categorieId)
+                    ->select('id', 'nom')
+                    ->get();
+                    
+        return response()->json($types);
+    }
     public function store(Request $request)
 {
     if (!auth()->user()->hasPermission('create_timesheets')) {

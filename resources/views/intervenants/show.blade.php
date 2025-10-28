@@ -41,7 +41,7 @@
                                     <i class="fas fa-edit"></i> Modifier
                                 </a>
                                 @endif
-                                <a href="{{ route('intervenants.index') }}" class="btn btn-secondary btn-sm ml-1">
+                                <a href="{{ url()->previous() }}" class="btn btn-secondary btn-sm ml-1">
                                     <i class="fas fa-arrow-left"></i> Retour
                                 </a>
                             </div>

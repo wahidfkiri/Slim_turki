@@ -363,7 +363,7 @@
                         <!-- /.card-body -->
 
                         <div class="card-footer">
-                            <a href="{{ route('users.index') }}" class="btn btn-default btn-lg">
+                            <a href="{{ url()->previous() }}" class="btn btn-default btn-lg">
                                 <i class="fas fa-arrow-left"></i> Retour à la liste
                             </a>
                             
