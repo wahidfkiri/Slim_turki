@@ -371,10 +371,10 @@
                                                                         <td>{{ ($file->created_at ?? now())->format('d/m/Y H:i') }}</td>
                                                                         <td>
                                                                             <div class="btn-group btn-group-sm">
-                                                                                <a href="{{ $file->file_url ?? '#' }}" target="_blank" class="btn btn-info" title="Voir">
+                                                                                <a href="{{url('intervenant/display')}}/{{ $file->id ?? '#' }}" target="_blank" class="btn btn-info" title="Voir">
                                                                                     <i class="fas fa-eye"></i>
                                                                                 </a>
-                                                                                <a href="{{ $file->file_url ?? '#' }}" download class="btn btn-success" title="Télécharger">
+                                                                                <a href="{{url('intervenant/download')}}/{{ $file->id ?? '#' }}" download class="btn btn-success" title="Télécharger">
                                                                                     <i class="fas fa-download"></i>
                                                                                 </a>
                                                                             </div>

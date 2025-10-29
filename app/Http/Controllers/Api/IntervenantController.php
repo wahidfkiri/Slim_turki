@@ -454,4 +454,89 @@ if($request->ajax()) {
         return redirect()->back()->with('error', 'Erreur lors de la suppression du fichier.');
     }
 }
+
+    public function downloadFile($file)
+    {
+        try {
+            $intervenantFile = IntervenantFile::find($file);
+
+            if (!$intervenantFile) {
+                if (request()->ajax()) {
+                    return response()->json(['success' => false, 'message' => 'Fichier introuvable.'], 404);
+                }
+                return redirect()->back()->with('error', 'Fichier introuvable.');
+            }
+
+            $filePath = storage_path('app/public/' . $intervenantFile->file_path);
+
+            if (!File::exists($filePath)) {
+                if (request()->ajax()) {
+                    return response()->json(['success' => false, 'message' => 'Fichier physique introuvable sur le serveur.'], 404);
+                }
+                return redirect()->back()->with('error', 'Fichier introuvable sur le serveur.');
+            }
+
+            $downloadName = $intervenantFile->file_name ?? basename($filePath);
+
+            return response()->download($filePath, $downloadName);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du téléchargement du fichier intervenant', [
+                'file_id' => $file,
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'user_id' => auth()->id() ?? null,
+            ]);
+
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors du téléchargement du fichier.'], 500);
+            }
+
+            return redirect()->back()->with('error', 'Une erreur est survenue lors du téléchargement du fichier. Veuillez réessayer.');
+        }
+    }
+
+    public function displayFile($file)
+    {
+        try {
+            $intervenantFile = IntervenantFile::find($file);
+
+            if (!$intervenantFile) {
+                if (request()->ajax()) {
+                    return response()->json(['success' => false, 'message' => 'Fichier introuvable.'], 404);
+                }
+                return redirect()->back()->with('error', 'Fichier introuvable.');
+            }
+
+            $filePath = storage_path('app/public/' . $intervenantFile->file_path);
+
+            if (!File::exists($filePath)) {
+                if (request()->ajax()) {
+                    return response()->json(['success' => false, 'message' => 'Fichier physique introuvable sur le serveur.'], 404);
+                }
+                return redirect()->back()->with('error', 'Fichier introuvable sur le serveur.');
+            }
+
+            $mime = File::mimeType($filePath) ?: 'application/octet-stream';
+            $headers = [
+                'Content-Type' => $mime,
+                // force inline display
+                'Content-Disposition' => 'inline; filename="' . ($intervenantFile->file_name ?? basename($filePath)) . '"'
+            ];
+
+            return response()->file($filePath, $headers);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de l\'affichage du fichier intervenant', [
+                'file_id' => $file,
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'user_id' => auth()->id() ?? null,
+            ]);
+
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Une erreur est survenue lors de l\'affichage du fichier.'], 500);
+            }
+
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'affichage du fichier. Veuillez réessayer.');
+        }
+    }
 }

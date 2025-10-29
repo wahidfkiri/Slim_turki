@@ -51,6 +51,8 @@ Route::get('intervenants/search', [IntervenantController::class, 'search']);
 Route::post('intervenants/{intervenant}/attach-dossier', [IntervenantController::class, 'attachDossier']);
 Route::post('intervenants/detach-intervenant', [IntervenantController::class, 'detachIntervenant'])->name('intervenants.detach-intervenant');
 Route::delete('intervenant-files/{file}', [IntervenantController::class, 'destroyFile'])->name('intervenants.files.destroy');
+Route::get('intervenant/download/{file}', [IntervenantController::class,'downloadFile']);
+Route::get('intervenant/display/{file}', [IntervenantController::class,'displayFile']);
 
 Route::resource('dossiers', DossierController::class);
 Route::get('get/dossiers/data', [DossierController::class, 'getDossiersData'])->name('dossiers.data');
