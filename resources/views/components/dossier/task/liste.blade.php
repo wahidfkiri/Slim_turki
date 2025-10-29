@@ -50,10 +50,12 @@
                                                                         <a href="{{route('tasks.show', $task)}}" class="btn btn-sm btn-info" title="Voir">
                                                                             <i class="fas fa-eye"></i>
                                                                         </a>
-                                                                        <a href="{{ url('tasks.pdf', $task) }}" 
+                                                                        @if($task->file_path)
+                                                                        <a href="{{url('tasks/download')}}/{{$task->id}}" 
                                                                            download class="btn btn-sm btn-success" title="Télécharger">
                                                                             <i class="fas fa-download"></i>
                                                                         </a>
+                                                                        @endif
                                                                     </td>
                                                                 </tr>
                                                                 @endforeach

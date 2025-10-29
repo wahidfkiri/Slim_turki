@@ -47,10 +47,12 @@
                                 <a href="{{route('factures.show', $facture)}}" class="btn btn-sm btn-info" title="Voir">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('factures.pdf', $facture) }}" 
+                                @if($facture->piece_jointe)
+                                <a href="{{ url('factures/download')}}/{{ $facture->id }}" 
                                    download class="btn btn-sm btn-success" title="Télécharger">
                                     <i class="fas fa-download"></i>
                                 </a>
+                                @endif
                             </td>
                         </tr>
                         @endforeach

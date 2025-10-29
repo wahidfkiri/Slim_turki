@@ -85,12 +85,18 @@ Route::post('agenda-categories', [AgendaController::class, 'storeCategorieAgenda
 Route::put('agendas/categories/{id}', [AgendaController::class, 'updateCategorieAgenda'])->name('agenda-categories.update');
 Route::delete('agendas/categories/{id}', [AgendaController::class, 'deleteCategorieAgenda'])->name('agenda-categories.delete');
 Route::get('/api/agenda-categories', [AgendaController::class, 'apiIndex'])->name('agenda-categories.api');
+Route::get('agendas/download/{id}', [AgendaController::class, 'downloadFile']);
+
+
 Route::resource('tasks', TaskController::class);
 Route::get('tasks/status/{statut}', [TaskController::class, 'byStatus']);
 Route::get('users/{userId}/tasks', [TaskController::class, 'byUser']);
 Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus']);
 Route::get('/get/tasks/data', [TaskController::class, 'getTasksData'])->name('tasks.data');
 Route::get('tasks/{taskId}/download', [TaskController::class, 'downloadFile'])->name('tasks.download');
+
+Route::get('tasks/download/{id}', [TaskController::class,'downloadFile']);
+Route::get('tasks/display/{id}', [TaskController::class,'displayFile']);
 
 Route::resource('factures', FactureController::class);
  Route::get('/get/factures/data', [FactureController::class, 'getFacturesData'])->name('factures.data');
@@ -103,7 +109,8 @@ Route::get('dossiers/{dossierId}/factures', [FactureController::class, 'byDossie
 Route::get('factures/status/{statut}', [FactureController::class, 'byStatus']);
 Route::patch('factures/{facture}/status', [FactureController::class, 'updateStatus']);
 Route::get('factures/generate-number', [FactureController::class, 'generateNumber']);
-
+Route::get('factures/download/{id}', [FactureController::class,'downloadFile']);
+Route::get('factures/display/{id}', [FactureController::class,'displayFile']);
 
 
 

@@ -561,4 +561,29 @@ public function edit(Agenda $agenda)
     $categories = \App\Models\AgendaCategory::active()->ordered()->get();
     return response()->json($categories);
 }
+
+public function downloadFile($id)
+    {
+       
+        if (!auth()->user()->hasPermission('view_agendas')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $agenda = Agenda::find($id);
+
+        if (!$agenda || !$agenda->file_path) {
+            return redirect()->back()->with('error', 'Fichier introuvable pour cette agenda.');
+        }
+
+        $filePath = storage_path('app/public/' . $agenda->file_path);
+
+        if (!file_exists($filePath)) {
+            return redirect()->back()->with('error', 'Le fichier est introuvable sur le serveur.');
+        }
+
+        $downloadName = $agenda->file_name ?? $agenda->file_path;
+        $mime = @mime_content_type($filePath) ?: 'application/octet-stream';
+
+        return response()->download($filePath, $downloadName, ['Content-Type' => $mime]);
+    }
 }

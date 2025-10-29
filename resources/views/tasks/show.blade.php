@@ -83,6 +83,23 @@
                                                 </span>
                                             </td>
                                         </tr>
+                                        <tr>
+                                            <td>Pièce Jointe</td>
+                                            <td>
+                                                @if($task->file_path != null)
+                                                <div class="btn-group btn-group-sm d-block">
+                                                                                <a href="{{url('tasks/display')}}/{{ $task->id ?? '#' }}" target="_blank" title="Voir">
+                                                                                    <i class="fas fa-eye text-success"></i> Afficher
+                                                                                </a><br>
+                                                                                <a href="{{url('tasks/download')}}/{{ $task->id ?? '#' }}" download title="Télécharger">
+                                                                                    <i class="fas fa-download text-info"></i>  Télécharger
+                                                                                </a>
+                                                                            </div>
+                                                                            @else
+                                                                            Non définit
+                                                @endif
+                                            </td>
+                                        </tr>
                                     </table>
                                 </div>
 

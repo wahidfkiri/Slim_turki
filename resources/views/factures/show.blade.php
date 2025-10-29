@@ -161,7 +161,15 @@
                                             <th>Pièce jointe</th>
                                             <td>
                                                 @if($facture->piece_jointe ?? null)
-                                                    <div class="d-flex align-items-center">
+                                                                            <div class="btn-group btn-group-sm d-block">
+                                                                                <a href="{{url('factures/display')}}/{{ $facture->id ?? '#' }}" target="_blank" title="Voir">
+                                                                                    <i class="fas fa-eye text-success"></i> Afficher
+                                                                                </a><br>
+                                                                                <a href="{{url('factures/download')}}/{{ $facture->id ?? '#' }}" download title="Télécharger">
+                                                                                    <i class="fas fa-download text-info"></i>  Télécharger
+                                                                                </a>
+                                                                            </div>
+                                                    <!-- <div class="d-flex align-items-center">
                                                         <i class="fas 
                                                             @if(($facture->piece_jointe_extension ?? '') == 'pdf') fa-file-pdf text-danger
                                                             @elseif(in_array($facture->piece_jointe_extension ?? '', ['doc', 'docx'])) fa-file-word text-primary
@@ -176,7 +184,7 @@
                                                         <span class="badge badge-info ml-2">
                                                             {{ strtoupper($facture->piece_jointe_extension ?? 'N/A') }}
                                                         </span>
-                                                    </div>
+                                                    </div> -->
                                                 @else
                                                     <span class="text-muted">Aucune pièce jointe</span>
                                                 @endif

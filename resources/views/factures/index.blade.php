@@ -364,7 +364,7 @@ $(document).ready(function() {
                     @endif
 
                     @if(auth()->user()->hasPermission('export_data'))
-                        actions += '<a href="/factures/' + row.id + '/pdf" class="btn btn-secondary btn-sm" title="PDF" target="_blank"><i class="fas fa-file-pdf"></i></a>';
+                        actions += '<a href="/factures/download/' + row.id + '" class="btn btn-secondary btn-sm" title="PDF" target="_blank"><i class="fas fa-file-pdf"></i></a>';
                     @endif
                     
                     actions += '</div>';

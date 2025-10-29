@@ -331,15 +331,61 @@ class TaskController extends Controller
             ->with('success', 'Tâche supprimée avec succès.');
     }
 
-    public function downloadFile($taskId)
+    // public function downloadFile($taskId)
+    // {
+    //     $task = Task::findOrFail($taskId);
+    //    if(!auth()->user()->hasPermission('view_tasks')){
+    //         return abort(403, 'Unauthorized action.');
+    //     }
+
+    //     if ($task->file_path && Storage::disk('public')->exists($task->file_path)) {
+    //         return Storage::disk('public')->download($task->file_path, $task->file_name);
+    //     }
+
+    //     return redirect()->back()->with('error', 'Fichier non trouvé.');
+    // }
+
+    public function downloadFile($id)
     {
-        $task = Task::findOrFail($taskId);
-       if(!auth()->user()->hasPermission('view_tasks')){
-            return abort(403, 'Unauthorized action.');
+        $task = Task::findOrFail($id);
+
+        if (!auth()->user()->hasPermission('view_tasks')) {
+            abort(403, 'Unauthorized action.');
         }
 
         if ($task->file_path && Storage::disk('public')->exists($task->file_path)) {
-            return Storage::disk('public')->download($task->file_path, $task->file_name);
+            $path = Storage::disk('public')->path($task->file_path);
+            $mime = Storage::disk('public')->mimeType($task->file_path) ?? 'application/octet-stream';
+            $headers = [
+                'Content-Type' => $mime,
+                'Content-Disposition' => 'inline; filename="' . ($task->file_name ?? basename($path)) . '"'
+            ];
+
+            return response()->file($path, $headers);
+        }
+
+        return redirect()->back()->with('error', 'Fichier non trouvé.');
+    }
+
+    public function displayFile($id)
+    {
+        $task = Task::findOrFail($id);
+
+        if (!auth()->user()->hasPermission('view_tasks')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($task->file_path && Storage::disk('public')->exists($task->file_path)) {
+            $path = Storage::disk('public')->path($task->file_path);
+            $mime = Storage::disk('public')->mimeType($task->file_path) ?? 'application/octet-stream';
+            $filename = $task->file_name ?? basename($path);
+
+            $headers = [
+                'Content-Type' => $mime,
+                'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            ];
+
+            return response()->file($path, $headers);
         }
 
         return redirect()->back()->with('error', 'Fichier non trouvé.');

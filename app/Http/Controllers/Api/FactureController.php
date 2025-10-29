@@ -657,4 +657,66 @@ class FactureController extends Controller
         'Content-Type' => 'application/pdf',
     ]);
 }
+
+    public function downloadFile($id)
+    {
+        if (!auth()->user()->hasPermission('view_factures')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $facture = Facture::find($id);
+
+        if (!$facture || !$facture->piece_jointe) {
+            return redirect()->back()->with('error', 'Fichier introuvable pour cette facture.');
+        }
+
+        $filePath = storage_path('app/public/factures/' . $facture->piece_jointe);
+
+        if (!file_exists($filePath)) {
+            return redirect()->back()->with('error', 'Le fichier est introuvable sur le serveur.');
+        }
+
+        $downloadName = $facture->file_name ?? $facture->piece_jointe;
+        $mime = @mime_content_type($filePath) ?: 'application/octet-stream';
+
+        return response()->download($filePath, $downloadName, ['Content-Type' => $mime]);
+    }
+
+    public function displayFile($id)
+    {
+        if (!auth()->user()->hasPermission('view_factures')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $facture = Facture::find($id);
+
+        if (!$facture || !$facture->piece_jointe) {
+            return redirect()->back()->with('error', 'Fichier introuvable pour cette facture.');
+        }
+
+        $filePath = storage_path('app/public/factures/' . $facture->piece_jointe);
+
+        if (!file_exists($filePath)) {
+            return redirect()->back()->with('error', 'Le fichier est introuvable sur le serveur.');
+        }
+
+        $mime = @mime_content_type($filePath) ?: 'application/octet-stream';
+        $inlineTypes = [
+            'application/pdf',
+            'image/jpeg',
+            'image/png',
+            'image/jpg'
+        ];
+
+        $headers = ['Content-Type' => $mime];
+        $displayName = $facture->file_name ?? $facture->piece_jointe;
+
+        if (in_array($mime, $inlineTypes, true)) {
+            // Afficher directement dans le navigateur
+            return response()->file($filePath, $headers);
+        }
+
+        // Pour les autres types, forcer le téléchargement
+        return response()->download($filePath, $displayName, $headers);
+    }
 }

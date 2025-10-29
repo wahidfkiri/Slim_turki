@@ -827,7 +827,7 @@ function initializeCalendar() {
                 ${event.extendedProps.dossier ? `<p><strong>Dossier:</strong> ${event.extendedProps.dossier}</p>` : ''}
                 ${event.extendedProps.intervenant ? `<p><strong>Intervenant:</strong> ${event.extendedProps.intervenant}</p>` : ''}
                 ${event.extendedProps.utilisateur ? `<p><strong>Assigné à:</strong> ${event.extendedProps.utilisateur}</p>` : ''}
-                ${event.extendedProps.file_name ? `<p><strong>Fichier:</strong> ${event.extendedProps.file_name}</p>` : ''}
+                ${event.extendedProps.file_name ? `<p><strong><a href="{{url('agendas/download')}}/${event.id}"><i class="fa fa-download"></i> Télécharger</a></strong> ${event.extendedProps.file_name}</p>` : ''}
             </div>
         `;
         
